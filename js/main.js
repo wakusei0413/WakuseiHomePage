@@ -252,9 +252,11 @@
             console.log(`[壁纸] 已加载 ${urls.length} 张图片（含克隆：${state.images.length}）`);
         }
         
-        // 启动无限滚动
+        // 启动无限滚动（延迟一点时间确保DOM渲染完成）
         if (infiniteConfig.enabled) {
-            initInfiniteScroll();
+            setTimeout(() => {
+                initInfiniteScroll();
+            }, 500);
         }
     }
     
@@ -324,9 +326,16 @@
     // ========== 无限滚动逻辑 ==========
     
     function initInfiniteScroll() {
-        if (!infiniteConfig.enabled || state.images.length === 0) return;
+        if (!infiniteConfig.enabled || state.images.length === 0) {
+            console.warn('[壁纸] 无限滚动未启动：配置未启用或没有图片');
+            return;
+        }
         
         const mode = infiniteConfig.mode || 'interval';
+        
+        if (CONFIG.debug && CONFIG.debug.consoleLog) {
+            console.log(`[壁纸] 正在启动无限滚动，模式：${mode}，图片数：${state.images.length}`);
+        }
         
         // 设置事件监听
         setupEventListeners();
@@ -374,23 +383,31 @@
     let currentImageIndex = 0;
     
     function startIntervalMode() {
-        if (state.isAutoScrolling) return;
+        if (state.isAutoScrolling) {
+            console.log('[壁纸] 间隔模式已在运行');
+            return;
+        }
         
         state.isAutoScrolling = true;
+        currentImageIndex = 0;
         
         const interval = infiniteConfig.interval || 5000;
-        const transitionDuration = infiniteConfig.transitionDuration || 1000;
+        
+        console.log(`[壁纸] 启动间隔模式，间隔：${interval}ms`);
         
         function scrollToNextImage() {
             if (state.isPaused || state.isUserInteracting) {
+                console.log('[壁纸] 滚动暂停中，等待恢复...');
                 intervalTimer = setTimeout(scrollToNextImage, 500);
                 return;
             }
             
             currentImageIndex++;
+            console.log(`[壁纸] 滚动到第 ${currentImageIndex + 1} 张图片`);
             
             // 如果到达最后一张（克隆），无缝跳转到第一张
             if (currentImageIndex >= state.images.length) {
+                console.log('[壁纸] 到达底部，无缝循环');
                 container.style.scrollBehavior = 'auto';
                 container.scrollTop = 0;
                 currentImageIndex = 1;
@@ -407,8 +424,8 @@
             intervalTimer = setTimeout(scrollToNextImage, interval);
         }
         
-        // 开始滚动
-        intervalTimer = setTimeout(scrollToNextImage, interval);
+        // 开始滚动（首次延迟稍短，让用户先看到第一张）
+        intervalTimer = setTimeout(scrollToNextImage, 2000);
     }
     
     function scrollToImage(index) {
@@ -428,10 +445,15 @@
     // ========== 速度模式 ==========
     
     function startSpeedMode() {
-        if (state.isAutoScrolling) return;
+        if (state.isAutoScrolling) {
+            console.log('[壁纸] 速度模式已在运行');
+            return;
+        }
         
         state.isAutoScrolling = true;
         const speed = infiniteConfig.speed || 0.3;
+        
+        console.log(`[壁纸] 启动速度模式，速度：${speed}px/帧`);
         
         function animate() {
             if (!state.isPaused && !state.isUserInteracting) {
@@ -440,11 +462,8 @@
                 // 检查是否到达底部（克隆图片位置）
                 const maxScroll = container.scrollHeight - container.clientHeight;
                 if (container.scrollTop >= maxScroll - 10) {
-                    container.style.scrollBehavior = 'auto';
+                    console.log('[壁纸] 速度模式到达底部，无缝循环');
                     container.scrollTop = 0;
-                    setTimeout(() => {
-                        container.style.scrollBehavior = 'smooth';
-                    }, 50);
                 }
             }
             
@@ -556,44 +575,6 @@
         }
     }
     
-    // ========== 控制按钮 ==========
-    
-    function setupControlButtons() {
-        const pauseBtn = document.getElementById('wallpaperPause');
-        const upBtn = document.getElementById('wallpaperUp');
-        const downBtn = document.getElementById('wallpaperDown');
-        
-        if (pauseBtn) {
-            pauseBtn.addEventListener('click', () => {
-                if (state.isPaused) {
-                    resumeAutoScroll();
-                    pauseBtn.textContent = '⏸';
-                    pauseBtn.title = '暂停';
-                } else {
-                    pauseAutoScroll();
-                    pauseBtn.textContent = '▶';
-                    pauseBtn.title = '继续';
-                }
-            });
-        }
-        
-        if (upBtn) {
-            upBtn.addEventListener('click', () => {
-                pauseAutoScroll();
-                container.scrollTop -= 300;
-                scheduleResume();
-            });
-        }
-        
-        if (downBtn) {
-            downBtn.addEventListener('click', () => {
-                pauseAutoScroll();
-                container.scrollTop += 300;
-                scheduleResume();
-            });
-        }
-    }
-    
     // ========== 清理 ==========
     
     function cleanup() {
@@ -613,7 +594,6 @@
     
     // 启动
     fetchWallpapers();
-    setupControlButtons();
     
     if (CONFIG.debug && CONFIG.debug.consoleLog) {
         console.log('[壁纸] 无限滚动壁纸系统已初始化');
