@@ -295,7 +295,7 @@ html {
 
 .left-panel .hero {
     width: 100%;
-    text-align: center;
+    text-align: left;
     animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -345,7 +345,7 @@ html {
 .avatar-box {
     width: clamp(100px, 12vw, 150px);
     height: clamp(100px, 12vw, 150px);
-    margin: 0 auto var(--space-lg);
+    margin: 0 0 var(--space-lg) 0;
     border: var(--border-heavy) solid var(--fg);
     box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--fg);
     display: flex;
