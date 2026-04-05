@@ -331,24 +331,18 @@
             return;
         }
         
-        const mode = infiniteConfig.mode || 'interval';
-        
         if (CONFIG.debug && CONFIG.debug.consoleLog) {
-            console.log(`[壁纸] 正在启动无限滚动，模式：${mode}，图片数：${state.images.length}`);
+            console.log(`[壁纸] 正在启动无限滚动，图片数：${state.images.length}`);
         }
         
         // 设置事件监听
         setupEventListeners();
         
-        // 启动自动滚动
-        if (mode === 'interval') {
-            startIntervalMode();
-        } else {
-            startSpeedMode();
-        }
+        // 启动持续滚动
+        startContinuousScroll();
         
         if (CONFIG.debug && CONFIG.debug.consoleLog) {
-            console.log(`[壁纸] 无限滚动已启动，模式：${mode}`);
+            console.log('[壁纸] 持续滚动已启动');
         }
     }
     
@@ -372,98 +366,40 @@
         if (infiniteConfig.wheelControl) {
             container.addEventListener('wheel', handleWheel, { passive: false });
         }
-        
-        // 滚动事件
-        container.addEventListener('scroll', handleScroll, { passive: true });
     }
     
-    // ========== 间隔模式 ==========
+    // ========== 持续滚动模式 ==========
     
-    let intervalTimer = null;
-    let currentImageIndex = 0;
-    
-    function startIntervalMode() {
+    function startContinuousScroll() {
         if (state.isAutoScrolling) {
-            console.log('[壁纸] 间隔模式已在运行');
+            console.log('[壁纸] 持续滚动已在运行');
             return;
         }
         
         state.isAutoScrolling = true;
-        currentImageIndex = 0;
+        // 默认速度 1.5 像素/帧，可以根据需要调整
+        const speed = infiniteConfig.speed || 1.5;
         
-        const interval = infiniteConfig.interval || 5000;
+        console.log(`[壁纸] 启动持续滚动，速度：${speed}px/帧`);
         
-        console.log(`[壁纸] 启动间隔模式，间隔：${interval}ms`);
+        let lastTime = performance.now();
         
-        function scrollToNextImage() {
-            if (state.isPaused || state.isUserInteracting) {
-                console.log('[壁纸] 滚动暂停中，等待恢复...');
-                intervalTimer = setTimeout(scrollToNextImage, 500);
-                return;
-            }
+        function animate(currentTime) {
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
             
-            currentImageIndex++;
-            console.log(`[壁纸] 滚动到第 ${currentImageIndex + 1} 张图片`);
-            
-            // 如果到达最后一张（克隆），无缝跳转到第一张
-            if (currentImageIndex >= state.images.length) {
-                console.log('[壁纸] 到达底部，无缝循环');
-                container.style.scrollBehavior = 'auto';
-                container.scrollTop = 0;
-                currentImageIndex = 1;
-                
-                // 强制回流后恢复平滑滚动
-                setTimeout(() => {
-                    container.style.scrollBehavior = 'smooth';
-                    scrollToImage(currentImageIndex);
-                }, 50);
-            } else {
-                scrollToImage(currentImageIndex);
-            }
-            
-            intervalTimer = setTimeout(scrollToNextImage, interval);
-        }
-        
-        // 开始滚动（首次延迟稍短，让用户先看到第一张）
-        intervalTimer = setTimeout(scrollToNextImage, 2000);
-    }
-    
-    function scrollToImage(index) {
-        if (index < 0 || index >= state.images.length) return;
-        
-        const img = state.images[index];
-        const targetTop = img.offsetTop;
-        
-        container.scrollTo({
-            top: targetTop,
-            behavior: 'smooth'
-        });
-        
-        updateCurrentIndex(index);
-    }
-    
-    // ========== 速度模式 ==========
-    
-    function startSpeedMode() {
-        if (state.isAutoScrolling) {
-            console.log('[壁纸] 速度模式已在运行');
-            return;
-        }
-        
-        state.isAutoScrolling = true;
-        const speed = infiniteConfig.speed || 0.3;
-        
-        console.log(`[壁纸] 启动速度模式，速度：${speed}px/帧`);
-        
-        function animate() {
+            // 只有在没有用户交互时才自动滚动
             if (!state.isPaused && !state.isUserInteracting) {
-                container.scrollTop += speed;
+                // 使用 deltaTime 确保不同帧率下速度一致
+                const scrollAmount = speed * (deltaTime / 16.67); // 16.67ms = 60fps
+                container.scrollTop += scrollAmount;
                 
                 // 检查是否到达底部（克隆图片位置）
                 const maxScroll = container.scrollHeight - container.clientHeight;
-                if (container.scrollTop >= maxScroll - 10) {
-                    console.log('[壁纸] 速度模式到达底部，无缝循环');
+                if (container.scrollTop >= maxScroll - 5) {
+                    // 无缝跳转到顶部
                     container.scrollTop = 0;
+                    console.log('[壁纸] 到达底部，无缝循环到顶部');
                 }
             }
             
@@ -515,16 +451,6 @@
         scheduleResume();
     }
     
-    function handleScroll() {
-        state.currentScrollTop = container.scrollTop;
-        state.lastScrollTime = Date.now();
-        
-        // 更新当前图片索引
-        const scrollPercentage = container.scrollTop / (container.scrollHeight - container.clientHeight);
-        const imageIndex = Math.floor(scrollPercentage * (state.images.length - 1));
-        updateCurrentIndex(imageIndex);
-    }
-    
     // ========== 暂停/恢复控制 ==========
     
     function pauseAutoScroll() {
@@ -556,31 +482,9 @@
         }, resumeDelay);
     }
     
-    // ========== UI 更新 ==========
-    
-    function updateCurrentIndex(index) {
-        // 更新指示器（如果存在）
-        const indicators = document.querySelectorAll('.wallpaper-indicator');
-        indicators.forEach((indicator, i) => {
-            indicator.classList.toggle('active', i === index);
-        });
-        
-        // 更新壁纸信息（如果存在）
-        const wallpaperInfo = document.querySelector('.wallpaper-info');
-        if (wallpaperInfo) {
-            const title = wallpaperInfo.querySelector('.wallpaper-title');
-            if (title) {
-                title.textContent = `壁纸 ${index + 1} / ${state.images.length - 1}`;
-            }
-        }
-    }
-    
     // ========== 清理 ==========
     
     function cleanup() {
-        if (intervalTimer) {
-            clearTimeout(intervalTimer);
-        }
         if (state.animationFrameId) {
             cancelAnimationFrame(state.animationFrameId);
         }

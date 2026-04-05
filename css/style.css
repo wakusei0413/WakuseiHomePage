@@ -608,9 +608,8 @@ html {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 254, 247, 0.3) transparent;
     
-    /* 无限滚动增强 */
-    scroll-behavior: smooth;
-    scroll-snap-type: y proximity;
+    /* 持续匀速滚动 - 不使用 scroll-snap，避免打断滚动 */
+    scroll-behavior: auto;
 }
 
 [data-theme="dark"] .wallpaper-scroll-area {
@@ -643,20 +642,11 @@ html {
     opacity: 0;
     filter: blur(20px);
     transition: opacity 0.5s ease, filter 0.5s ease;
-    
-    /* 滚动吸附 */
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
 }
 
 .wallpaper-image.loaded {
     opacity: 1;
     filter: blur(0);
-}
-
-/* 克隆图片（无缝循环） */
-.wallpaper-clone {
-    scroll-snap-align: none;
 }
 
 .wallpaper-placeholder {
