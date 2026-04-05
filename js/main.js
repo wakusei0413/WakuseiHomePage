@@ -17,6 +17,44 @@
     }
 })();
 
+// ========== 动态加载 Font Awesome（5秒超时放弃）==========
+(function loadFontAwesome() {
+    const fontAwesomeUrl = 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css';
+    const timeout = 5000; // 5秒超时
+    
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = fontAwesomeUrl;
+    link.crossOrigin = 'anonymous';
+    
+    let isLoaded = false;
+    
+    // 创建超时定时器
+    const timer = setTimeout(function() {
+        if (!isLoaded) {
+            document.head.removeChild(link);
+            console.warn('Font Awesome 加载超时，已放弃加载');
+        }
+    }, timeout);
+    
+    // 加载成功
+    link.onload = function() {
+        isLoaded = true;
+        clearTimeout(timer);
+        console.log('Font Awesome 加载成功');
+    };
+    
+    // 加载失败
+    link.onerror = function() {
+        isLoaded = true;
+        clearTimeout(timer);
+        document.head.removeChild(link);
+        console.warn('Font Awesome 加载失败');
+    };
+    
+    document.head.appendChild(link);
+})();
+
 // ========== 打字机效果（带 Slogan 循环）==========
 (function initTypewriter() {
     const textEl = document.getElementById('typewriterText');
