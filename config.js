@@ -48,8 +48,9 @@ const CONFIG = {
             },
             {
                 name: 'BILIBILI',
-                url: 'https://www.bilibili.com/',
+                url: 'https://space.bilibili.com/438168974',
                 icon: 'fab fa-bilibili',
+                color: '#ffa69e'
             },
             // 示例：添加更多链接
             // {
