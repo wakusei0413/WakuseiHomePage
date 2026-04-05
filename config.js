@@ -149,7 +149,7 @@ const CONFIG = {
             // 用户交互配置
             pauseOnHover: true,         // 鼠标悬停暂停
             pauseOnTouch: true,         // 触摸暂停
-            resumeDelay: 3000,          // 交互后恢复延迟（毫秒）
+            resumeDelay: 500,           // 交互后恢复延迟（毫秒）- 鼠标移开0.5秒后恢复
             wheelControl: true,         // 滚轮控制
         }
     },
