@@ -743,6 +743,12 @@ html {
 
 @media (max-width: 900px) {
     /* 移动端：单栏布局 */
+    /* 允许移动端页面滚动 */
+    html, body {
+        overflow-y: auto;
+        height: auto;
+    }
+    
     .container {
         flex-direction: column;
         overflow-y: auto;
