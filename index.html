@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAKUSEI - 个人主页</title>
+    
+    <meta name="description" content="wakusei - 个人主页">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- 主题检测（防止闪烁，必须在 CSS 加载前执行） -->
+    <script>
+        (function() {
+            var theme = 'light'; // 默认浅色
+            
+            // 读取 Cookie
+            var match = document.cookie.match(/(^| )theme=(light|dark)(;|$)/);
+            if (match) {
+                theme = match[2];
+            } else {
+                // 检测系统偏好
+                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    theme = 'dark';
+                }
+            }
+            
+            // 立即设置主题属性
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    
+    <!-- 字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 加载界面 -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <!-- 头像 -->
+            <div class="loading-avatar-box">
+                <img src="res/img/logo.png" alt="Avatar" class="loading-avatar-img" id="loadingAvatar">
+            </div>
+            
+            <!-- 名称 -->
+            <h2 class="loading-name">WAKUSEI</h2>
+            
+            <!-- 进度条容器 -->
+            <div class="loading-bar-container">
+                <div class="loading-bar-fill" id="loadingBar"></div>
+            </div>
+            
+            <!-- 加载状态 -->
+            <p class="loading-status" id="loadingStatus">初始化中...</p>
+        </div>
+    </div>
+    
+    <!-- 背景噪点 -->
+    <div class="noise-overlay"></div>
+    
+    <!-- 主页面 -->
+    <main class="container" id="mainContent">
+        <!-- ===== 左侧：个人信息 ===== -->
+        <section class="left-panel">
+            <header class="hero">
+                <!-- 头像方块 -->
+                <div class="avatar-box">
+                    <img src="res/img/logo.png" alt="Avatar" class="avatar-image">
+                </div>
+                
+                <!-- 名称 -->
+                <h1 class="name">WAKUSEI</h1>
+                
+                <!-- 状态栏 -->
+                <div class="status-bar">
+                    <span class="status-dot"></span>
+                    <span class="status-text">OPEN TO OPPORTUNITIES</span>
+                </div>
+                
+                <!-- 简介：打字机效果 -->
+                <div class="bio-container" id="bioContainer">
+                    <p class="bio">
+                        <span class="typewriter-text" id="typewriterText"></span><span class="typewriter-cursor" id="cursor">█</span>
+                    </p>
+                </div>
+                
+                <!-- 社交链接 -->
+                <nav class="social-links">
+                    <a href="#" class="social-link social-link--yellow" aria-label="GitHub">
+                        <span class="link-label">GITHUB</span>
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link social-link--red" aria-label="Twitter">
+                        <span class="link-label">TWITTER</span>
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link social-link--blue" aria-label="Email">
+                        <span class="link-label">EMAIL</span>
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                        </svg>
+                    </a>
+                </nav>
+            </header>
+            
+            <!-- 底部版权 -->
+            <footer class="footer-left">
+                <div class="footer-line"></div>
+                <p class="footer-text">BUILT WITH PASSION • 2024</p>
+            </footer>
+        </section>
+        
+        <!-- ===== 右侧：时间 + 壁纸 ===== -->
+        <aside class="right-panel">
+            <!-- 时间面板 -->
+            <div class="info-panel">
+                <div class="time-widget">
+                    <div class="weekday" id="weekday">星期四</div>
+                    <div class="date-display" id="dateDisplay">四月四日</div>
+                    <div class="clock" id="clock">15:30:35</div>
+                </div>
+            </div>
+            
+            <!-- 壁纸轮播 -->
+            <div class="wallpaper-container" id="wallpaperContainer">
+                <div class="wallpaper-placeholder">
+                    <div class="loading-spinner"></div>
+                    <span>加载壁纸中...</span>
+                </div>
+            </div>
+            
+            <!-- 壁纸信息 -->
+            <div class="wallpaper-info" id="wallpaperInfo">
+                <span class="wallpaper-title">Pixiv 插画</span>
+                <span class="wallpaper-author" id="wallpaperAuthor"></span>
+            </div>
+        </aside>
+    </main>
+    
+    <!-- 主题切换按钮 -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题" title="切换深色/浅色模式">
+        <!-- 太阳图标（浅色模式显示） -->
+        <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <!-- 月亮图标（深色模式显示） -->
+        <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <span class="sr-only">切换主题</span>
+    </button>
+    
+    <!-- JavaScript -->
+    <!-- 加载界面管理 -->
+    <script src="js/loading.js"></script>
+    <!-- 配置文件 -->
+    <script src="config.js"></script>
+    <!-- 主脚本 -->
+    <script src="js/main.js"></script>
+</body>
+</html>
