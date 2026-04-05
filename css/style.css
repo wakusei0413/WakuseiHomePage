@@ -282,13 +282,21 @@ html {
     padding: var(--space-xl);
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    align-items: center;
     border-right: var(--border-width) solid var(--fg);
     background-color: var(--bg);
     overflow-y: auto;
+    overflow-x: hidden;
     transition: width var(--transition-normal), 
                 padding var(--transition-normal),
                 border-right-width var(--transition-normal);
+}
+
+.left-panel .hero {
+    width: 100%;
+    text-align: center;
+    animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ===== 右侧面板 ===== */
