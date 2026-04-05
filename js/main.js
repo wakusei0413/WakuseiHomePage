@@ -354,6 +354,12 @@
         nameEl.textContent = config.name;
     }
     
+    // 加载界面名称
+    const loadingNameEl = document.getElementById('loadingName');
+    if (loadingNameEl && config.name) {
+        loadingNameEl.textContent = config.name;
+    }
+    
     // 状态栏
     const statusTextEl = document.querySelector('.status-text');
     if (statusTextEl && config.status) {
@@ -374,6 +380,14 @@
         if (links[2] && config.social.email) links[2].href = config.social.email;
     }
     
+    // 底部版权
+    const footerTextEl = document.getElementById('footerText');
+    if (footerTextEl && CONFIG.footer) {
+        const text = CONFIG.footer.text || 'BUILT WITH PASSION';
+        const year = new Date().getFullYear();
+        footerTextEl.textContent = `${text} • ${year}`;
+    }
+
     if (CONFIG.debug && CONFIG.debug.consoleLog) {
         console.log('[配置] 个人信息已应用');
     }
