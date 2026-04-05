@@ -173,14 +173,27 @@
     setInterval(updateTime, CONFIG.time.updateInterval || 1000);
 })();
 
-// ========== 壁纸加载（垂直滚动）==========
-(function initWallpaper() {
+// ========== 壁纸加载（无限滚动）==========
+(function initInfiniteWallpaper() {
     const container = document.getElementById('wallpaperScrollArea');
     
     if (!container) return;
     
     const config = CONFIG.wallpaper;
+    const infiniteConfig = config.infiniteScroll || { enabled: false };
     const count = config.count || 5;
+    
+    // 状态管理
+    const state = {
+        images: [],                  // 原始图片数组
+        isAutoScrolling: false,      // 是否正在自动滚动
+        isPaused: false,             // 是否暂停
+        isUserInteracting: false,    // 用户是否正在交互
+        currentScrollTop: 0,         // 当前滚动位置
+        animationFrameId: null,      // 动画帧 ID
+        resumeTimeout: null,         // 恢复定时器
+        lastScrollTime: 0,           // 上次滚动时间
+    };
     
     // 备用图片
     const fallbackImages = Array.from({ length: count }, (_, i) => 
@@ -201,6 +214,7 @@
         img.className = 'wallpaper-image';
         img.alt = `Wallpaper ${index + 1}`;
         img.loading = index === 0 ? 'eager' : 'lazy';
+        img.dataset.index = index;
         
         // 模糊到清晰的过渡效果
         img.onload = function() {
@@ -214,18 +228,33 @@
     function loadImages(urls) {
         // 清空容器
         container.innerHTML = '';
+        state.images = [];
         
         // 添加图片
         urls.forEach((url, index) => {
             const img = createImageElement(url, index);
             container.appendChild(img);
+            state.images.push(img);
         });
+        
+        // 克隆第一张图片到最后（实现无缝循环）
+        if (infiniteConfig.enabled && urls.length > 0) {
+            const clone = createImageElement(urls[0], urls.length);
+            clone.classList.add('wallpaper-clone');
+            container.appendChild(clone);
+            state.images.push(clone);
+        }
         
         // 触发壁纸加载完成事件
         window.dispatchEvent(new CustomEvent('wallpapers-loaded'));
         
         if (CONFIG.debug && CONFIG.debug.consoleLog) {
-            console.log(`[壁纸] 已加载 ${urls.length} 张图片`);
+            console.log(`[壁纸] 已加载 ${urls.length} 张图片（含克隆：${state.images.length}）`);
+        }
+        
+        // 启动无限滚动
+        if (infiniteConfig.enabled) {
+            initInfiniteScroll();
         }
     }
     
@@ -292,7 +321,303 @@
         }
     }
     
+    // ========== 无限滚动逻辑 ==========
+    
+    function initInfiniteScroll() {
+        if (!infiniteConfig.enabled || state.images.length === 0) return;
+        
+        const mode = infiniteConfig.mode || 'interval';
+        
+        // 设置事件监听
+        setupEventListeners();
+        
+        // 启动自动滚动
+        if (mode === 'interval') {
+            startIntervalMode();
+        } else {
+            startSpeedMode();
+        }
+        
+        if (CONFIG.debug && CONFIG.debug.consoleLog) {
+            console.log(`[壁纸] 无限滚动已启动，模式：${mode}`);
+        }
+    }
+    
+    function setupEventListeners() {
+        // 鼠标悬停暂停
+        if (infiniteConfig.pauseOnHover) {
+            container.addEventListener('mouseenter', handleMouseEnter);
+            container.addEventListener('mouseleave', handleMouseLeave);
+        }
+        
+        // 触摸暂停
+        if (infiniteConfig.pauseOnTouch) {
+            container.addEventListener('touchstart', handleTouchStart, { passive: true });
+            container.addEventListener('touchend', handleTouchEnd, { passive: true });
+        }
+        
+        // 触摸滑动
+        container.addEventListener('touchmove', handleTouchMove, { passive: true });
+        
+        // 滚轮控制
+        if (infiniteConfig.wheelControl) {
+            container.addEventListener('wheel', handleWheel, { passive: false });
+        }
+        
+        // 滚动事件
+        container.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    
+    // ========== 间隔模式 ==========
+    
+    let intervalTimer = null;
+    let currentImageIndex = 0;
+    
+    function startIntervalMode() {
+        if (state.isAutoScrolling) return;
+        
+        state.isAutoScrolling = true;
+        
+        const interval = infiniteConfig.interval || 5000;
+        const transitionDuration = infiniteConfig.transitionDuration || 1000;
+        
+        function scrollToNextImage() {
+            if (state.isPaused || state.isUserInteracting) {
+                intervalTimer = setTimeout(scrollToNextImage, 500);
+                return;
+            }
+            
+            currentImageIndex++;
+            
+            // 如果到达最后一张（克隆），无缝跳转到第一张
+            if (currentImageIndex >= state.images.length) {
+                container.style.scrollBehavior = 'auto';
+                container.scrollTop = 0;
+                currentImageIndex = 1;
+                
+                // 强制回流后恢复平滑滚动
+                setTimeout(() => {
+                    container.style.scrollBehavior = 'smooth';
+                    scrollToImage(currentImageIndex);
+                }, 50);
+            } else {
+                scrollToImage(currentImageIndex);
+            }
+            
+            intervalTimer = setTimeout(scrollToNextImage, interval);
+        }
+        
+        // 开始滚动
+        intervalTimer = setTimeout(scrollToNextImage, interval);
+    }
+    
+    function scrollToImage(index) {
+        if (index < 0 || index >= state.images.length) return;
+        
+        const img = state.images[index];
+        const targetTop = img.offsetTop;
+        
+        container.scrollTo({
+            top: targetTop,
+            behavior: 'smooth'
+        });
+        
+        updateCurrentIndex(index);
+    }
+    
+    // ========== 速度模式 ==========
+    
+    function startSpeedMode() {
+        if (state.isAutoScrolling) return;
+        
+        state.isAutoScrolling = true;
+        const speed = infiniteConfig.speed || 0.3;
+        
+        function animate() {
+            if (!state.isPaused && !state.isUserInteracting) {
+                container.scrollTop += speed;
+                
+                // 检查是否到达底部（克隆图片位置）
+                const maxScroll = container.scrollHeight - container.clientHeight;
+                if (container.scrollTop >= maxScroll - 10) {
+                    container.style.scrollBehavior = 'auto';
+                    container.scrollTop = 0;
+                    setTimeout(() => {
+                        container.style.scrollBehavior = 'smooth';
+                    }, 50);
+                }
+            }
+            
+            state.animationFrameId = requestAnimationFrame(animate);
+        }
+        
+        state.animationFrameId = requestAnimationFrame(animate);
+    }
+    
+    // ========== 用户交互处理 ==========
+    
+    function handleMouseEnter() {
+        pauseAutoScroll();
+    }
+    
+    function handleMouseLeave() {
+        scheduleResume();
+    }
+    
+    let touchStartY = 0;
+    
+    function handleTouchStart(e) {
+        touchStartY = e.touches[0].clientY;
+        pauseAutoScroll();
+    }
+    
+    function handleTouchMove(e) {
+        const touchY = e.touches[0].clientY;
+        const deltaY = touchStartY - touchY;
+        
+        // 手动控制滚动位置
+        container.scrollTop += deltaY * 0.5;
+        touchStartY = touchY;
+    }
+    
+    function handleTouchEnd() {
+        scheduleResume();
+    }
+    
+    function handleWheel(e) {
+        e.preventDefault();
+        
+        // 暂停自动滚动
+        pauseAutoScroll();
+        
+        // 滚轮控制
+        container.scrollTop += e.deltaY * 0.5;
+        
+        scheduleResume();
+    }
+    
+    function handleScroll() {
+        state.currentScrollTop = container.scrollTop;
+        state.lastScrollTime = Date.now();
+        
+        // 更新当前图片索引
+        const scrollPercentage = container.scrollTop / (container.scrollHeight - container.clientHeight);
+        const imageIndex = Math.floor(scrollPercentage * (state.images.length - 1));
+        updateCurrentIndex(imageIndex);
+    }
+    
+    // ========== 暂停/恢复控制 ==========
+    
+    function pauseAutoScroll() {
+        state.isPaused = true;
+        state.isUserInteracting = true;
+        
+        // 清除恢复定时器
+        if (state.resumeTimeout) {
+            clearTimeout(state.resumeTimeout);
+            state.resumeTimeout = null;
+        }
+    }
+    
+    function resumeAutoScroll() {
+        state.isPaused = false;
+        state.isUserInteracting = false;
+    }
+    
+    function scheduleResume() {
+        const resumeDelay = infiniteConfig.resumeDelay || 3000;
+        
+        // 清除之前的定时器
+        if (state.resumeTimeout) {
+            clearTimeout(state.resumeTimeout);
+        }
+        
+        state.resumeTimeout = setTimeout(() => {
+            resumeAutoScroll();
+        }, resumeDelay);
+    }
+    
+    // ========== UI 更新 ==========
+    
+    function updateCurrentIndex(index) {
+        // 更新指示器（如果存在）
+        const indicators = document.querySelectorAll('.wallpaper-indicator');
+        indicators.forEach((indicator, i) => {
+            indicator.classList.toggle('active', i === index);
+        });
+        
+        // 更新壁纸信息（如果存在）
+        const wallpaperInfo = document.querySelector('.wallpaper-info');
+        if (wallpaperInfo) {
+            const title = wallpaperInfo.querySelector('.wallpaper-title');
+            if (title) {
+                title.textContent = `壁纸 ${index + 1} / ${state.images.length - 1}`;
+            }
+        }
+    }
+    
+    // ========== 控制按钮 ==========
+    
+    function setupControlButtons() {
+        const pauseBtn = document.getElementById('wallpaperPause');
+        const upBtn = document.getElementById('wallpaperUp');
+        const downBtn = document.getElementById('wallpaperDown');
+        
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => {
+                if (state.isPaused) {
+                    resumeAutoScroll();
+                    pauseBtn.textContent = '⏸';
+                    pauseBtn.title = '暂停';
+                } else {
+                    pauseAutoScroll();
+                    pauseBtn.textContent = '▶';
+                    pauseBtn.title = '继续';
+                }
+            });
+        }
+        
+        if (upBtn) {
+            upBtn.addEventListener('click', () => {
+                pauseAutoScroll();
+                container.scrollTop -= 300;
+                scheduleResume();
+            });
+        }
+        
+        if (downBtn) {
+            downBtn.addEventListener('click', () => {
+                pauseAutoScroll();
+                container.scrollTop += 300;
+                scheduleResume();
+            });
+        }
+    }
+    
+    // ========== 清理 ==========
+    
+    function cleanup() {
+        if (intervalTimer) {
+            clearTimeout(intervalTimer);
+        }
+        if (state.animationFrameId) {
+            cancelAnimationFrame(state.animationFrameId);
+        }
+        if (state.resumeTimeout) {
+            clearTimeout(state.resumeTimeout);
+        }
+    }
+    
+    // 页面卸载时清理
+    window.addEventListener('beforeunload', cleanup);
+    
+    // 启动
     fetchWallpapers();
+    setupControlButtons();
+    
+    if (CONFIG.debug && CONFIG.debug.consoleLog) {
+        console.log('[壁纸] 无限滚动壁纸系统已初始化');
+    }
 })();
 
 // ========== 应用个人信息配置 ==========

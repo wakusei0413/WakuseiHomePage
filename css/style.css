@@ -607,6 +607,10 @@ html {
     background-color: #0A0A0A;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 254, 247, 0.3) transparent;
+    
+    /* 无限滚动增强 */
+    scroll-behavior: smooth;
+    scroll-snap-type: y proximity;
 }
 
 [data-theme="dark"] .wallpaper-scroll-area {
@@ -639,11 +643,20 @@ html {
     opacity: 0;
     filter: blur(20px);
     transition: opacity 0.5s ease, filter 0.5s ease;
+    
+    /* 滚动吸附 */
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
 }
 
 .wallpaper-image.loaded {
     opacity: 1;
     filter: blur(0);
+}
+
+/* 克隆图片（无缝循环） */
+.wallpaper-clone {
+    scroll-snap-align: none;
 }
 
 .wallpaper-placeholder {
@@ -728,6 +741,83 @@ html {
     font-family: var(--font-mono);
     font-size: 0.75rem;
     color: rgba(255, 254, 247, 0.7);
+}
+
+/* ===== 壁纸控制按钮 ===== */
+.wallpaper-controls {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.wallpaper-scroll-area:hover ~ .wallpaper-controls,
+.wallpaper-controls:hover {
+    opacity: 1;
+}
+
+.wallpaper-btn {
+    width: 36px;
+    height: 36px;
+    border: 2px solid rgba(255, 254, 247, 0.3);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: rgba(255, 254, 247, 0.8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.wallpaper-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 254, 247, 0.5);
+    color: var(--accent-yellow);
+    transform: scale(1.1);
+}
+
+.wallpaper-btn:active {
+    transform: scale(0.95);
+}
+
+/* 壁纸指示器 */
+.wallpaper-indicators {
+    position: absolute;
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 10;
+}
+
+.wallpaper-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 254, 247, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.wallpaper-indicator:hover {
+    background: rgba(255, 254, 247, 0.6);
+    transform: scale(1.2);
+}
+
+.wallpaper-indicator.active {
+    background: var(--accent-yellow);
+    transform: scale(1.3);
 }
 
 /* ===== 响应式设计 ===== */

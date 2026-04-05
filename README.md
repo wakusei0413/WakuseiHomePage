@@ -2,7 +2,7 @@
 
 一个采用粗放主义（Brutalist）设计风格的个人主页，具有磨砂玻璃效果、动态壁纸轮播、打字机 Slogan 展示等功能。
 
-![版本](https://img.shields.io/badge/version-0.0.8-blue)
+![版本](https://img.shields.io/badge/version-0.0.9-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## ✨ 特性
@@ -249,9 +249,6 @@ time: {
 
 ```javascript
 wallpaper: {
-    // 切换间隔（毫秒）
-    interval: 10000,
-    
     // 数据源：'pixiv' | 'unsplash' | 'picsum'
     source: 'pixiv',
     
@@ -263,8 +260,42 @@ wallpaper: {
     
     // 预加载图片数量
     count: 5,
+    
+    // 无限滚动配置
+    infiniteScroll: {
+        enabled: true,              // 启用无限滚动
+        
+        // 滚动模式：
+        // 'interval' - 间隔跳转（每张停留固定时间后切换）
+        // 'speed'    - 连续滚动（以固定速度持续滚动）
+        mode: 'interval',
+        
+        // 间隔模式配置（mode: 'interval' 时生效）
+        interval: 5000,             // 每张壁纸显示时间（毫秒）
+        transitionDuration: 1000,   // 切换动画时长（毫秒）
+        
+        // 速度模式配置（mode: 'speed' 时生效）
+        speed: 0.3,                 // 滚动速度（像素/帧）
+        
+        // 用户交互配置
+        pauseOnHover: true,         // 鼠标悬停暂停
+        pauseOnTouch: true,         // 触摸暂停
+        resumeDelay: 3000,          // 交互后恢复延迟（毫秒）
+        wheelControl: true,         // 滚轮控制
+        
+        // 性能配置
+        preloadCount: 3,            // 预加载图片数量
+        maxImages: 20,              // 最大图片数量
+    }
 }
 ```
+
+**用户交互功能：**
+- 鼠标悬停时自动暂停滚动
+- 触摸屏幕时自动暂停
+- 支持触摸滑动控制位置
+- 鼠标滚轮控制滚动
+- 右侧控制按钮（向上/暂停/向下）
 
 ---
 
@@ -437,6 +468,16 @@ WakuseiHomePage/
 ---
 
 ## 🔧 更新日志
+
+### v0.0.9
+- 新增无限滚动壁纸功能
+- 支持两种滚动模式：间隔跳转（10秒/张）和连续滚动
+- 鼠标悬停自动暂停，移开后自动恢复
+- 触摸屏幕自动暂停，支持触摸滑动控制
+- 鼠标滚轮控制滚动位置
+- 新增控制按钮（向上/暂停/向下）
+- 无缝循环滚动（克隆首张图片实现）
+- 所有功能可通过 `config.js` 配置
 
 ### v0.0.8
 - 新增点击彩纸特效（点击社交链接时触发）

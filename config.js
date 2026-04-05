@@ -129,9 +129,6 @@ const CONFIG = {
     // 壁纸轮播配置
     // ============================================================
     wallpaper: {
-        // 切换间隔（毫秒，10秒 = 10000）
-        interval: 10000,
-        
         // 数据源：'pixiv' | 'unsplash' | 'picsum'
         source: 'pixiv',
         
@@ -143,6 +140,31 @@ const CONFIG = {
         
         // 图片数量（预加载）
         count: 5,
+        
+        // 无限滚动配置
+        infiniteScroll: {
+            enabled: true,              // 启用无限滚动
+            
+            // 滚动模式：'interval'（间隔跳转）| 'speed'（连续滚动）
+            mode: 'interval',
+            
+            // 间隔模式配置（mode: 'interval' 时生效）
+            interval: 5000,             // 每张壁纸显示时间（毫秒）
+            transitionDuration: 1000,   // 切换动画时长（毫秒）
+            
+            // 速度模式配置（mode: 'speed' 时生效）
+            speed: 0.3,                 // 滚动速度（像素/帧）
+            
+            // 用户交互配置
+            pauseOnHover: true,         // 鼠标悬停暂停
+            pauseOnTouch: true,         // 触摸暂停
+            resumeDelay: 3000,          // 交互后恢复延迟（毫秒）
+            wheelControl: true,         // 滚轮控制
+            
+            // 性能配置
+            preloadCount: 3,            // 预加载图片数量
+            maxImages: 20,              // 最大图片数量
+        }
     },
 
     // ============================================================
