@@ -187,59 +187,18 @@
     
     // 状态管理
     const state = {
-        images: [],                  // 所有图片URL数组
-        isLoading: false,            // 是否正在加载
-        hasMore: true,               // 是否还有更多
-        totalLoaded: 0,              // 总共加载数量
-        observer: null,              // Intersection Observer
-        sentinel: null,              // 底部检测元素
+        images: [],
+        isLoading: false,
+        hasMore: true,
+        totalLoaded: 0,
+        observer: null,
+        sentinel: null,
     };
     
     // 备用图片
     const fallbackImages = Array.from({ length: INITIAL_LOAD }, (_, i) => 
         `https://picsum.photos/1920/1080?random=${i + 1}`
     );
-    
-    function showLoading() {
-        container.innerHTML = `
-            <div class="wallpaper-placeholder">
-                <div class="loading-spinner"></div>
-                <span>加载壁纸中...</span>
-            </div>
-        `;
-    }
-    
-    function showLoadingMore() {
-        const indicator = document.createElement('div');
-        indicator.className = 'wallpaper-loading-more';
-        indicator.id = 'loadingMoreIndicator';
-        indicator.innerHTML = `
-            <div class="loading-spinner-small"></div>
-            <span>加载更多...</span>
-        `;
-        container.appendChild(indicator);
-    }
-    
-    function hideLoadingMore() {
-        const indicator = document.getElementById('loadingMoreIndicator');
-        if (indicator) indicator.remove();
-    }
-    
-    // 预加载图片（返回Promise）
-    function preloadImage(url) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve({ url, success: true });
-            img.onerror = () => resolve({ url, success: false });
-            img.src = url;
-        });
-    }
-    
-    // 预加载所有初始图片
-    async function preloadInitialImages(urls) {
-        const results = await Promise.all(urls.map(url => preloadImage(url)));
-        return results.filter(r => r.success).map(r => r.url);
-    }
     
     function createImageElement(url, index) {
         const img = document.createElement('img');
@@ -248,9 +207,15 @@
         img.loading = 'lazy';
         img.dataset.index = index;
         
-        // 模糊到清晰的过渡效果
+        // 加载完成后显示
         img.onload = function() {
             this.classList.add('loaded');
+        };
+        
+        img.onerror = function() {
+            // 加载失败时显示备用色块
+            this.style.backgroundColor = '#1a1a1a';
+            this.style.minHeight = '400px';
         };
         
         img.src = url;
@@ -274,31 +239,17 @@
         );
     }
     
-    // 加载初始图片（必须全部加载完成）
-    async function loadInitialImages() {
-        showLoading();
-        
+    // 加载初始图片（直接加载，不等待）
+    function loadInitialImages() {
         // 检测运行环境
         const isLocalFile = window.location.protocol === 'file:';
         if (isLocalFile) {
-            if (CONFIG.debug && CONFIG.debug.consoleLog) {
-                console.warn('[壁纸] 检测到 file:// 协议，使用备用图片');
-            }
+            console.warn('[壁纸] 检测到 file:// 协议，使用备用图片');
             return fallbackImages;
         }
         
-        // 获取URL列表
-        const urls = getImageUrls(INITIAL_LOAD, Date.now());
-        
-        // 预加载所有图片
-        const loadedUrls = await preloadInitialImages(urls);
-        
-        if (loadedUrls.length === 0) {
-            console.warn('[壁纸] 初始图片加载失败，使用备用图片');
-            return fallbackImages;
-        }
-        
-        return loadedUrls;
+        // 直接返回URL列表，不预加载
+        return getImageUrls(INITIAL_LOAD, Date.now());
     }
     
     // 渲染初始图片
@@ -311,10 +262,7 @@
             appendImage(url, index);
         });
         
-        console.log(`[壁纸] 初始加载完成：${urls.length} 张图片`);
-        
-        // 触发壁纸加载完成事件
-        window.dispatchEvent(new CustomEvent('wallpapers-loaded'));
+        console.log(`[壁纸] 初始加载：${urls.length} 张图片`);
     }
     
     // 清理旧图片（内存管理）
@@ -345,34 +293,24 @@
     }
     
     // 加载更多图片
-    async function loadMoreImages() {
+    function loadMoreImages() {
         if (state.isLoading || !state.hasMore) return;
         
         state.isLoading = true;
-        showLoadingMore();
         
-        try {
-            // 生成新的URL
-            const urls = getImageUrls(BATCH_SIZE, Date.now() + state.totalLoaded);
-            
-            // 加载每张图片
-            for (const url of urls) {
-                await preloadImage(url);
-                appendImage(url, state.totalLoaded);
-            }
-            
-            console.log(`[壁纸] 加载更多：${BATCH_SIZE} 张，总计：${state.totalLoaded}`);
-            
-            // 内存清理
-            cleanupOldImages();
-            
-        } catch (error) {
-            console.error('[壁纸] 加载更多失败:', error);
-            state.hasMore = false;
-        } finally {
-            state.isLoading = false;
-            hideLoadingMore();
-        }
+        // 生成新的URL并直接添加
+        const urls = getImageUrls(BATCH_SIZE, Date.now() + state.totalLoaded);
+        
+        urls.forEach((url) => {
+            appendImage(url, state.totalLoaded);
+        });
+        
+        console.log(`[壁纸] 加载更多：${BATCH_SIZE} 张，总计：${state.totalLoaded}`);
+        
+        // 内存清理
+        cleanupOldImages();
+        
+        state.isLoading = false;
     }
     
     // 设置底部检测
@@ -402,14 +340,14 @@
     }
     
     // 初始化
-    async function init() {
+    function init() {
         if (!infiniteConfig.enabled) {
             console.log('[壁纸] 无限加载已禁用');
             return;
         }
         
         // 加载初始图片
-        const urls = await loadInitialImages();
+        const urls = loadInitialImages();
         renderInitialImages(urls);
         
         // 设置无限加载
