@@ -117,8 +117,9 @@
     --shadow-offset: 10px;
     --shadow-offset-sm: 6px;
     
-    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
-    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Noto Sans SC', monospace;
+    --font-display: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+    --font-sans: 'Noto Sans SC', sans-serif;
     
     --space-xs: 0.5rem;
     --space-sm: 1rem;
@@ -506,14 +507,14 @@ html {
 
 /* ===== 右侧：信息面板 ===== */
 .info-panel {
-    padding: var(--space-lg);
+    padding: var(--space-md);
+    padding-bottom: 0;
     border-bottom: var(--border-width) solid rgba(255, 254, 247, 0.2);
 }
 
 /* ===== 时间组件 ===== */
 .time-widget {
     text-align: left;
-    margin-bottom: var(--space-md);
 }
 
 .weekday {
