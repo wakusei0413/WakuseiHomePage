@@ -620,3 +620,268 @@ if (CONFIG.debug && CONFIG.debug.consoleLog) {
         console.log('[壁纸面板] 已初始化');
     }
 })();
+
+// ========== 点击彩纸特效 ==========
+(function initConfetti() {
+    const config = CONFIG.effects?.confetti;
+    if (!config || !config.enabled) return;
+    
+    const socialLinks = document.querySelectorAll('.social-link');
+    if (!socialLinks.length) return;
+    
+    // 获取 CSS 变量值
+    function getCSSVariable(name) {
+        if (name.startsWith('--')) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+        return name;
+    }
+    
+    // 创建单个彩纸粒子
+    function createParticle(x, y, color) {
+        const particle = document.createElement('div');
+        particle.className = 'confetti-particle';
+        
+        // 随机大小
+        const size = Math.random() * 8 + 4;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // 随机形状
+        const shapes = ['square', 'circle'];
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        particle.classList.add(`confetti--${shape}`);
+        
+        // 颜色
+        particle.style.backgroundColor = getCSSVariable(color);
+        
+        // 初始位置
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        
+        // 随机动画参数 - 使用简单的随机偏移
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * config.spread + 50;
+        const rotation = Math.random() * 720 - 360; // -360 到 360 度
+        
+        // 计算 x 和 y 偏移量
+        const xOffset = Math.cos(angle) * velocity;
+        const yOffset = Math.abs(Math.sin(angle) * velocity) + 200; // 确保向下落
+        
+        particle.style.setProperty('--x-offset', `${xOffset}px`);
+        particle.style.setProperty('--y-offset', `${yOffset}px`);
+        particle.style.setProperty('--rotation', `${rotation}deg`);
+        particle.style.setProperty('--duration', `${config.duration}ms`);
+        
+        document.body.appendChild(particle);
+        
+        // 动画结束后移除
+        particle.addEventListener('animationend', () => {
+            particle.remove();
+        });
+    }
+    
+    // 点击事件处理
+    function handleConfetti(event) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        
+        // 创建彩纸
+        const colors = config.colors || ['--accent-yellow', '--accent-red', '--accent-blue'];
+        for (let i = 0; i < config.count; i++) {
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            setTimeout(() => {
+                createParticle(x, y, color);
+            }, Math.random() * 50);
+        }
+        
+        if (CONFIG.debug && CONFIG.debug.consoleLog) {
+            console.log('[彩纸特效] 触发点击效果');
+        }
+    }
+    
+    // 绑定事件
+    socialLinks.forEach(link => {
+        link.addEventListener('click', handleConfetti);
+    });
+    
+    if (CONFIG.debug && CONFIG.debug.consoleLog) {
+        console.log('[彩纸特效] 已初始化');
+    }
+})();
+
+// ========== 滚动触发动画 ==========
+(function initScrollAnimations() {
+    const config = CONFIG.effects?.scrollReveal;
+    if (!config || !config.enabled) return;
+    
+    // 需要添加滚动动画的元素
+    const targetSelectors = [
+        '.social-link',
+        '.info-panel',
+        '.wallpaper-info',
+        '.avatar-box',
+        '.name',
+        '.status-bar'
+    ];
+    
+    const targets = document.querySelectorAll(targetSelectors.join(','));
+    if (!targets.length) return;
+    
+    // 为每个元素添加初始类和延迟
+    targets.forEach((el, index) => {
+        el.classList.add('scroll-reveal');
+        el.style.transitionDelay = `${index * config.delay}ms`;
+    });
+    
+    // 创建 Intersection Observer
+    const observerOptions = {
+        root: null,
+        rootMargin: `0px 0px -${config.offset}px 0px`,
+        threshold: 0.1
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('scroll-reveal--visible');
+                
+                // 可选：动画完成后移除监听（一次性动画）
+                // observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    // 开始观察
+    targets.forEach(el => observer.observe(el));
+    
+    if (CONFIG.debug && CONFIG.debug.consoleLog) {
+        console.log('[滚动动画] 已初始化，监听元素:', targets.length);
+    }
+})();
+
+// ========== 像素小宠物 ==========
+(function initPixelPet() {
+    const config = CONFIG.effects?.pixelPet;
+    if (!config || !config.enabled) return;
+    
+    // 创建宠物容器
+    const petContainer = document.createElement('div');
+    petContainer.className = 'pixel-pet';
+    petContainer.id = 'pixelPet';
+    
+    // 创建宠物元素
+    const pet = document.createElement('div');
+    pet.className = `pixel-pet__sprite pixel-pet__sprite--${config.type || 'cat'}`;
+    
+    // 创建爱心特效容器
+    const heartContainer = document.createElement('div');
+    heartContainer.className = 'pixel-pet__hearts';
+    
+    // 组装
+    petContainer.appendChild(pet);
+    petContainer.appendChild(heartContainer);
+    document.body.appendChild(petContainer);
+    
+    // 状态管理
+    const petSize = 32; // 像素猫咪的视觉大小
+    const state = {
+        x: Math.random() * (window.innerWidth - petSize),
+        y: window.innerHeight - petSize - 20,
+        direction: 1, // 1: 右, -1: 左
+        speed: config.speed || 0.5,
+        isWalking: true,
+        lastUpdate: Date.now()
+    };
+    
+    // 动画帧计数器
+    let frameCount = 0;
+    const FRAME_INTERVAL = 50; // 每帧间隔（毫秒）
+    let bounceOffset = 0;
+    
+    // 更新宠物位置和状态
+    function updatePet() {
+        const now = Date.now();
+        const delta = now - state.lastUpdate;
+        
+        if (delta < FRAME_INTERVAL) {
+            requestAnimationFrame(updatePet);
+            return;
+        }
+        
+        state.lastUpdate = now;
+        frameCount++;
+        
+        // 随机改变行走/停留状态
+        if (Math.random() < 0.005) {
+            state.isWalking = !state.isWalking;
+        }
+        
+        if (state.isWalking) {
+            // 移动
+            state.x += state.speed * state.direction;
+            
+            // 边界检测
+            if (state.x <= 0) {
+                state.direction = 1;
+            } else if (state.x >= window.innerWidth - petSize) {
+                state.direction = -1;
+            }
+            
+            // 走路时的上下弹跳效果
+            bounceOffset = Math.abs(Math.sin(frameCount * 0.3)) * 3;
+        } else {
+            bounceOffset = 0;
+        }
+        
+        // 应用变换
+        pet.style.transform = `translateX(${state.x}px) translateY(${-bounceOffset}px) scaleX(${state.direction})`;
+        
+        requestAnimationFrame(updatePet);
+    }
+    
+    // 点击互动
+    if (config.interactions) {
+        pet.addEventListener('click', () => {
+            // 跳跃动画
+            pet.classList.add('pixel-pet__sprite--jump');
+            
+            // 显示爱心
+            const heart = document.createElement('div');
+            heart.className = 'pixel-pet__heart';
+            heart.textContent = '❤️';
+            heart.style.left = `${state.x + petSize / 2}px`;
+            heart.style.bottom = `${petSize + 10}px`;
+            heartContainer.appendChild(heart);
+            
+            // 移除爱心
+            setTimeout(() => {
+                heart.remove();
+            }, 1000);
+            
+            // 移除跳跃类
+            setTimeout(() => {
+                pet.classList.remove('pixel-pet__sprite--jump');
+            }, 300);
+            
+            if (CONFIG.debug && CONFIG.debug.consoleLog) {
+                console.log('[像素宠物] 被点击了！');
+            }
+        });
+    }
+    
+    // 窗口大小变化时调整位置
+    window.addEventListener('resize', () => {
+        if (state.x > window.innerWidth - petSize) {
+            state.x = window.innerWidth - petSize;
+        }
+    });
+    
+    // 开始动画
+    requestAnimationFrame(updatePet);
+    
+    if (CONFIG.debug && CONFIG.debug.consoleLog) {
+        console.log('[像素宠物] 已初始化');
+    }
+})();

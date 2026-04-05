@@ -1191,3 +1191,169 @@ html {
         right: 15px;
     }
 }
+
+/* ===== 交互特效 ===== */
+
+/* 点击彩纸特效 */
+.confetti-particle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    animation: confetti-fall var(--duration, 1500ms) ease-out forwards;
+}
+
+.confetti--square {
+    border-radius: 2px;
+}
+
+.confetti--circle {
+    border-radius: 50%;
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(
+            var(--x-offset, 50px),
+            var(--y-offset, 300px)
+        ) rotate(var(--rotation, 360deg)) scale(0.3);
+        opacity: 0;
+    }
+}
+
+/* 滚动触发动画 */
+.scroll-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-reveal--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 像素小宠物 */
+.pixel-pet {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.pixel-pet__sprite {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.1s linear;
+    background: transparent;
+}
+
+/* 像素猫咪 - 使用 box-shadow 绘制 */
+.pixel-pet__sprite--cat {
+    width: 4px;
+    height: 4px;
+    background: var(--fg);
+    box-shadow:
+        /* 耳朵 */
+        4px 0 0 var(--fg),
+        0 4px 0 var(--fg),
+        4px 4px 0 var(--fg),
+        24px 0 0 var(--fg),
+        28px 0 0 var(--fg),
+        24px 4px 0 var(--fg),
+        28px 4px 0 var(--fg),
+        /* 头部 */
+        4px 8px 0 var(--fg),
+        8px 8px 0 var(--fg),
+        12px 8px 0 var(--fg),
+        16px 8px 0 var(--fg),
+        20px 8px 0 var(--fg),
+        24px 8px 0 var(--fg),
+        4px 12px 0 var(--fg),
+        8px 12px 0 var(--fg),
+        12px 12px 0 var(--fg),
+        16px 12px 0 var(--fg),
+        20px 12px 0 var(--fg),
+        24px 12px 0 var(--fg),
+        /* 眼睛 */
+        8px 16px 0 var(--fg),
+        12px 16px 0 var(--bg),
+        16px 16px 0 var(--bg),
+        20px 16px 0 var(--fg),
+        /* 鼻子和嘴巴 */
+        12px 20px 0 var(--fg),
+        16px 20px 0 var(--fg),
+        12px 24px 0 var(--fg),
+        16px 24px 0 var(--fg),
+        /* 身体 */
+        4px 28px 0 var(--fg),
+        8px 28px 0 var(--fg),
+        12px 28px 0 var(--fg),
+        16px 28px 0 var(--fg),
+        20px 28px 0 var(--fg),
+        24px 28px 0 var(--fg),
+        /* 腿 */
+        4px 32px 0 var(--fg),
+        8px 32px 0 var(--fg),
+        20px 32px 0 var(--fg),
+        24px 32px 0 var(--fg);
+    transform-origin: bottom left;
+}
+
+.pixel-pet__sprite--jump {
+    animation: pixel-pet-jump 0.3s ease-out;
+}
+
+@keyframes pixel-pet-jump {
+    0%, 100% {
+        transform: translateY(0) translateX(var(--x, 0px)) scaleX(var(--dir, 1));
+    }
+    50% {
+        transform: translateY(-20px) translateX(var(--x, 0px)) scaleX(var(--dir, 1));
+    }
+}
+
+.pixel-pet__hearts {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.pixel-pet__heart {
+    position: absolute;
+    font-size: 20px;
+    animation: pixel-pet-heart-float 1s ease-out forwards;
+}
+
+@keyframes pixel-pet-heart-float {
+    0% {
+        transform: translateY(0) scale(0);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-30px) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-60px) scale(1);
+        opacity: 0;
+    }
+}

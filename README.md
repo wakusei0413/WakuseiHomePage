@@ -2,7 +2,7 @@
 
 一个采用粗放主义（Brutalist）设计风格的个人主页，具有磨砂玻璃效果、动态壁纸轮播、打字机 Slogan 展示等功能。
 
-![版本](https://img.shields.io/badge/version-0.0.6-blue)
+![版本](https://img.shields.io/badge/version-0.0.8-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## ✨ 特性
@@ -328,6 +328,66 @@ footer: {
 
 ---
 
+## ✨ 交互特效配置 (`effects`)
+
+### 彩纸特效 (`confetti`)
+
+点击社交链接按钮时，从点击位置飞散出随机颜色的彩纸碎片。
+
+```javascript
+effects: {
+    confetti: {
+        enabled: true,              // 是否启用
+        count: 25,                  // 彩纸数量（默认 25）
+        colors: [                   // 彩纸颜色（支持 CSS 变量或 HEX）
+            '--accent-yellow',
+            '--accent-red',
+            '--accent-blue',
+            '#FF6B6B',
+            '#4ECDC4'
+        ],
+        duration: 1500,             // 动画时长（毫秒）
+        spread: 150,                // 扩散范围（像素）
+    }
+}
+```
+
+### 滚动触发动画 (`scrollReveal`)
+
+页面元素进入视口时，从下方淡入并错开显示。
+
+```javascript
+effects: {
+    scrollReveal: {
+        enabled: true,              // 是否启用
+        offset: 50,                 // 触发偏移量（像素）
+        delay: 50,                  // 元素间错开延迟（毫秒）
+        duration: 600,              // 动画时长（毫秒）
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',  // 缓动函数
+    }
+}
+```
+
+### 像素小宠物 (`pixelPet`)
+
+页面右下角有一个像素风格的小猫，在屏幕边缘悠闲散步。
+
+```javascript
+effects: {
+    pixelPet: {
+        enabled: true,              // 是否启用
+        type: 'cat',                // 宠物类型：'cat'（猫）| 'dog'（预留）
+        speed: 0.5,                 // 移动速度（像素/帧）
+        size: 32,                   // 显示尺寸（像素）
+        interactions: true,         // 是否允许点击互动（点击会跳跃+显示爱心）
+    }
+}
+```
+
+**互动效果：** 点击小猫会触发跳跃动画并显示爱心 ❤️
+
+---
+
 ## 🎨 自定义样式
 
 如需进一步自定义样式，可以编辑 `css/style.css` 文件。主要 CSS 变量定义在 `:root` 中：
@@ -377,6 +437,12 @@ WakuseiHomePage/
 ---
 
 ## 🔧 更新日志
+
+### v0.0.8
+- 新增点击彩纸特效（点击社交链接时触发）
+- 新增滚动触发动画（元素进入视口时淡入）
+- 新增像素小宠物（右下角像素猫咪，可点击互动）
+- 所有特效可通过 `config.js` 独立开关和配置
 
 ### v0.0.6
 - 社交链接支持自定义 HEX 颜色（如 `#FF6B6B`）

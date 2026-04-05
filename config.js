@@ -182,6 +182,38 @@ const CONFIG = {
         
         // 过渡动画时长（毫秒）
         transitionDuration: 300,
+    },
+
+    // ============================================================
+    // 交互特效配置
+    // ============================================================
+    effects: {
+        // 点击彩纸特效
+        confetti: {
+            enabled: true,
+            count: 25,              // 彩纸数量
+            colors: ['--accent-yellow', '--accent-red', '--accent-blue', '#FF6B6B', '#4ECDC4'],
+            duration: 1500,         // 动画时长（毫秒）
+            spread: 150,            // 扩散范围（像素）
+        },
+        
+        // 滚动触发动画
+        scrollReveal: {
+            enabled: true,
+            offset: 50,             // 触发偏移量
+            delay: 50,              // 错开延迟（毫秒）
+            duration: 600,          // 动画时长（毫秒）
+            easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        },
+        
+        // 像素小宠物
+        pixelPet: {
+            enabled: true,
+            type: 'cat',            // 'cat' | 'dog'（预留）
+            speed: 0.5,             // 移动速度
+            size: 32,               // 显示尺寸（像素）
+            interactions: true,     // 是否允许点击互动
+        }
     }
 };
 
