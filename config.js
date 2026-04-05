@@ -16,13 +16,48 @@ const CONFIG = {
         
         // 头像路径
         avatar: 'res/img/logo.png',
+    },
+
+    // ============================================================
+    // 社交链接配置
+    // ============================================================
+    socialLinks: {
+        // 颜色分配策略: 'cycle' (循环 yellow→red→blue) | 'same' (全部使用同色系)
+        // 如果某个链接设置了 color 属性，则优先使用该颜色
+        colorScheme: 'cycle',
         
-        // 社交链接（填写你的链接）
-        social: {
-            github: 'https://github.com/wakusei0413',      // GitHub 链接
-            twitter: 'https://x.com/ChinaMilBugle',     // Twitter 链接
-            email: 'mailto:wakusei0413@outlook.com',       // Email 链接
-        }
+        // 链接列表（可自由添加、删除、修改）
+        links: [
+            {
+                name: 'GITHUB',
+                url: 'https://github.com/wakusei0413',
+                icon: 'fab fa-github',        // Font Awesome 图标类
+                color: 'yellow'               // 可选：预设值 'yellow' | 'red' | 'blue'，或 HEX 格式如 '#FF6B6B'
+            },
+            {
+                name: 'TWITTER',
+                url: 'https://x.com/ChinaMilBugle',
+                icon: 'fab fa-x-twitter',
+                // 不设置 color，将按 colorScheme 自动分配
+            },
+            {
+                name: 'EMAIL',
+                url: 'mailto:wakusei0413@outlook.com',
+                icon: 'fas fa-envelope',
+                color: 'blue'
+            },
+            {
+                name: 'BILIBILI',
+                url: 'https://www.bilibili.com/',
+                icon: 'fab fa-bilibili',
+            },
+            // 示例：添加更多链接
+            // {
+            //     name: 'BILIBILI',
+            //     url: 'https://space.bilibili.com/xxxx',
+            //     icon: 'fab fa-bilibili',
+            // },
+        ]
     },
 
     // ============================================================

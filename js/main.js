@@ -323,12 +323,83 @@
         avatarImg.src = config.avatar;
     }
     
-    // 社交链接
-    if (config.social) {
-        const links = document.querySelectorAll('.social-link');
-        if (links[0] && config.social.github) links[0].href = config.social.github;
-        if (links[1] && config.social.twitter) links[1].href = config.social.twitter;
-        if (links[2] && config.social.email) links[2].href = config.social.email;
+    // 社交链接 - 动态生成
+    if (CONFIG.socialLinks && CONFIG.socialLinks.links) {
+        const socialContainer = document.getElementById('socialLinks');
+        if (socialContainer) {
+            const links = CONFIG.socialLinks.links;
+            const colorScheme = CONFIG.socialLinks.colorScheme || 'cycle';
+            const colors = ['yellow', 'red', 'blue'];
+            
+            // 清空容器
+            socialContainer.innerHTML = '';
+            
+            // 生成链接
+            links.forEach((link, index) => {
+                // 确定颜色
+                let color = link.color;
+                let isHexColor = false;
+                
+                // 检查是否是 HEX 颜色格式
+                if (color && color.startsWith('#')) {
+                    isHexColor = true;
+                } else if (!color) {
+                    // 未设置颜色，按 colorScheme 分配
+                    if (colorScheme === 'same') {
+                        color = colors[0];
+                    } else {
+                        color = colors[index % colors.length];
+                    }
+                }
+                
+                // 创建链接元素
+                const a = document.createElement('a');
+                a.href = link.url;
+                a.setAttribute('aria-label', link.name);
+                a.target = link.url.startsWith('mailto:') ? '_self' : '_blank';
+                a.rel = link.url.startsWith('mailto:') ? '' : 'noopener noreferrer';
+                
+                // 图标
+                const icon = document.createElement('i');
+                icon.className = link.icon;
+                icon.setAttribute('aria-hidden', 'true');
+                
+                // 标签
+                const label = document.createElement('span');
+                label.className = 'link-label';
+                label.textContent = link.name;
+                
+                // 应用颜色样式
+                if (isHexColor) {
+                    // HEX 颜色：使用内联样式
+                    a.className = 'social-link';
+                    a.style.borderColor = 'var(--fg)';
+                    a.style.boxShadow = `var(--shadow-offset-sm) var(--shadow-offset-sm) 0 ${color}`;
+                    
+                    // 添加 hover 效果
+                    a.addEventListener('mouseenter', () => {
+                        a.style.backgroundColor = color;
+                        a.style.boxShadow = `10px 10px 0 ${color}`;
+                    });
+                    a.addEventListener('mouseleave', () => {
+                        a.style.backgroundColor = 'var(--bg)';
+                        a.style.boxShadow = `var(--shadow-offset-sm) var(--shadow-offset-sm) 0 ${color}`;
+                    });
+                } else {
+                    // 预设颜色：使用 CSS 类
+                    a.className = `social-link social-link--${color}`;
+                }
+                
+                // 组装
+                a.appendChild(icon);
+                a.appendChild(label);
+                socialContainer.appendChild(a);
+            });
+            
+            if (CONFIG.debug && CONFIG.debug.consoleLog) {
+                console.log(`[配置] 已生成 ${links.length} 个社交链接`);
+            }
+        }
     }
     
     // 底部版权
