@@ -175,7 +175,7 @@
 
 // ========== 壁纸加载（垂直滚动）==========
 (function initWallpaper() {
-    const container = document.getElementById('wallpaperContainer');
+    const container = document.getElementById('wallpaperScrollArea');
     
     if (!container) return;
     
@@ -199,23 +199,27 @@
     function createImageElement(url, index) {
         const img = document.createElement('img');
         img.className = 'wallpaper-image';
-        img.src = url;
         img.alt = `Wallpaper ${index + 1}`;
         img.loading = index === 0 ? 'eager' : 'lazy';
+        
+        // 模糊到清晰的过渡效果
+        img.onload = function() {
+            this.classList.add('loaded');
+        };
+        
+        img.src = url;
         return img;
     }
     
     function loadImages(urls) {
-        const scrollArea = document.createElement('div');
-        scrollArea.className = 'wallpaper-scroll-area';
+        // 清空容器
+        container.innerHTML = '';
         
+        // 添加图片
         urls.forEach((url, index) => {
             const img = createImageElement(url, index);
-            scrollArea.appendChild(img);
+            container.appendChild(img);
         });
-        
-        container.innerHTML = '';
-        container.appendChild(scrollArea);
         
         // 触发壁纸加载完成事件
         window.dispatchEvent(new CustomEvent('wallpapers-loaded'));
@@ -440,5 +444,108 @@ if (CONFIG.debug && CONFIG.debug.consoleLog) {
     
     if (CONFIG.debug && CONFIG.debug.consoleLog) {
         console.log('[主题] 初始化完成，当前主题:', getCurrentTheme());
+    }
+})();
+
+// ========== 移动端粘性头像 ==========
+(function initMobileStickyAvatar() {
+    const container = document.querySelector('.container');
+    const leftPanel = document.querySelector('.left-panel');
+    const avatarBox = document.getElementById('avatarBox');
+    
+    if (!container || !avatarBox) return;
+    
+    // 检测是否为移动端
+    function isMobile() {
+        return window.innerWidth <= 900;
+    }
+    
+    // 获取滚动容器（移动端用 container，桌面端用 leftPanel）
+    function getScrollContainer() {
+        return isMobile() ? container : leftPanel;
+    }
+    
+    // 滚动监听
+    function handleScroll() {
+        if (!isMobile()) return;
+        
+        const scrollContainer = getScrollContainer();
+        const scrolled = scrollContainer.scrollTop > 50;
+        avatarBox.classList.toggle('scrolled', scrolled);
+    }
+    
+    // 点击回到顶部
+    avatarBox.addEventListener('click', () => {
+        if (!isMobile()) return;
+        
+        const scrollContainer = getScrollContainer();
+        if (scrollContainer.scrollTop > 50) {
+            scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+    
+    // 监听滚动
+    container.addEventListener('scroll', handleScroll);
+    leftPanel.addEventListener('scroll', handleScroll);
+    
+    // 窗口大小变化时重置状态
+    window.addEventListener('resize', () => {
+        if (!isMobile()) {
+            avatarBox.classList.remove('scrolled');
+        }
+    });
+    
+    if (CONFIG.debug && CONFIG.debug.consoleLog) {
+        console.log('[粘性头像] 已初始化');
+    }
+})();
+
+// ========== 手机端壁纸面板切换 ==========
+(function initMobileWallpaperToggle() {
+    const toggleBtn = document.getElementById('wallpaperToggle');
+    const closeBtn = document.getElementById('closePanel');
+    const rightPanel = document.querySelector('.right-panel');
+    
+    if (!toggleBtn || !closeBtn || !rightPanel) return;
+    
+    function isMobile() {
+        return window.innerWidth <= 900;
+    }
+    
+    function showPanel() {
+        rightPanel.classList.add('active');
+        toggleBtn.classList.add('active');
+        closeBtn.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function hidePanel() {
+        rightPanel.classList.remove('active');
+        toggleBtn.classList.remove('active');
+        closeBtn.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    // 展开按钮点击
+    toggleBtn.addEventListener('click', () => {
+        if (rightPanel.classList.contains('active')) {
+            hidePanel();
+        } else {
+            showPanel();
+        }
+    });
+    
+    // 关闭按钮点击
+    closeBtn.addEventListener('click', hidePanel);
+    
+    // 窗口大小变化时重置
+    window.addEventListener('resize', () => {
+        if (!isMobile()) {
+            hidePanel();
+        }
+    });
+    
+    if (CONFIG.debug && CONFIG.debug.consoleLog) {
+        console.log('[壁纸面板] 已初始化');
     }
 })();

@@ -67,7 +67,7 @@
         <section class="left-panel">
             <header class="hero">
                 <!-- 头像方块 -->
-                <div class="avatar-box">
+                <div class="avatar-box" id="avatarBox">
                     <img src="res/img/logo.png" alt="Avatar" class="avatar-image">
                 </div>
                 
@@ -119,7 +119,15 @@
         
         <!-- ===== 右侧：时间 + 壁纸 ===== -->
         <aside class="right-panel">
-            <!-- 时间面板 -->
+            <!-- 壁纸滚动区域（覆盖整个面板） -->
+            <div class="wallpaper-scroll-area" id="wallpaperScrollArea">
+                <div class="wallpaper-placeholder">
+                    <div class="loading-spinner"></div>
+                    <span>加载壁纸中...</span>
+                </div>
+            </div>
+            
+            <!-- 时间面板（磨砂玻璃覆盖） -->
             <div class="info-panel">
                 <div class="time-widget">
                     <div class="weekday" id="weekday">星期四</div>
@@ -128,15 +136,7 @@
                 </div>
             </div>
             
-            <!-- 壁纸滚动区域 -->
-            <div class="wallpaper-container" id="wallpaperContainer">
-                <div class="wallpaper-placeholder">
-                    <div class="loading-spinner"></div>
-                    <span>加载壁纸中...</span>
-                </div>
-            </div>
-            
-            <!-- 壁纸信息 -->
+            <!-- 壁纸信息（磨砂玻璃覆盖） -->
             <div class="wallpaper-info">
                 <span class="wallpaper-title">Pixiv 插画</span>
                 <span class="wallpaper-author">滚动浏览</span>
@@ -163,6 +163,25 @@
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
         </svg>
         <span class="sr-only">切换主题</span>
+    </button>
+    
+    <!-- 手机端壁纸切换按钮 -->
+    <button class="wallpaper-toggle" id="wallpaperToggle" aria-label="查看壁纸" title="查看壁纸">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+        <span class="sr-only">查看壁纸</span>
+    </button>
+    
+    <!-- 手机端右侧面板关闭按钮 -->
+    <button class="close-panel" id="closePanel" aria-label="关闭">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        <span class="sr-only">关闭</span>
     </button>
     
     <!-- JavaScript -->
