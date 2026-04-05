@@ -43,6 +43,18 @@
     <!-- 背景噪点 -->
     <div class="noise-overlay"></div>
     
+    <!-- 加载遮罩层 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-panel">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loadingText">少女祈祷中...</div>
+            <div class="loading-progress">
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+            <div class="loading-percent" id="loadingPercent">0%</div>
+        </div>
+    </div>
+    
     <!-- 主页面 -->
     <main class="container" id="mainContent">
         <!-- ===== 左侧：个人信息 ===== -->
@@ -85,12 +97,7 @@
         <!-- ===== 右侧：时间 + 壁纸 ===== -->
         <aside class="right-panel">
             <!-- 壁纸滚动区域（覆盖整个面板） -->
-            <div class="wallpaper-scroll-area" id="wallpaperScrollArea">
-                <div class="wallpaper-placeholder">
-                    <div class="loading-spinner"></div>
-                    <span>加载壁纸中...</span>
-                </div>
-            </div>
+            <div class="wallpaper-scroll-area" id="wallpaperScrollArea"></div>
             
             <!-- 时间面板（磨砂玻璃覆盖） -->
             <div class="info-panel">

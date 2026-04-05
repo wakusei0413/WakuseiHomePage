@@ -193,12 +193,11 @@ const CONFIG = {
     },
 
     // ============================================================
-    // 交互特效配置
-    // ============================================================
+// 交互特效配置
     effects: {
         // 点击彩纸特效
         confetti: {
-            enabled: true,
+            enabled: false,
             count: 25,              // 彩纸数量
             colors: ['--accent-yellow', '--accent-red', '--accent-blue', '#FF6B6B', '#4ECDC4'],
             duration: 1500,         // 动画时长（毫秒）

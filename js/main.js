@@ -173,188 +173,274 @@
     setInterval(updateTime, CONFIG.time.updateInterval || 1000);
 })();
 
-// ========== 壁纸加载（瀑布流无限加载）==========
-(function initWaterfallWallpaper() {
+// ========== 壁纸加载（双 API 竞速 + 首屏阻塞）==========
+(function initWallpaperScroller() {
     const container = document.getElementById('wallpaperScrollArea');
-    
     if (!container) return;
     
-    const config = CONFIG.wallpaper;
-    const infiniteConfig = config.infiniteScroll || { enabled: false };
-    const INITIAL_LOAD = infiniteConfig.initialLoad || 5;
-    const BATCH_SIZE = infiniteConfig.batchSize || 5;
-    const MAX_IMAGES = infiniteConfig.maxImages || 50;
+    const { infiniteScroll } = CONFIG.wallpaper;
+    if (!infiniteScroll?.enabled) return;
     
-    // 状态管理
-    const state = {
-        images: [],
-        isLoading: false,
-        hasMore: true,
-        totalLoaded: 0,
-        observer: null,
-        sentinel: null,
-    };
+    const BATCH_SIZE = infiniteScroll.batchSize || 3;
+    const MAX_IMAGES = infiniteScroll.maxImages || 20;
+    const SCROLL_SPEED = 1.5;
+    const LOAD_THRESHOLD = 500;
+    const RACE_TIMEOUT = 10000;
+    const MAX_RETRIES = 100;
+    const PRELOAD_COUNT = 3;
     
-    // 备用图片
-    const fallbackImages = Array.from({ length: INITIAL_LOAD }, (_, i) => 
-        `https://picsum.photos/1920/1080?random=${i + 1}`
-    );
+    const API1 = 'https://www.loliapi.com/bg/';
+    const API2 = 'https://www.dmoe.cc/random.php';
     
-    function createImageElement(url, index) {
-        const img = document.createElement('img');
-        img.className = 'wallpaper-image';
-        img.alt = `Wallpaper ${index + 1}`;
-        img.loading = 'lazy';
-        img.dataset.index = index;
-        
-        // 加载完成后显示
-        img.onload = function() {
-            this.classList.add('loaded');
-        };
-        
-        img.onerror = function() {
-            // 加载失败时显示备用色块
-            this.style.backgroundColor = '#1a1a1a';
-            this.style.minHeight = '400px';
-        };
-        
-        img.src = url;
-        return img;
-    }
+    let imageCounter = 0;
+    let images = [];
     
-    // 添加单张图片
-    function appendImage(url, index) {
-        const img = createImageElement(url, index);
-        container.appendChild(img);
-        state.images.push(url);
-        state.totalLoaded++;
-        return img;
-    }
+    // 有趣的加载文字列表
+    const loadingTexts = [
+        '少女祈祷中...',
+        '正在给服务器喂猫粮...',
+        '正在数像素...114...514...',
+        '正在和404谈判...',
+        '正在召唤服务器精灵...',
+        '正在给图片上色...',
+        '正在连接异次元...',
+        '正在偷取你的带宽...（开玩笑的）',
+        '正在加载大量萌要素...',
+        '服务器正在喝茶...'
+    ];
     
-    // 获取图片URL
-    function getImageUrls(count, seed) {
-        const apiUrl = 'https://i.mukyu.ru/random';
-        return Array.from({ length: count }, (_, i) => 
-            `${apiUrl}?seed=${seed}-${i}`
-        );
-    }
+    let currentLoadingTextIndex = 0;
     
-    // 加载初始图片（直接加载，不等待）
-    function loadInitialImages() {
-        // 检测运行环境
-        const isLocalFile = window.location.protocol === 'file:';
-        if (isLocalFile) {
-            console.warn('[壁纸] 检测到 file:// 协议，使用备用图片');
-            return fallbackImages;
-        }
-        
-        // 直接返回URL列表，不预加载
-        return getImageUrls(INITIAL_LOAD, Date.now());
-    }
-    
-    // 渲染初始图片
-    function renderInitialImages(urls) {
-        // 清空容器
-        container.innerHTML = '';
-        
-        // 添加所有图片
-        urls.forEach((url, index) => {
-            appendImage(url, index);
+    // 竞速加载单张图片
+    function raceLoadImage(index) {
+        return new Promise((resolve, reject) => {
+            const ts = Date.now();
+            const url1 = `${API1}?t=${ts}_${index}`;
+            const url2 = `${API2}?t=${ts}_${index}`;
+            
+            const img1 = new Image();
+            const img2 = new Image();
+            let done = false;
+            const timer = setTimeout(() => {
+                if (!done) {
+                    done = true;
+                    img1.onload = img1.onerror = null;
+                    img2.onload = img2.onerror = null;
+                    img1.src = '';
+                    img2.src = '';
+                    reject(new Error('Timeout'));
+                }
+            }, RACE_TIMEOUT);
+            
+            function finish(img) {
+                if (done) return;
+                done = true;
+                clearTimeout(timer);
+                img1.onload = img1.onerror = null;
+                img2.onload = img2.onerror = null;
+                const other = img === img1 ? img2 : img1;
+                other.src = '';
+                resolve(img);
+            }
+            
+            img1.onload = () => finish(img1);
+            img2.onload = () => finish(img2);
+            img1.onerror = () => {
+                if (done) return;
+            };
+            img2.onerror = () => {
+                if (done) return;
+            };
+            img1.src = url1;
+            img2.src = url2;
         });
-        
-        console.log(`[壁纸] 初始加载：${urls.length} 张图片`);
     }
     
-    // 清理旧图片（内存管理）
-    function cleanupOldImages() {
-        if (state.images.length <= MAX_IMAGES) return;
-        
-        const imagesToRemove = state.images.length - MAX_IMAGES + 10;
-        const imageElements = container.querySelectorAll('.wallpaper-image');
-        
-        // 删除最旧的10张
-        for (let i = 0; i < Math.min(imagesToRemove, 10); i++) {
-            if (imageElements[i]) {
-                imageElements[i].remove();
+    // 带重试的加载
+    async function loadWithRetry(index) {
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                return await raceLoadImage(index);
+            } catch (err) {
+                console.log(`[壁纸] 加载中... (${attempt}/${MAX_RETRIES})`);
             }
         }
-        
-        // 更新数组
-        state.images = state.images.slice(10);
-        
-        // 重新索引
-        const remainingImages = container.querySelectorAll('.wallpaper-image');
-        remainingImages.forEach((img, i) => {
-            img.dataset.index = i;
-            img.alt = `Wallpaper ${i + 1}`;
-        });
-        
-        console.log(`[壁纸] 已清理旧图片，当前：${state.images.length} 张`);
+        throw new Error('Max retries exceeded');
     }
     
-    // 加载更多图片
-    function loadMoreImages() {
-        if (state.isLoading || !state.hasMore) return;
+    // 懒加载（进入视野时）
+    function loadImageLazy(placeholder) {
+        if (placeholder.dataset.loaded) return;
+        if (placeholder.dataset.loading) return;
+        placeholder.dataset.loading = 'true';
         
-        state.isLoading = true;
+        const index = placeholder.dataset.index;
+        const img = new Image();
         
-        // 生成新的URL并直接添加
-        const urls = getImageUrls(BATCH_SIZE, Date.now() + state.totalLoaded);
+        img.onload = () => {
+            placeholder.appendChild(img);
+            placeholder.dataset.loaded = 'true';
+            delete placeholder.dataset.loading;
+            requestAnimationFrame(() => placeholder.classList.add('loaded'));
+        };
         
-        urls.forEach((url) => {
-            appendImage(url, state.totalLoaded);
-        });
+        img.onerror = () => {
+            delete placeholder.dataset.loading;
+            retryLazy(placeholder);
+        };
         
-        console.log(`[壁纸] 加载更多：${BATCH_SIZE} 张，总计：${state.totalLoaded}`);
-        
-        // 内存清理
-        cleanupOldImages();
-        
-        state.isLoading = false;
+        img.src = `${API1}?t=${Date.now()}_${index}`;
     }
     
-    // 设置底部检测
-    function setupInfiniteScroll() {
-        // 创建检测元素
-        state.sentinel = document.createElement('div');
-        state.sentinel.className = 'wallpaper-sentinel';
-        state.sentinel.style.height = '10px';
-        container.appendChild(state.sentinel);
+    // 懒加载失败时切换 API 重试
+    function retryLazy(placeholder) {
+        if (placeholder.dataset.loaded) return;
+        if (placeholder.dataset.retried) return;
+        placeholder.dataset.retried = 'true';
+        placeholder.dataset.loading = 'true';
         
-        // 创建 Intersection Observer
-        state.observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && !state.isLoading && state.hasMore) {
-                    loadMoreImages();
-                }
-            });
-        }, {
-            root: container,
-            rootMargin: '0px 0px 200px 0px', // 提前200px触发
-            threshold: 0
+        const index = placeholder.dataset.index;
+        const img = new Image();
+        
+        img.onload = () => {
+            placeholder.appendChild(img);
+            placeholder.dataset.loaded = 'true';
+            delete placeholder.dataset.loading;
+            requestAnimationFrame(() => placeholder.classList.add('loaded'));
+        };
+        
+        img.onerror = () => {
+            delete placeholder.dataset.loading;
+        };
+        
+        img.src = `${API2}?t=${Date.now()}_${index}`;
+    }
+    
+    // 创建占位符
+    function createPlaceholder() {
+        const div = document.createElement('div');
+        div.className = 'wallpaper-image';
+        return div;
+    }
+    
+    // 添加更多占位符
+    function addPlaceholders(count) {
+        for (let i = 0; i < count; i++) {
+            const placeholder = createPlaceholder();
+            placeholder.dataset.index = imageCounter++;
+            container.appendChild(placeholder);
+            images.push(placeholder);
+            observer.observe(placeholder);
+        }
+    }
+    
+    // 清理旧图片
+    function cleanup() {
+        while (images.length > MAX_IMAGES) {
+            const old = images.shift();
+            observer.unobserve(old);
+            old.remove();
+        }
+    }
+    
+    // Intersection Observer
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                loadImageLazy(entry.target);
+            }
         });
+    }, {
+        root: container,
+        rootMargin: '400px 0px',
+        threshold: 0.01
+    });
+    
+    // 自动滚动
+    function autoScroll() {
+        container.scrollTop += SCROLL_SPEED;
         
-        state.observer.observe(state.sentinel);
+        const scrollBottom = container.scrollTop + container.clientHeight;
+        if (container.scrollHeight - scrollBottom < LOAD_THRESHOLD) {
+            addPlaceholders(BATCH_SIZE);
+            cleanup();
+        }
         
-        console.log('[壁纸] 瀑布流无限加载已启动');
+        requestAnimationFrame(autoScroll);
+    }
+    
+    // 禁用用户交互
+    function disableInteraction() {
+        container.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+        container.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+        container.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        container.addEventListener('mousedown', e => e.preventDefault());
     }
     
     // 初始化
-    function init() {
-        if (!infiniteConfig.enabled) {
-            console.log('[壁纸] 无限加载已禁用');
-            return;
+    async function init() {
+        const main = document.querySelector('.container');
+        const overlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        const loadingBar = document.getElementById('loadingBar');
+        const loadingPercent = document.getElementById('loadingPercent');
+        
+        // 文字切换定时器
+        const textInterval = setInterval(() => {
+            currentLoadingTextIndex = (currentLoadingTextIndex + 1) % loadingTexts.length;
+            if (loadingText) {
+                loadingText.textContent = loadingTexts[currentLoadingTextIndex];
+            }
+        }, 2000);
+        
+        const placeholders = [];
+        for (let i = 0; i < PRELOAD_COUNT; i++) {
+            const p = createPlaceholder();
+            p.dataset.index = imageCounter++;
+            container.appendChild(p);
+            images.push(p);
+            placeholders.push(p);
         }
         
-        // 加载初始图片
-        const urls = loadInitialImages();
-        renderInitialImages(urls);
+        let loadedCount = 0;
         
-        // 设置无限加载
-        setupInfiniteScroll();
+        // 并行加载前 PRELOAD_COUNT 张，带进度跟踪
+        const loadPromises = placeholders.map((p, i) => 
+            loadWithRetry(p.dataset.index).then(img => {
+                p.appendChild(img);
+                p.dataset.loaded = 'true';
+                p.classList.add('loaded');
+                
+                // 更新进度
+                loadedCount++;
+                const percent = Math.round((loadedCount / PRELOAD_COUNT) * 100);
+                if (loadingBar) loadingBar.style.width = `${percent}%`;
+                if (loadingPercent) loadingPercent.textContent = `${percent}%`;
+            }).catch(() => {
+                console.error(`[壁纸] 第 ${i + 1} 张加载失败`);
+                // 失败也算完成（避免卡住）
+                loadedCount++;
+                const percent = Math.round((loadedCount / PRELOAD_COUNT) * 100);
+                if (loadingBar) loadingBar.style.width = `${percent}%`;
+                if (loadingPercent) loadingPercent.textContent = `${percent}%`;
+            })
+        );
+        
+        await Promise.all(loadPromises);
+        
+        // 清除文字切换定时器
+        clearInterval(textInterval);
+        
+        // 显示页面
+        if (main) main.classList.add('visible');
+        if (overlay) overlay.classList.add('hidden');
+        
+        placeholders.forEach(p => observer.observe(p));
+        addPlaceholders(BATCH_SIZE);
+        disableInteraction();
+        requestAnimationFrame(autoScroll);
     }
     
-    // 启动
     init();
 })();
 
@@ -434,20 +520,9 @@
                 
                 // 应用颜色样式
                 if (isHexColor) {
-                    // HEX 颜色：使用内联样式
-                    a.className = 'social-link';
-                    a.style.borderColor = 'var(--fg)';
-                    a.style.boxShadow = `var(--shadow-offset-sm) var(--shadow-offset-sm) 0 ${color}`;
-                    
-                    // 添加 hover 效果
-                    a.addEventListener('mouseenter', () => {
-                        a.style.backgroundColor = color;
-                        a.style.boxShadow = `10px 10px 0 ${color}`;
-                    });
-                    a.addEventListener('mouseleave', () => {
-                        a.style.backgroundColor = 'var(--bg)';
-                        a.style.boxShadow = `var(--shadow-offset-sm) var(--shadow-offset-sm) 0 ${color}`;
-                    });
+                    // HEX 颜色：使用 CSS 类 + CSS 变量
+                    a.className = 'social-link social-link--custom';
+                    a.style.setProperty('--custom-color', color);
                 } else {
                     // 预设颜色：使用 CSS 类
                     a.className = `social-link social-link--${color}`;
@@ -479,10 +554,13 @@
 })();
 
 // ========== 初始化完成 ==========
-if (CONFIG.debug && CONFIG.debug.consoleLog) {
-    console.log('%c个人主页已加载 ✓', 'color: #FFE600; font-size: 14px; font-weight: bold;');
-    console.log('功能：打字机效果 (Slogan 循环) | 时间显示 | 天气获取 | 壁纸轮播 | 主题切换');
-}
+// 注意：网页显示由壁纸模块控制，首屏图片加载完成后才显示
+(function initComplete() {
+    if (CONFIG.debug && CONFIG.debug.consoleLog) {
+        console.log('%c个人主页脚本已加载', 'color: #FFE600; font-size: 12px;');
+        console.log('功能：打字机效果 (Slogan 循环) | 时间显示 | 天气获取 | 壁纸轮播 | 主题切换');
+    }
+})();
 
 // ========== 主题切换 ==========
 (function initTheme() {
