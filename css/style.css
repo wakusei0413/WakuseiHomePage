@@ -680,6 +680,35 @@ html {
     padding: var(--space-md);
 }
 
+/* ===== 瀑布流加载更多提示 ===== */
+.wallpaper-loading-more {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
+    gap: var(--space-sm);
+    color: rgba(255, 254, 247, 0.5);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+}
+
+.loading-spinner-small {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 254, 247, 0.1);
+    border-top-color: var(--accent-yellow);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* 底部检测元素（用于Intersection Observer） */
+.wallpaper-sentinel {
+    height: 10px;
+    width: 100%;
+    pointer-events: none;
+}
+
 /* ===== 壁纸信息 ===== */
 .wallpaper-info {
     padding: var(--space-sm) var(--space-md);

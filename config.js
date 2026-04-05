@@ -146,11 +146,10 @@ const CONFIG = {
             enabled: true,              // 启用无限滚动
             speed: 1.5,                 // 滚动速度（像素/帧，建议 0.5-3）
             
-            // 用户交互配置
-            pauseOnHover: true,         // 鼠标悬停暂停
-            pauseOnTouch: true,         // 触摸暂停
-            resumeDelay: 500,           // 交互后恢复延迟（毫秒）- 鼠标移开0.5秒后恢复
-            wheelControl: true,         // 滚轮控制
+            // 瀑布流配置
+            initialLoad: 5,             // 初始加载数量（必须加载完成才显示主页面）
+            batchSize: 5,               // 每次滚动到底部加载的数量
+            maxImages: 50,              // 最大保留图片数量（超出后删除最旧的）
         }
     },
 

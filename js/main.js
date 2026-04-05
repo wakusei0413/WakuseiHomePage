@@ -173,30 +173,30 @@
     setInterval(updateTime, CONFIG.time.updateInterval || 1000);
 })();
 
-// ========== 壁纸加载（无限滚动）==========
-(function initInfiniteWallpaper() {
+// ========== 壁纸加载（瀑布流无限加载）==========
+(function initWaterfallWallpaper() {
     const container = document.getElementById('wallpaperScrollArea');
     
     if (!container) return;
     
     const config = CONFIG.wallpaper;
     const infiniteConfig = config.infiniteScroll || { enabled: false };
-    const count = config.count || 5;
+    const INITIAL_LOAD = infiniteConfig.initialLoad || 5;
+    const BATCH_SIZE = infiniteConfig.batchSize || 5;
+    const MAX_IMAGES = infiniteConfig.maxImages || 50;
     
     // 状态管理
     const state = {
-        images: [],                  // 原始图片数组
-        isAutoScrolling: false,      // 是否正在自动滚动
-        isPaused: false,             // 是否暂停
-        isUserInteracting: false,    // 用户是否正在交互
-        currentScrollTop: 0,         // 当前滚动位置
-        animationFrameId: null,      // 动画帧 ID
-        resumeTimeout: null,         // 恢复定时器
-        lastScrollTime: 0,           // 上次滚动时间
+        images: [],                  // 所有图片URL数组
+        isLoading: false,            // 是否正在加载
+        hasMore: true,               // 是否还有更多
+        totalLoaded: 0,              // 总共加载数量
+        observer: null,              // Intersection Observer
+        sentinel: null,              // 底部检测元素
     };
     
     // 备用图片
-    const fallbackImages = Array.from({ length: count }, (_, i) => 
+    const fallbackImages = Array.from({ length: INITIAL_LOAD }, (_, i) => 
         `https://picsum.photos/1920/1080?random=${i + 1}`
     );
     
@@ -209,11 +209,43 @@
         `;
     }
     
+    function showLoadingMore() {
+        const indicator = document.createElement('div');
+        indicator.className = 'wallpaper-loading-more';
+        indicator.id = 'loadingMoreIndicator';
+        indicator.innerHTML = `
+            <div class="loading-spinner-small"></div>
+            <span>加载更多...</span>
+        `;
+        container.appendChild(indicator);
+    }
+    
+    function hideLoadingMore() {
+        const indicator = document.getElementById('loadingMoreIndicator');
+        if (indicator) indicator.remove();
+    }
+    
+    // 预加载图片（返回Promise）
+    function preloadImage(url) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve({ url, success: true });
+            img.onerror = () => resolve({ url, success: false });
+            img.src = url;
+        });
+    }
+    
+    // 预加载所有初始图片
+    async function preloadInitialImages(urls) {
+        const results = await Promise.all(urls.map(url => preloadImage(url)));
+        return results.filter(r => r.success).map(r => r.url);
+    }
+    
     function createImageElement(url, index) {
         const img = document.createElement('img');
         img.className = 'wallpaper-image';
         img.alt = `Wallpaper ${index + 1}`;
-        img.loading = index === 0 ? 'eager' : 'lazy';
+        img.loading = 'lazy';
         img.dataset.index = index;
         
         // 模糊到清晰的过渡效果
@@ -225,306 +257,167 @@
         return img;
     }
     
-    function loadImages(urls) {
-        // 清空容器
-        container.innerHTML = '';
-        state.images = [];
-        
-        // 添加图片
-        urls.forEach((url, index) => {
-            const img = createImageElement(url, index);
-            container.appendChild(img);
-            state.images.push(img);
-        });
-        
-        // 克隆第一张图片到最后（实现无缝循环）
-        if (infiniteConfig.enabled && urls.length > 0) {
-            const clone = createImageElement(urls[0], urls.length);
-            clone.classList.add('wallpaper-clone');
-            container.appendChild(clone);
-            state.images.push(clone);
-        }
-        
-        // 触发壁纸加载完成事件
-        window.dispatchEvent(new CustomEvent('wallpapers-loaded'));
-        
-        if (CONFIG.debug && CONFIG.debug.consoleLog) {
-            console.log(`[壁纸] 已加载 ${urls.length} 张图片（含克隆：${state.images.length}）`);
-        }
-        
-        // 启动无限滚动（延迟一点时间确保DOM渲染完成）
-        if (infiniteConfig.enabled) {
-            setTimeout(() => {
-                initInfiniteScroll();
-            }, 500);
-        }
+    // 添加单张图片
+    function appendImage(url, index) {
+        const img = createImageElement(url, index);
+        container.appendChild(img);
+        state.images.push(url);
+        state.totalLoaded++;
+        return img;
     }
     
-    function useFallbackImages() {
-        if (CONFIG.debug && CONFIG.debug.consoleLog) {
-            console.log('[壁纸] 使用备用图片');
-        }
-        loadImages(fallbackImages);
+    // 获取图片URL
+    function getImageUrls(count, seed) {
+        const apiUrl = 'https://i.mukyu.ru/random';
+        return Array.from({ length: count }, (_, i) => 
+            `${apiUrl}?seed=${seed}-${i}`
+        );
     }
     
-    async function fetchWallpapers() {
+    // 加载初始图片（必须全部加载完成）
+    async function loadInitialImages() {
         showLoading();
         
         // 检测运行环境
         const isLocalFile = window.location.protocol === 'file:';
-        
-        // 如果是 file:// 协议，直接使用备用图片
         if (isLocalFile) {
             if (CONFIG.debug && CONFIG.debug.consoleLog) {
-                console.warn('[壁纸] 检测到 file:// 协议，无法访问外部 API');
-                console.log('[提示] 请使用本地服务器: python -m http.server 8080');
+                console.warn('[壁纸] 检测到 file:// 协议，使用备用图片');
             }
-            useFallbackImages();
-            return;
+            return fallbackImages;
         }
         
-        // 触发壁纸开始加载事件
-        window.dispatchEvent(new CustomEvent('wallpapers-loading'));
+        // 获取URL列表
+        const urls = getImageUrls(INITIAL_LOAD, Date.now());
         
-        // 尝试使用 Pixiv 随机图片
+        // 预加载所有图片
+        const loadedUrls = await preloadInitialImages(urls);
+        
+        if (loadedUrls.length === 0) {
+            console.warn('[壁纸] 初始图片加载失败，使用备用图片');
+            return fallbackImages;
+        }
+        
+        return loadedUrls;
+    }
+    
+    // 渲染初始图片
+    function renderInitialImages(urls) {
+        // 清空容器
+        container.innerHTML = '';
+        
+        // 添加所有图片
+        urls.forEach((url, index) => {
+            appendImage(url, index);
+        });
+        
+        console.log(`[壁纸] 初始加载完成：${urls.length} 张图片`);
+        
+        // 触发壁纸加载完成事件
+        window.dispatchEvent(new CustomEvent('wallpapers-loaded'));
+    }
+    
+    // 清理旧图片（内存管理）
+    function cleanupOldImages() {
+        if (state.images.length <= MAX_IMAGES) return;
+        
+        const imagesToRemove = state.images.length - MAX_IMAGES + 10;
+        const imageElements = container.querySelectorAll('.wallpaper-image');
+        
+        // 删除最旧的10张
+        for (let i = 0; i < Math.min(imagesToRemove, 10); i++) {
+            if (imageElements[i]) {
+                imageElements[i].remove();
+            }
+        }
+        
+        // 更新数组
+        state.images = state.images.slice(10);
+        
+        // 重新索引
+        const remainingImages = container.querySelectorAll('.wallpaper-image');
+        remainingImages.forEach((img, i) => {
+            img.dataset.index = i;
+            img.alt = `Wallpaper ${i + 1}`;
+        });
+        
+        console.log(`[壁纸] 已清理旧图片，当前：${state.images.length} 张`);
+    }
+    
+    // 加载更多图片
+    async function loadMoreImages() {
+        if (state.isLoading || !state.hasMore) return;
+        
+        state.isLoading = true;
+        showLoadingMore();
+        
         try {
-            if (CONFIG.debug && CONFIG.debug.consoleLog) {
-                console.log('[壁纸] 尝试加载 Pixiv 随机图片...');
+            // 生成新的URL
+            const urls = getImageUrls(BATCH_SIZE, Date.now() + state.totalLoaded);
+            
+            // 加载每张图片
+            for (const url of urls) {
+                await preloadImage(url);
+                appendImage(url, state.totalLoaded);
             }
             
-            const apiUrl = 'https://i.mukyu.ru/random';
-            const urls = Array.from({ length: count }, (_, i) => 
-                `${apiUrl}?seed=${Date.now()}-${i}`
-            );
+            console.log(`[壁纸] 加载更多：${BATCH_SIZE} 张，总计：${state.totalLoaded}`);
             
-            // 预加载第一张图片检测是否可用
-            const testImg = new Image();
-            testImg.onload = () => {
-                loadImages(urls);
-                if (CONFIG.debug && CONFIG.debug.consoleLog) {
-                    console.log('[壁纸] Pixiv 图片加载成功');
-                }
-            };
-            testImg.onerror = () => {
-                if (CONFIG.debug && CONFIG.debug.consoleLog) {
-                    console.warn('[壁纸] Pixiv 图片加载失败，切换备用图片');
-                }
-                useFallbackImages();
-                window.dispatchEvent(new CustomEvent('wallpapers-failed'));
-            };
-            testImg.src = urls[0];
+            // 内存清理
+            cleanupOldImages();
             
         } catch (error) {
-            if (CONFIG.debug && CONFIG.debug.consoleLog) {
-                console.warn('[壁纸] 图片加载异常:', error.message);
-                console.log('[壁纸] 切换到 Picsum 备用图片源');
-            }
-            useFallbackImages();
+            console.error('[壁纸] 加载更多失败:', error);
+            state.hasMore = false;
+        } finally {
+            state.isLoading = false;
+            hideLoadingMore();
         }
     }
     
-    // ========== 无限滚动逻辑 ==========
-    
-    function initInfiniteScroll() {
-        if (!infiniteConfig.enabled || state.images.length === 0) {
-            console.warn('[壁纸] 无限滚动未启动：配置未启用或没有图片');
-            return;
-        }
+    // 设置底部检测
+    function setupInfiniteScroll() {
+        // 创建检测元素
+        state.sentinel = document.createElement('div');
+        state.sentinel.className = 'wallpaper-sentinel';
+        state.sentinel.style.height = '10px';
+        container.appendChild(state.sentinel);
         
-        if (CONFIG.debug && CONFIG.debug.consoleLog) {
-            console.log(`[壁纸] 正在启动无限滚动，图片数：${state.images.length}`);
-        }
-        
-        // 设置事件监听
-        setupEventListeners();
-        
-        // 启动持续滚动
-        startContinuousScroll();
-        
-        if (CONFIG.debug && CONFIG.debug.consoleLog) {
-            console.log('[壁纸] 持续滚动已启动');
-        }
-    }
-    
-    function setupEventListeners() {
-        // 鼠标悬停暂停
-        if (infiniteConfig.pauseOnHover) {
-            container.addEventListener('mouseenter', handleMouseEnter);
-            container.addEventListener('mouseleave', handleMouseLeave);
-        }
-        
-        // 触摸暂停
-        if (infiniteConfig.pauseOnTouch) {
-            container.addEventListener('touchstart', handleTouchStart, { passive: true });
-            container.addEventListener('touchend', handleTouchEnd, { passive: true });
-        }
-        
-        // 触摸滑动
-        container.addEventListener('touchmove', handleTouchMove, { passive: true });
-        
-        // 滚轮控制
-        if (infiniteConfig.wheelControl) {
-            container.addEventListener('wheel', handleWheel, { passive: false });
-        }
-    }
-    
-    // ========== 持续滚动模式 ==========
-    
-    function startContinuousScroll() {
-        if (state.isAutoScrolling) {
-            console.log('[壁纸] 持续滚动已在运行');
-            return;
-        }
-        
-        state.isAutoScrolling = true;
-        const speed = infiniteConfig.speed || 1.5;
-        
-        console.log(`[壁纸] 启动持续滚动，速度：${speed}px/帧`);
-        
-        let lastTime = performance.now();
-        let lastScrollTop = container.scrollTop;
-        
-        function animate(currentTime) {
-            const deltaTime = currentTime - lastTime;
-            lastTime = currentTime;
-            
-            // 检测用户是否手动滚动（通过比较当前位置和上次位置）
-            const currentScrollTop = container.scrollTop;
-            if (Math.abs(currentScrollTop - lastScrollTop) > speed * 2 && !state.isUserInteracting) {
-                // 用户手动滚动了，暂停自动
-                state.isUserInteracting = true;
-                console.log('[壁纸] 检测到手动滚动，暂停自动');
-                
-                // 3秒后恢复自动
-                clearTimeout(state.resumeTimeout);
-                state.resumeTimeout = setTimeout(() => {
-                    state.isUserInteracting = false;
-                    console.log('[壁纸] 恢复自动滚动');
-                }, 3000);
-            }
-            lastScrollTop = currentScrollTop;
-            
-            // 只有在没有用户交互时才自动滚动
-            if (!state.isPaused && !state.isUserInteracting) {
-                // 自动向上滚动（减小scrollTop）
-                const scrollAmount = speed * (deltaTime / 16.67);
-                container.scrollTop -= scrollAmount;
-                lastScrollTop = container.scrollTop;
-                
-                // 检查是否到达顶部
-                if (container.scrollTop <= 0) {
-                    // 跳转到底部（克隆图片之前）
-                    const maxScroll = container.scrollHeight - container.clientHeight;
-                    container.scrollTop = maxScroll - 5;
-                    console.log('[壁纸] 到达顶部，跳转到底部继续');
+        // 创建 Intersection Observer
+        state.observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !state.isLoading && state.hasMore) {
+                    loadMoreImages();
                 }
-            }
-            
-            state.animationFrameId = requestAnimationFrame(animate);
+            });
+        }, {
+            root: container,
+            rootMargin: '0px 0px 200px 0px', // 提前200px触发
+            threshold: 0
+        });
+        
+        state.observer.observe(state.sentinel);
+        
+        console.log('[壁纸] 瀑布流无限加载已启动');
+    }
+    
+    // 初始化
+    async function init() {
+        if (!infiniteConfig.enabled) {
+            console.log('[壁纸] 无限加载已禁用');
+            return;
         }
         
-        // 初始位置设到底部，从底部开始向上滚动
-        setTimeout(() => {
-            const maxScroll = container.scrollHeight - container.clientHeight;
-            container.scrollTop = maxScroll;
-            lastScrollTop = maxScroll;
-            state.animationFrameId = requestAnimationFrame(animate);
-        }, 100);
-    }
-    
-    // ========== 用户交互处理 ==========
-    
-    function handleMouseEnter() {
-        pauseAutoScroll();
-    }
-    
-    function handleMouseLeave() {
-        scheduleResume();
-    }
-    
-    let touchStartY = 0;
-    
-    function handleTouchStart(e) {
-        touchStartY = e.touches[0].clientY;
-        pauseAutoScroll();
-    }
-    
-    function handleTouchMove(e) {
-        const touchY = e.touches[0].clientY;
-        const deltaY = touchStartY - touchY;
+        // 加载初始图片
+        const urls = await loadInitialImages();
+        renderInitialImages(urls);
         
-        // 手动控制滚动位置
-        container.scrollTop += deltaY * 0.5;
-        touchStartY = touchY;
+        // 设置无限加载
+        setupInfiniteScroll();
     }
-    
-    function handleTouchEnd() {
-        scheduleResume();
-    }
-    
-    function handleWheel(e) {
-        e.preventDefault();
-        
-        // 暂停自动滚动
-        pauseAutoScroll();
-        
-        // 滚轮控制
-        container.scrollTop += e.deltaY * 0.5;
-        
-        scheduleResume();
-    }
-    
-    // ========== 暂停/恢复控制 ==========
-    
-    function pauseAutoScroll() {
-        state.isPaused = true;
-        state.isUserInteracting = true;
-        
-        // 清除恢复定时器
-        if (state.resumeTimeout) {
-            clearTimeout(state.resumeTimeout);
-            state.resumeTimeout = null;
-        }
-    }
-    
-    function resumeAutoScroll() {
-        state.isPaused = false;
-        state.isUserInteracting = false;
-    }
-    
-    function scheduleResume() {
-        const resumeDelay = infiniteConfig.resumeDelay || 3000;
-        
-        // 清除之前的定时器
-        if (state.resumeTimeout) {
-            clearTimeout(state.resumeTimeout);
-        }
-        
-        state.resumeTimeout = setTimeout(() => {
-            resumeAutoScroll();
-        }, resumeDelay);
-    }
-    
-    // ========== 清理 ==========
-    
-    function cleanup() {
-        if (state.animationFrameId) {
-            cancelAnimationFrame(state.animationFrameId);
-        }
-        if (state.resumeTimeout) {
-            clearTimeout(state.resumeTimeout);
-        }
-    }
-    
-    // 页面卸载时清理
-    window.addEventListener('beforeunload', cleanup);
     
     // 启动
-    fetchWallpapers();
-    
-    if (CONFIG.debug && CONFIG.debug.consoleLog) {
-        console.log('[壁纸] 无限滚动壁纸系统已初始化');
-    }
+    init();
 })();
 
 // ========== 应用个人信息配置 ==========
