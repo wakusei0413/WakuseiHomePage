@@ -173,19 +173,13 @@
     setInterval(updateTime, CONFIG.time.updateInterval || 1000);
 })();
 
-// ========== 壁纸轮播 ==========
+// ========== 壁纸加载（垂直滚动）==========
 (function initWallpaper() {
     const container = document.getElementById('wallpaperContainer');
-    const authorEl = document.getElementById('wallpaperAuthor');
     
     if (!container) return;
     
-    let currentIndex = 0;
-    let wallpapers = [];
-    let images = [];
-    
     const config = CONFIG.wallpaper;
-    const interval = config.interval || 10000;
     const count = config.count || 5;
     
     // 备用图片
@@ -207,20 +201,27 @@
         img.className = 'wallpaper-image';
         img.src = url;
         img.alt = `Wallpaper ${index + 1}`;
-        img.loading = 'lazy';
+        img.loading = index === 0 ? 'eager' : 'lazy';
         return img;
     }
     
-    function nextWallpaper() {
-        if (images.length === 0) return;
+    function loadImages(urls) {
+        const scrollArea = document.createElement('div');
+        scrollArea.className = 'wallpaper-scroll-area';
         
-        images[currentIndex]?.classList.remove('active');
-        currentIndex = (currentIndex + 1) % images.length;
-        images[currentIndex]?.classList.add('active');
+        urls.forEach((url, index) => {
+            const img = createImageElement(url, index);
+            scrollArea.appendChild(img);
+        });
         
-        if (authorEl && wallpapers[currentIndex]) {
-            const wp = wallpapers[currentIndex];
-            authorEl.textContent = wp.author ? `${wp.author}` : `#${currentIndex + 1}`;
+        container.innerHTML = '';
+        container.appendChild(scrollArea);
+        
+        // 触发壁纸加载完成事件
+        window.dispatchEvent(new CustomEvent('wallpapers-loaded'));
+        
+        if (CONFIG.debug && CONFIG.debug.consoleLog) {
+            console.log(`[壁纸] 已加载 ${urls.length} 张图片`);
         }
     }
     
@@ -228,27 +229,7 @@
         if (CONFIG.debug && CONFIG.debug.consoleLog) {
             console.log('[壁纸] 使用备用图片');
         }
-        
-        fallbackImages.forEach((url, index) => {
-            const img = createImageElement(url, index);
-            container.appendChild(img);
-            images.push(img);
-            wallpapers.push({ title: `壁纸 ${index + 1}`, url: url, author: 'Picsum' });
-        });
-        
-        setTimeout(() => {
-            if (images[0]) {
-                images[0].classList.add('active');
-                const placeholder = container.querySelector('.wallpaper-placeholder');
-                if (placeholder) placeholder.style.display = 'none';
-            }
-            setInterval(nextWallpaper, interval);
-            
-            // 触发壁纸加载完成事件
-            window.dispatchEvent(new CustomEvent('wallpapers-loaded'));
-        }, 500);
-        
-        if (authorEl) authorEl.textContent = 'Picsum Photos';
+        loadImages(fallbackImages);
     }
     
     async function fetchWallpapers() {
@@ -270,67 +251,33 @@
         // 触发壁纸开始加载事件
         window.dispatchEvent(new CustomEvent('wallpapers-loading'));
         
-        // 尝试使用 Pixiv 随机图片（直接加载图片，绑过 CORS）
+        // 尝试使用 Pixiv 随机图片
         try {
             if (CONFIG.debug && CONFIG.debug.consoleLog) {
                 console.log('[壁纸] 尝试加载 Pixiv 随机图片...');
             }
             
-            // 使用直接图片链接，不经过 fetch（绑过 CORS）
-            const apiUrls = [
-                'https://i.mukyu.ru/random',
-                'https://pic1.pixiv.net/img-original/img/',  // 备用
-            ];
+            const apiUrl = 'https://i.mukyu.ru/random';
+            const urls = Array.from({ length: count }, (_, i) => 
+                `${apiUrl}?seed=${Date.now()}-${i}`
+            );
             
-            for (let i = 0; i < count; i++) {
-                const imgUrl = `${apiUrls[0]}?seed=${Date.now()}-${i}`;
-                const img = createImageElement(imgUrl, i);
-                container.appendChild(img);
-                images.push(img);
-                wallpapers.push({
-                    title: `Pixiv 作品 ${i + 1}`,
-                    author: 'Pixiv',
-                    url: imgUrl
-                });
-            }
-            
-            // 监听第一张图片加载
-            let loadedCount = 0;
-            const checkLoaded = () => {
-                loadedCount++;
-                if (loadedCount === 1) {
-                    images[0].classList.add('active');
-                    const placeholder = container.querySelector('.wallpaper-placeholder');
-                    if (placeholder) placeholder.style.display = 'none';
-                    setInterval(nextWallpaper, interval);
-                    
-                    if (CONFIG.debug && CONFIG.debug.consoleLog) {
-                        console.log('[壁纸] Pixiv 图片加载成功');
-                    }
-                    
-                    // 触发壁纸加载完成事件
-                    window.dispatchEvent(new CustomEvent('wallpapers-loaded'));
+            // 预加载第一张图片检测是否可用
+            const testImg = new Image();
+            testImg.onload = () => {
+                loadImages(urls);
+                if (CONFIG.debug && CONFIG.debug.consoleLog) {
+                    console.log('[壁纸] Pixiv 图片加载成功');
                 }
             };
-            
-            images[0].onload = checkLoaded;
-            images[0].onerror = () => {
+            testImg.onerror = () => {
                 if (CONFIG.debug && CONFIG.debug.consoleLog) {
                     console.warn('[壁纸] Pixiv 图片加载失败，切换备用图片');
                 }
-                // 清空已添加的图片
-                container.innerHTML = '';
-                images.length = 0;
-                wallpapers.length = 0;
                 useFallbackImages();
-                
-                // 触发壁纸加载失败事件
                 window.dispatchEvent(new CustomEvent('wallpapers-failed'));
             };
-            
-            if (authorEl) {
-                authorEl.textContent = 'Pixiv 随机';
-            }
+            testImg.src = urls[0];
             
         } catch (error) {
             if (CONFIG.debug && CONFIG.debug.consoleLog) {
