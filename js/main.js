@@ -377,36 +377,59 @@
         }
         
         state.isAutoScrolling = true;
-        // 默认速度 1.5 像素/帧，可以根据需要调整
         const speed = infiniteConfig.speed || 1.5;
         
         console.log(`[壁纸] 启动持续滚动，速度：${speed}px/帧`);
         
         let lastTime = performance.now();
+        let lastScrollTop = container.scrollTop;
         
         function animate(currentTime) {
             const deltaTime = currentTime - lastTime;
             lastTime = currentTime;
             
+            // 检测用户是否手动滚动（通过比较当前位置和上次位置）
+            const currentScrollTop = container.scrollTop;
+            if (Math.abs(currentScrollTop - lastScrollTop) > speed * 2 && !state.isUserInteracting) {
+                // 用户手动滚动了，暂停自动
+                state.isUserInteracting = true;
+                console.log('[壁纸] 检测到手动滚动，暂停自动');
+                
+                // 3秒后恢复自动
+                clearTimeout(state.resumeTimeout);
+                state.resumeTimeout = setTimeout(() => {
+                    state.isUserInteracting = false;
+                    console.log('[壁纸] 恢复自动滚动');
+                }, 3000);
+            }
+            lastScrollTop = currentScrollTop;
+            
             // 只有在没有用户交互时才自动滚动
             if (!state.isPaused && !state.isUserInteracting) {
-                // 使用 deltaTime 确保不同帧率下速度一致
-                const scrollAmount = speed * (deltaTime / 16.67); // 16.67ms = 60fps
-                container.scrollTop += scrollAmount;
+                // 自动向上滚动（减小scrollTop）
+                const scrollAmount = speed * (deltaTime / 16.67);
+                container.scrollTop -= scrollAmount;
+                lastScrollTop = container.scrollTop;
                 
-                // 检查是否到达底部（克隆图片位置）
-                const maxScroll = container.scrollHeight - container.clientHeight;
-                if (container.scrollTop >= maxScroll - 5) {
-                    // 无缝跳转到顶部
-                    container.scrollTop = 0;
-                    console.log('[壁纸] 到达底部，无缝循环到顶部');
+                // 检查是否到达顶部
+                if (container.scrollTop <= 0) {
+                    // 跳转到底部（克隆图片之前）
+                    const maxScroll = container.scrollHeight - container.clientHeight;
+                    container.scrollTop = maxScroll - 5;
+                    console.log('[壁纸] 到达顶部，跳转到底部继续');
                 }
             }
             
             state.animationFrameId = requestAnimationFrame(animate);
         }
         
-        state.animationFrameId = requestAnimationFrame(animate);
+        // 初始位置设到底部，从底部开始向上滚动
+        setTimeout(() => {
+            const maxScroll = container.scrollHeight - container.clientHeight;
+            container.scrollTop = maxScroll;
+            lastScrollTop = maxScroll;
+            state.animationFrameId = requestAnimationFrame(animate);
+        }, 100);
     }
     
     // ========== 用户交互处理 ==========
