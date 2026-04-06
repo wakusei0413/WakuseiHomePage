@@ -5,6 +5,8 @@
 ![版本](https://img.shields.io/badge/version-0.0.9-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+本项目在 [LINUX DO](https://linux.do) 社区进行开源推广
+
 ## ✨ 特性
 
 - 🎨 **粗放主义设计** - 大胆的边框、阴影和几何形状
