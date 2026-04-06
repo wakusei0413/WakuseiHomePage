@@ -309,7 +309,7 @@
             retryLazy(placeholder);
         };
         
-        img.src = `${API1}?t=${Date.now()}_${index}`;
+        img.src = `${APIS[0]}?t=${Date.now()}_${index}`;
     }
     
     // 懒加载失败时切换 API 重试
@@ -333,7 +333,7 @@
             delete placeholder.dataset.loading;
         };
         
-        img.src = `${API2}?t=${Date.now()}_${index}`;
+        img.src = `${APIS[1]}?t=${Date.now()}_${index}`;
     }
     
     // 创建占位符
