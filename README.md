@@ -2,7 +2,7 @@
 
 一个采用粗放主义（Brutalist）设计风格的个人主页，具有磨砂玻璃效果、动态壁纸轮播、打字机 Slogan 展示等功能。
 
-![版本](https://img.shields.io/badge/version-0.0.9-blue)
+![版本](https://img.shields.io/badge/version-0.1.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 本项目在 [LINUX DO](https://linux.do) 社区进行开源推广
@@ -65,11 +65,12 @@ const CONFIG = {
     footer: { ... },       // 底部版权
     slogans: { ... },      // Slogan/简介
     time: { ... },         // 时间组件
-    weather: { ... },      // 天气配置
-    wallpaper: { ... },    // 壁纸轮播
+    loading: { ... },      // 加载界面
+    wallpaper: { ... },    // 壁纸配置
     animation: { ... },    // 动画配置
     debug: { ... },        // 调试配置
     theme: { ... },        // 主题配置
+    effects: { ... },      // 交互特效
 };
 ```
 
@@ -251,17 +252,20 @@ time: {
 
 ```javascript
 wallpaper: {
-    // 数据源：'pixiv' | 'unsplash' | 'picsum'
-    source: 'pixiv',
+    // 壁纸源 API 列表（竞速加载，首个成功的生效）
+    apis: [
+        'https://www.loliapi.com/bg/',
+        'https://www.dmoe.cc/random.php'
+    ],
     
-    // Pixiv 标签过滤器（仅 source: 'pixiv' 时有效）
-    tags: ['少女', '风景', '插画', '动漫'],
+    // 竞速超时（毫秒）
+    raceTimeout: 10000,
     
-    // R18 过滤：0 全年龄 | 1 R18
-    r18: 0,
+    // 最大重试次数
+    maxRetries: 100,
     
-    // 预加载图片数量
-    count: 5,
+    // 预加载数量（首页必须加载完成才显示）
+    preloadCount: 3,
     
     // 无限滚动配置（瀑布流模式）
     infiniteScroll: {
@@ -274,11 +278,46 @@ wallpaper: {
 ```
 
 **瀑布流特性：**
-- **预加载等待**：前5张图片完全加载后才隐藏加载界面
+- **多 API 竞速**：支持配置多个壁纸源，同时请求，首个成功的生效
+- **预加载等待**：前 3 张（可配置）图片完全加载后才隐藏加载界面
 - **无限加载**：向下滚动到底部时自动加载更多图片
 - **瀑布流展示**：持续向下追加新图片，不是循环播放
-- **内存管理**：超过50张时自动清理最旧的10张图片
+- **内存管理**：超过 50 张时自动清理最旧的图片
 - **手动滚动**：支持鼠标滚轮和触摸滑动自由浏览
+
+---
+
+### ⏳ 加载界面配置 (`loading`)
+
+配置首页加载时显示的提示文字和切换间隔。
+
+```javascript
+loading: {
+    // 加载提示文字列表（随机循环显示）
+    texts: [
+        '少女祈祷中...',
+        '正在给服务器喂猫粮...',
+        '正在数像素...114...514...',
+        '正在和404谈判...',
+        '正在召唤服务器精灵...',
+        '正在给图片上色...',
+        '正在连接异次元...',
+        '正在偷取你的带宽...（开玩笑的）',
+        '正在加载大量萌要素...',
+        '服务器正在喝茶...'
+    ],
+    
+    // 文字切换间隔（毫秒）
+    textSwitchInterval: 2000,
+}
+```
+
+**配置说明：**
+
+| 配置项 | 类型 | 说明 |
+|--------|------|------|
+| `texts` | array | 加载时显示的提示文字数组，会按顺序循环显示 |
+| `textSwitchInterval` | number | 文字切换的时间间隔（毫秒），默认 2000ms |
 
 ---
 
@@ -311,20 +350,6 @@ debug: {
     
     // 是否显示性能信息
     showPerfInfo: false,
-}
-```
-
----
-
-### 🌤️ 天气配置 (`weather`)
-
-```javascript
-weather: {
-    // 默认城市（获取失败时使用）
-    defaultCity: 'Beijing',
-    
-    // 更新间隔（毫秒，10分钟 = 600000）
-    updateInterval: 600000,
 }
 ```
 
@@ -451,6 +476,20 @@ WakuseiHomePage/
 ---
 
 ## 🔧 更新日志
+
+### v0.1.0
+- **配置优化**
+  - 删除未使用的 `weather` 配置节
+  - 删除未使用的 `wallpaper.source`、`wallpaper.tags`、`wallpaper.r18`、`wallpaper.count` 配置项
+  - 新增 `wallpaper.apis` 支持多 API 源配置化（可配置任意数量的壁纸源）
+  - 新增 `wallpaper.preloadCount` 预加载数量配置
+  - 新增 `wallpaper.raceTimeout` 和 `wallpaper.maxRetries` 竞速参数配置
+  - 新增 `loading.texts` 加载文字配置（可自定义加载提示文案）
+  - 新增 `loading.textSwitchInterval` 文字切换间隔配置
+- **代码重构**
+  - 壁纸 API 地址从硬编码改为配置化
+  - 加载提示文字从硬编码改为配置化
+  - 支持任意数量的 API 竞速加载（不再限制为2个）
 
 ### v0.0.9
 - **瀑布流无限加载壁纸**

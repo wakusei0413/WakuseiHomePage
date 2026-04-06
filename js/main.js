@@ -223,49 +223,34 @@
     const MAX_IMAGES = infiniteScroll.maxImages || 20;
     const SCROLL_SPEED = 1.5;
     const LOAD_THRESHOLD = 500;
-    const RACE_TIMEOUT = 10000;
-    const MAX_RETRIES = 100;
-    const PRELOAD_COUNT = 3;
-    
-    const API1 = 'https://www.loliapi.com/bg/';
-    const API2 = 'https://www.dmoe.cc/random.php';
+    const RACE_TIMEOUT = CONFIG.wallpaper.raceTimeout || 10000;
+    const MAX_RETRIES = CONFIG.wallpaper.maxRetries || 100;
+    const PRELOAD_COUNT = CONFIG.wallpaper.preloadCount || 3;
+    const APIS = CONFIG.wallpaper.apis || ['https://www.loliapi.com/bg/', 'https://www.dmoe.cc/random.php'];
     
     let imageCounter = 0;
     let images = [];
     
-    // 有趣的加载文字列表
-    const loadingTexts = [
-        '少女祈祷中...',
-        '正在给服务器喂猫粮...',
-        '正在数像素...114...514...',
-        '正在和404谈判...',
-        '正在召唤服务器精灵...',
-        '正在给图片上色...',
-        '正在连接异次元...',
-        '正在偷取你的带宽...（开玩笑的）',
-        '正在加载大量萌要素...',
-        '服务器正在喝茶...'
-    ];
-    
+    // 加载文字列表（从配置读取）
+    const loadingTexts = CONFIG.loading?.texts || ['少女祈祷中...'];
+    const textSwitchInterval = CONFIG.loading?.textSwitchInterval || 2000;
     let currentLoadingTextIndex = 0;
     
     // 竞速加载单张图片
     function raceLoadImage(index) {
         return new Promise((resolve, reject) => {
             const ts = Date.now();
-            const url1 = `${API1}?t=${ts}_${index}`;
-            const url2 = `${API2}?t=${ts}_${index}`;
-            
-            const img1 = new Image();
-            const img2 = new Image();
+            const images = APIS.map(api => new Image());
+            const urls = APIS.map((api, i) => `${api}?t=${ts}_${index}`);
             let done = false;
+            
             const timer = setTimeout(() => {
                 if (!done) {
                     done = true;
-                    img1.onload = img1.onerror = null;
-                    img2.onload = img2.onerror = null;
-                    img1.src = '';
-                    img2.src = '';
+                    images.forEach(img => {
+                        img.onload = img.onerror = null;
+                        img.src = '';
+                    });
                     reject(new Error('Timeout'));
                 }
             }, RACE_TIMEOUT);
@@ -274,23 +259,20 @@
                 if (done) return;
                 done = true;
                 clearTimeout(timer);
-                img1.onload = img1.onerror = null;
-                img2.onload = img2.onerror = null;
-                const other = img === img1 ? img2 : img1;
-                other.src = '';
+                images.forEach(i => {
+                    i.onload = i.onerror = null;
+                    if (i !== img) i.src = '';
+                });
                 resolve(img);
             }
             
-            img1.onload = () => finish(img1);
-            img2.onload = () => finish(img2);
-            img1.onerror = () => {
-                if (done) return;
-            };
-            img2.onerror = () => {
-                if (done) return;
-            };
-            img1.src = url1;
-            img2.src = url2;
+            images.forEach((img, i) => {
+                img.onload = () => finish(img);
+                img.onerror = () => {
+                    if (done) return;
+                };
+                img.src = urls[i];
+            });
         });
     }
     
@@ -429,7 +411,7 @@
             if (loadingText) {
                 loadingText.textContent = loadingTexts[currentLoadingTextIndex];
             }
-        }, 2000);
+        }, textSwitchInterval);
         
         const placeholders = [];
         for (let i = 0; i < PRELOAD_COUNT; i++) {
