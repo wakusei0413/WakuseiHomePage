@@ -2,7 +2,7 @@
 
 一个采用粗放主义（Brutalist）设计风格的个人主页，具有磨砂玻璃效果、动态壁纸轮播、打字机 Slogan 展示等功能。
 
-![版本](https://img.shields.io/badge/version-0.1.0-blue)
+![版本](https://img.shields.io/badge/version-0.1.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 本项目在 [LINUX DO](https://linux.do) 社区进行开源推广
@@ -476,6 +476,12 @@ WakuseiHomePage/
 ---
 
 ## 🔧 更新日志
+
+### v0.1.1
+- **🐛 紧急修复**
+  - 修复生产环境（Vercel）壁纸无限滚动功能失效的问题
+  - 修复 `loadImageLazy` 和 `retryLazy` 函数中引用未定义变量 `API1` 和 `API2` 的问题
+  - 更新为使用配置化的 `APIS` 数组（`APIS[0]` 和 `APIS[1]`）
 
 ### v0.1.0
 - **配置优化**
