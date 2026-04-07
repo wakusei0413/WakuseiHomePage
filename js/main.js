@@ -211,257 +211,30 @@
     setInterval(updateTime, CONFIG.time.updateInterval || 1000);
 })();
 
-// ========== 壁纸加载（双 API 竞速 + 首屏阻塞）==========
-(function initWallpaperScroller() {
-    const container = document.getElementById('wallpaperScrollArea');
-    if (!container) return;
-    
-    const { infiniteScroll } = CONFIG.wallpaper;
-    if (!infiniteScroll?.enabled) return;
-    
-    const BATCH_SIZE = infiniteScroll.batchSize || 3;
-    const MAX_IMAGES = infiniteScroll.maxImages || 20;
-    const SCROLL_SPEED = 1.5;
-    const LOAD_THRESHOLD = 500;
-    const RACE_TIMEOUT = CONFIG.wallpaper.raceTimeout || 10000;
-    const MAX_RETRIES = CONFIG.wallpaper.maxRetries || 100;
-    const PRELOAD_COUNT = CONFIG.wallpaper.preloadCount || 3;
-    const APIS = CONFIG.wallpaper.apis || ['https://www.loliapi.com/bg/', 'https://www.dmoe.cc/random.php'];
-    
-    let imageCounter = 0;
-    let images = [];
-    
-    // 加载文字列表（从配置读取）
-    const loadingTexts = CONFIG.loading?.texts || ['少女祈祷中...'];
-    const textSwitchInterval = CONFIG.loading?.textSwitchInterval || 2000;
-    let currentLoadingTextIndex = 0;
-    
-    // 竞速加载单张图片
-    function raceLoadImage(index) {
-        return new Promise((resolve, reject) => {
-            const ts = Date.now();
-            const images = APIS.map(api => new Image());
-            const urls = APIS.map((api, i) => `${api}?t=${ts}_${index}`);
-            let done = false;
-            
-            const timer = setTimeout(() => {
-                if (!done) {
-                    done = true;
-                    images.forEach(img => {
-                        img.onload = img.onerror = null;
-                        img.src = '';
-                    });
-                    reject(new Error('Timeout'));
-                }
-            }, RACE_TIMEOUT);
-            
-            function finish(img) {
-                if (done) return;
-                done = true;
-                clearTimeout(timer);
-                images.forEach(i => {
-                    i.onload = i.onerror = null;
-                    if (i !== img) i.src = '';
-                });
-                resolve(img);
-            }
-            
-            images.forEach((img, i) => {
-                img.onload = () => finish(img);
-                img.onerror = () => {
-                    if (done) return;
-                };
-                img.src = urls[i];
-            });
-        });
+// ========== 壁纸初始化（模块化调用）==========
+(function initWallpaper() {
+    if (typeof WallpaperScroller === 'undefined') {
+        console.error('[壁纸] WallpaperScroller 模块未加载');
+        return;
     }
     
-    // 带重试的加载
-    async function loadWithRetry(index) {
-        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-            try {
-                return await raceLoadImage(index);
-            } catch (err) {
-                console.log(`[壁纸] 加载中... (${attempt}/${MAX_RETRIES})`);
-            }
+    const wallpaper = new WallpaperScroller(
+        'wallpaperScrollArea',
+        CONFIG.wallpaper,
+        CONFIG.loading,
+        function onWallpaperReady() {
+            const main = document.querySelector('.container');
+            const overlay = document.getElementById('loadingOverlay');
+            if (main) main.classList.add('visible');
+            if (overlay) overlay.classList.add('hidden');
         }
-        throw new Error('Max retries exceeded');
+    );
+    
+    wallpaper.init();
+    
+    if (CONFIG.debug && CONFIG.debug.consoleLog) {
+        console.log('[壁纸] 模块已初始化');
     }
-    
-    // 懒加载（进入视野时）
-    function loadImageLazy(placeholder) {
-        if (placeholder.dataset.loaded) return;
-        if (placeholder.dataset.loading) return;
-        placeholder.dataset.loading = 'true';
-        
-        const index = placeholder.dataset.index;
-        const img = new Image();
-        
-        img.onload = () => {
-            placeholder.appendChild(img);
-            placeholder.dataset.loaded = 'true';
-            delete placeholder.dataset.loading;
-            requestAnimationFrame(() => placeholder.classList.add('loaded'));
-        };
-        
-        img.onerror = () => {
-            delete placeholder.dataset.loading;
-            retryLazy(placeholder);
-        };
-        
-        img.src = `${APIS[0]}?t=${Date.now()}_${index}`;
-    }
-    
-    // 懒加载失败时切换 API 重试
-    function retryLazy(placeholder) {
-        if (placeholder.dataset.loaded) return;
-        if (placeholder.dataset.retried) return;
-        placeholder.dataset.retried = 'true';
-        placeholder.dataset.loading = 'true';
-        
-        const index = placeholder.dataset.index;
-        const img = new Image();
-        
-        img.onload = () => {
-            placeholder.appendChild(img);
-            placeholder.dataset.loaded = 'true';
-            delete placeholder.dataset.loading;
-            requestAnimationFrame(() => placeholder.classList.add('loaded'));
-        };
-        
-        img.onerror = () => {
-            delete placeholder.dataset.loading;
-        };
-        
-        img.src = `${APIS[1]}?t=${Date.now()}_${index}`;
-    }
-    
-    // 创建占位符
-    function createPlaceholder() {
-        const div = document.createElement('div');
-        div.className = 'wallpaper-image';
-        return div;
-    }
-    
-    // 添加更多占位符
-    function addPlaceholders(count) {
-        for (let i = 0; i < count; i++) {
-            const placeholder = createPlaceholder();
-            placeholder.dataset.index = imageCounter++;
-            container.appendChild(placeholder);
-            images.push(placeholder);
-            observer.observe(placeholder);
-        }
-    }
-    
-    // 清理旧图片
-    function cleanup() {
-        while (images.length > MAX_IMAGES) {
-            const old = images.shift();
-            observer.unobserve(old);
-            old.remove();
-        }
-    }
-    
-    // Intersection Observer
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                loadImageLazy(entry.target);
-            }
-        });
-    }, {
-        root: container,
-        rootMargin: '400px 0px',
-        threshold: 0.01
-    });
-    
-    // 自动滚动
-    function autoScroll() {
-        container.scrollTop += SCROLL_SPEED;
-        
-        const scrollBottom = container.scrollTop + container.clientHeight;
-        if (container.scrollHeight - scrollBottom < LOAD_THRESHOLD) {
-            addPlaceholders(BATCH_SIZE);
-            cleanup();
-        }
-        
-        requestAnimationFrame(autoScroll);
-    }
-    
-    // 禁用用户交互
-    function disableInteraction() {
-        container.addEventListener('wheel', e => e.preventDefault(), { passive: false });
-        container.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
-        container.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
-        container.addEventListener('mousedown', e => e.preventDefault());
-    }
-    
-    // 初始化
-    async function init() {
-        const main = document.querySelector('.container');
-        const overlay = document.getElementById('loadingOverlay');
-        const loadingText = document.getElementById('loadingText');
-        const loadingBar = document.getElementById('loadingBar');
-        const loadingPercent = document.getElementById('loadingPercent');
-        
-        // 文字切换定时器
-        const textInterval = setInterval(() => {
-            currentLoadingTextIndex = (currentLoadingTextIndex + 1) % loadingTexts.length;
-            if (loadingText) {
-                loadingText.textContent = loadingTexts[currentLoadingTextIndex];
-            }
-        }, textSwitchInterval);
-        
-        const placeholders = [];
-        for (let i = 0; i < PRELOAD_COUNT; i++) {
-            const p = createPlaceholder();
-            p.dataset.index = imageCounter++;
-            container.appendChild(p);
-            images.push(p);
-            placeholders.push(p);
-        }
-        
-        let loadedCount = 0;
-        
-        // 并行加载前 PRELOAD_COUNT 张，带进度跟踪
-        const loadPromises = placeholders.map((p, i) => 
-            loadWithRetry(p.dataset.index).then(img => {
-                p.appendChild(img);
-                p.dataset.loaded = 'true';
-                p.classList.add('loaded');
-                
-                // 更新进度
-                loadedCount++;
-                const percent = Math.round((loadedCount / PRELOAD_COUNT) * 100);
-                if (loadingBar) loadingBar.style.width = `${percent}%`;
-                if (loadingPercent) loadingPercent.textContent = `${percent}%`;
-            }).catch(() => {
-                console.error(`[壁纸] 第 ${i + 1} 张加载失败`);
-                // 失败也算完成（避免卡住）
-                loadedCount++;
-                const percent = Math.round((loadedCount / PRELOAD_COUNT) * 100);
-                if (loadingBar) loadingBar.style.width = `${percent}%`;
-                if (loadingPercent) loadingPercent.textContent = `${percent}%`;
-            })
-        );
-        
-        await Promise.all(loadPromises);
-        
-        // 清除文字切换定时器
-        clearInterval(textInterval);
-        
-        // 显示页面
-        if (main) main.classList.add('visible');
-        if (overlay) overlay.classList.add('hidden');
-        
-        placeholders.forEach(p => observer.observe(p));
-        addPlaceholders(BATCH_SIZE);
-        disableInteraction();
-        requestAnimationFrame(autoScroll);
-    }
-    
-    init();
 })();
 
 // ========== 应用个人信息配置 ==========
@@ -601,11 +374,6 @@
     // 写入 Cookie
     function setCookieTheme(theme) {
         document.cookie = `${cookieName}=${theme};path=/;max-age=${cookieExpire}`;
-    }
-    
-    // 检测系统偏好
-    function getSystemTheme() {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
     
     // 获取当前主题
@@ -779,96 +547,6 @@
     
     if (CONFIG.debug && CONFIG.debug.consoleLog) {
         console.log('[壁纸面板] 已初始化');
-    }
-})();
-
-// ========== 点击彩纸特效 ==========
-(function initConfetti() {
-    const config = CONFIG.effects?.confetti;
-    if (!config || !config.enabled) return;
-    
-    const socialLinks = document.querySelectorAll('.social-link');
-    if (!socialLinks.length) return;
-    
-    // 获取 CSS 变量值
-    function getCSSVariable(name) {
-        if (name.startsWith('--')) {
-            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-        }
-        return name;
-    }
-    
-    // 创建单个彩纸粒子
-    function createParticle(x, y, color) {
-        const particle = document.createElement('div');
-        particle.className = 'confetti-particle';
-        
-        // 随机大小
-        const size = Math.random() * 8 + 4;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        
-        // 随机形状
-        const shapes = ['square', 'circle'];
-        const shape = shapes[Math.floor(Math.random() * shapes.length)];
-        particle.classList.add(`confetti--${shape}`);
-        
-        // 颜色
-        particle.style.backgroundColor = getCSSVariable(color);
-        
-        // 初始位置
-        particle.style.left = `${x}px`;
-        particle.style.top = `${y}px`;
-        
-        // 随机动画参数 - 使用简单的随机偏移
-        const angle = Math.random() * Math.PI * 2;
-        const velocity = Math.random() * config.spread + 50;
-        const rotation = Math.random() * 720 - 360; // -360 到 360 度
-        
-        // 计算 x 和 y 偏移量
-        const xOffset = Math.cos(angle) * velocity;
-        const yOffset = Math.abs(Math.sin(angle) * velocity) + 200; // 确保向下落
-        
-        particle.style.setProperty('--x-offset', `${xOffset}px`);
-        particle.style.setProperty('--y-offset', `${yOffset}px`);
-        particle.style.setProperty('--rotation', `${rotation}deg`);
-        particle.style.setProperty('--duration', `${config.duration}ms`);
-        
-        document.body.appendChild(particle);
-        
-        // 动画结束后移除
-        particle.addEventListener('animationend', () => {
-            particle.remove();
-        });
-    }
-    
-    // 点击事件处理
-    function handleConfetti(event) {
-        const rect = event.currentTarget.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-        
-        // 创建彩纸
-        const colors = config.colors || ['--accent-yellow', '--accent-red', '--accent-blue'];
-        for (let i = 0; i < config.count; i++) {
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            setTimeout(() => {
-                createParticle(x, y, color);
-            }, Math.random() * 50);
-        }
-        
-        if (CONFIG.debug && CONFIG.debug.consoleLog) {
-            console.log('[彩纸特效] 触发点击效果');
-        }
-    }
-    
-    // 绑定事件
-    socialLinks.forEach(link => {
-        link.addEventListener('click', handleConfetti);
-    });
-    
-    if (CONFIG.debug && CONFIG.debug.consoleLog) {
-        console.log('[彩纸特效] 已初始化');
     }
 })();
 

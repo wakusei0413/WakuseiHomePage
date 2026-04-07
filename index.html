@@ -97,6 +97,9 @@
             <!-- 壁纸滚动区域（覆盖整个面板） -->
             <div class="wallpaper-scroll-area" id="wallpaperScrollArea"></div>
             
+            <!-- 独立阴影层 - 与壁纸解耦，营造画框效果 -->
+            <div class="right-panel-shadow"></div>
+            
             <!-- 时间面板（磨砂玻璃覆盖） -->
             <div class="info-panel">
                 <div class="time-widget">
@@ -106,11 +109,7 @@
                 </div>
             </div>
             
-            <!-- 壁纸信息（磨砂玻璃覆盖） -->
-            <div class="wallpaper-info">
-                <span class="wallpaper-title">Pixiv 插画</span>
-                <span class="wallpaper-author">滚动浏览</span>
-            </div>
+            
         </aside>
     </main>
     
@@ -157,6 +156,8 @@
     <!-- JavaScript -->
     <!-- 配置文件 -->
     <script src="config.js"></script>
+    <!-- 壁纸模块 -->
+    <script src="js/wallpaper.js"></script>
     <!-- 主脚本 -->
     <script src="js/main.js"></script>
 </body>

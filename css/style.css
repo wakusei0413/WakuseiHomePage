@@ -8,6 +8,7 @@
     --bg-card: #FFFFFF;
     --fg: #0A0A0A;
     --muted: #666666;
+    
     --border-color: #0A0A0A;
     
     --accent-yellow: #FFE600;
@@ -29,6 +30,12 @@
     --space-lg: 2rem;
     --space-xl: 3rem;
     --space-2xl: 4rem;
+    
+    /* 层级管理 */
+    --z-wallpaper: 0;
+    --z-content: 50;
+    --z-buttons: 1000;
+    --z-noise: 2000;
     
     /* 过渡动画参数 */
     --transition-fast: 0.2s ease-out;
@@ -107,19 +114,6 @@ html {
 * {
     -ms-overflow-style: none;
     scrollbar-width: none;
-}
-
-/* ===== 全局过渡类 ===== */
-.transition-layout {
-    transition: var(--transition-layout);
-}
-
-.transition-transform {
-    transition: transform var(--transition-normal);
-}
-
-.transition-all {
-    transition: var(--transition-all);
 }
 
 /* ===== 批量过渡应用（解耦） ===== */
@@ -254,8 +248,6 @@ html {
     display: flex;
     flex-wrap: nowrap;
     height: 100vh;
-    max-width: 1600px;
-    margin: 0 auto;
     overflow: hidden;
     transition: grid-template-columns var(--transition-normal),
                 filter 0.5s ease-out;
@@ -274,8 +266,9 @@ html {
 
 /* ===== 左侧面板 ===== */
 .left-panel {
-    width: 30%;
-    min-width: 280px;
+    width: 500px;
+    flex-shrink: 0;
+    min-width: 320px;
     padding: var(--space-xl);
     display: flex;
     flex-direction: column;
@@ -285,6 +278,11 @@ html {
     background-color: var(--bg);
     overflow-y: auto;
     overflow-x: hidden;
+    position: relative;
+    z-index: var(--z-content);
+    box-shadow: 
+        15px 0 40px rgba(0, 0, 0, 0.2),
+        0 0 60px rgba(0, 0, 0, 0.1);
     transition: width var(--transition-normal), 
                 padding var(--transition-normal),
                 border-right-width var(--transition-normal);
@@ -298,15 +296,14 @@ html {
 
 /* ===== 右侧面板 ===== */
 .right-panel {
-    width: 70%;
     flex: 1;
     min-width: 300px;
     display: flex;
     flex-direction: column;
     background-color: transparent;
     color: var(--bg);
-    transition: width var(--transition-normal);
     position: relative;
+    z-index: 1;
 }
 
 /* ===== 右侧：信息面板 ===== */
@@ -567,8 +564,11 @@ html {
         inset 0 1px 0 rgba(255, 254, 247, 0.12),
         inset 0 -1px 0 rgba(0, 0, 0, 0.15),
         inset 0 0 0 1px rgba(255, 254, 247, 0.05);
-    position: relative;
-    z-index: 2;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-content);
 }
 
 .info-panel::before {
@@ -633,6 +633,19 @@ html {
     letter-spacing: 0.05em;
 }
 
+/* ===== 右侧面板阴影层 - 独立于壁纸 ===== */
+.right-panel-shadow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow:
+        inset -12px 0 30px rgba(0, 0, 0, 0.15),
+        inset 12px 0 30px rgba(0, 0, 0, 0.15),
+        inset 0 12px 30px rgba(0, 0, 0, 0.15),
+        inset 0 -12px 30px rgba(0, 0, 0, 0.15);
+}
+
 /* ===== 壁纸容器 ===== */
 .wallpaper-scroll-area {
     position: absolute;
@@ -642,8 +655,8 @@ html {
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
-    z-index: 0;
-    background-color: #0A0A0A;
+    z-index: var(--z-wallpaper);
+    background-color: var(--bg);
     scrollbar-width: none;
     
     /* 禁用用户交互 */
@@ -651,10 +664,6 @@ html {
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;
-}
-
-[data-theme="dark"] .wallpaper-scroll-area {
-    background-color: #151515;
 }
 
 .wallpaper-scroll-area::-webkit-scrollbar {
@@ -693,74 +702,6 @@ html {
 
 .wallpaper-image.loaded img {
     opacity: 1;
-}
-
-/* ===== 壁纸信息 ===== */
-.wallpaper-info {
-    padding: var(--space-sm) var(--space-md);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid rgba(255, 254, 247, 0.15);
-    background: rgba(10, 10, 10, 0.75);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    box-shadow: 
-        0 -8px 40px rgba(0, 0, 0, 0.35),
-        0 -16px 64px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 254, 247, 0.12),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.15),
-        inset 0 0 0 1px rgba(255, 254, 247, 0.05);
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 2;
-}
-
-.wallpaper-info::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 254, 247, 0.2), transparent);
-    pointer-events: none;
-    z-index: 2;
-}
-
-.wallpaper-info::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: 
-        linear-gradient(180deg, rgba(255,150,80,0.12) 0%, transparent 12%),
-        linear-gradient(90deg, rgba(255,100,100,0.1) 0%, transparent 15%),
-        linear-gradient(270deg, rgba(100,180,255,0.1) 0%, transparent 15%),
-        linear-gradient(0deg, rgba(150,100,255,0.12) 0%, transparent 12%);
-    pointer-events: none;
-    z-index: 1;
-}
-
-/* 深色主题壁纸信息 */
-[data-theme="dark"] .wallpaper-info {
-    background: rgba(15, 15, 15, 0.85);
-    border-color: rgba(255, 254, 247, 0.1);
-}
-
-.wallpaper-title {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: rgba(255, 254, 247, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-}
-
-.wallpaper-author {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: rgba(255, 254, 247, 0.7);
 }
 
 /* ===== 响应式设计 ===== */
@@ -853,11 +794,6 @@ html {
         opacity: 1;
         visibility: visible;
         transform: translateX(0);
-    }
-    
-    /* 移除固定尺寸，使用 clamp */
-    .avatar-letter {
-        font-size: clamp(3rem, 10vw, 4rem);
     }
     
     .social-links {
@@ -1131,14 +1067,6 @@ html {
     scrollbar-color: rgba(255, 254, 247, 0.3) transparent;
 }
 
-[data-theme="dark"] .wallpaper-title {
-    color: rgba(255, 254, 247, 0.5);
-}
-
-[data-theme="dark"] .wallpaper-author {
-    color: rgba(255, 254, 247, 0.7);
-}
-
 /* 减少动画偏好 */
 @media (prefers-reduced-motion: reduce) {
     .theme-icon {
@@ -1259,35 +1187,7 @@ html {
 
 /* ===== 交互特效 ===== */
 
-/* 点击彩纸特效 */
-.confetti-particle {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9999;
-    animation: confetti-fall var(--duration, 1500ms) ease-out forwards;
-}
 
-.confetti--square {
-    border-radius: 2px;
-}
-
-.confetti--circle {
-    border-radius: 50%;
-}
-
-@keyframes confetti-fall {
-    0% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(
-            var(--x-offset, 50px),
-            var(--y-offset, 300px)
-        ) rotate(var(--rotation, 360deg)) scale(0.3);
-        opacity: 0;
-    }
-}
 
 /* 滚动触发动画 */
 .scroll-reveal {
