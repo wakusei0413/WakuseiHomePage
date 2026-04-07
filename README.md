@@ -2,7 +2,7 @@
 
 一个采用粗放主义（Brutalist）设计风格的个人主页，具有磨砂玻璃效果、动态壁纸轮播、打字机 Slogan 展示等功能。
 
-![版本](https://img.shields.io/badge/version-0.1.1-blue)
+![版本](https://img.shields.io/badge/version-0.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 本项目在 [LINUX DO](https://linux.do) 社区进行开源推广
@@ -257,21 +257,20 @@ wallpaper: {
         'https://www.loliapi.com/bg/',
         'https://www.dmoe.cc/random.php'
     ],
-    
+
     // 竞速超时（毫秒）
     raceTimeout: 10000,
-    
+
     // 最大重试次数
     maxRetries: 100,
-    
+
     // 预加载数量（首页必须加载完成才显示）
     preloadCount: 3,
-    
+
     // 无限滚动配置（瀑布流模式）
     infiniteScroll: {
         enabled: true,              // 启用无限加载
         speed: 1.5,                 // 滚动速度（像素/帧，建议 0.5-3）
-        initialLoad: 5,            // 初始加载数量（必须加载完成才显示主页面）
         batchSize: 5,               // 每次滚动到底部加载的数量
         maxImages: 50,              // 最大保留图片数量（超出后删除最旧的）
     }
@@ -285,7 +284,6 @@ wallpaper: {
 - **自动滚动**：壁纸自动向下滚动，速度可配置（`speed` 参数）
 - **瀑布流展示**：持续向下追加新图片，不是循环播放
 - **内存管理**：超过 50 张时自动清理最旧的图片
-- **手动滚动**：支持鼠标滚轮和触摸滑动自由浏览
 
 ---
 
@@ -389,7 +387,6 @@ effects: {
 effects: {
     pixelPet: {
         enabled: true,              // 是否启用
-        type: 'cat',                // 宠物类型：'cat'（猫）| 'dog'（预留）
         speed: 0.5,                 // 移动速度（像素/帧）
         interactions: true,         // 是否允许点击互动（点击会跳跃+显示爱心）
     }
@@ -440,7 +437,7 @@ WakuseiHomePage/
 │   └── style.css       # 样式文件
 ├── js/
 │   ├── main.js         # 主脚本（社交链接生成、主题切换等）
-│   └── loading.js      # 加载界面管理
+│   └── wallpaper.js    # 壁纸滚动模块（无限滚动、竞速加载）
 └── res/
     └── img/
         └── logo.png    # 默认头像
@@ -449,6 +446,27 @@ WakuseiHomePage/
 ---
 
 ## 🔧 更新日志
+
+### v0.2.0
+- **🏗️ 架构重构：壁纸模块解耦**
+  - 将壁纸滚动功能拆分为独立模块 `js/wallpaper.js`（WallpaperScroller 类）
+  - 主脚本 `main.js` 精简为调用代码，职责分离更清晰
+  - 支持模块销毁和清理，便于内存管理
+- **🎨 UI 层级重构**
+  - 左侧面板宽度从百分比改为固定 500px，布局更稳定
+  - 右侧面板使用 `flex: 1` 自适应延申至屏幕边缘，避免宽屏留白
+  - 新增 `.right-panel-shadow` 独立阴影层，营造"透过玻璃/画框观看"的视觉效果
+  - 阴影层与壁纸模块完全解耦，即使壁纸被替换或移除效果依然存在
+- **🧹 代码清理与优化**
+  - 删除未使用的 `wallpaper.infiniteScroll.initialLoad` 配置项（实际使用 `preloadCount`）
+  - 删除未使用的 `effects.pixelPet.type` 配置项（当前仅支持猫咪）
+  - 删除过时的"天气功能"相关注释
+  - 删除无用的壁纸滚动条 CSS 样式（用户交互已被禁用）
+  - 修复像素宠物类型硬编码问题
+- **📚 文档更新**
+  - 更新项目结构说明（删除不存在的 `loading.js`，新增 `wallpaper.js`）
+  - 修正壁纸配置文档（移除 `initialLoad` 参数）
+  - 更新版本号徽章至 0.2.0
 
 ### v0.1.1
 - **🐛 紧急修复**

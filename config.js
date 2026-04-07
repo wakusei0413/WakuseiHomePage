@@ -157,23 +157,20 @@ const CONFIG = {
             'https://www.loliapi.com/bg/',
             'https://www.dmoe.cc/random.php'
         ],
-        
+
         // 竞速超时（毫秒）
         raceTimeout: 10000,
-        
+
         // 最大重试次数
         maxRetries: 100,
-        
+
         // 预加载数量（首页必须加载完成才显示）
         preloadCount: 3,
-        
+
         // 无限滚动配置
         infiniteScroll: {
             enabled: true,              // 启用无限滚动
             speed: 1.5,                 // 滚动速度（像素/帧，建议 0.5-3）
-            
-            // 瀑布流配置
-            initialLoad: 5,             // 初始加载数量（必须加载完成才显示主页面）
             batchSize: 5,               // 每次滚动到底部加载的数量
             maxImages: 50,              // 最大保留图片数量（超出后删除最旧的）
         }
@@ -222,7 +219,6 @@ const CONFIG = {
         // 像素小宠物
         pixelPet: {
             enabled: true,
-            type: 'cat',            // 'cat' | 'dog'（预留）
             speed: 0.5,             // 移动速度
             interactions: true,     // 是否允许点击互动
         }

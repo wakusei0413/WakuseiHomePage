@@ -1,6 +1,6 @@
 /**
  * 个人主页 - 主脚本
- * 功能：打字机效果 + 时间 + 天气 + 壁纸轮播
+ * 功能：打字机效果 + 时间 + 壁纸轮播
  * 配置：config.js
  */
 
@@ -351,7 +351,7 @@
 (function initComplete() {
     if (CONFIG.debug && CONFIG.debug.consoleLog) {
         console.log('%c个人主页脚本已加载', 'color: #FFE600; font-size: 12px;');
-        console.log('功能：打字机效果 (Slogan 循环) | 时间显示 | 天气获取 | 壁纸轮播 | 主题切换');
+        console.log('功能：打字机效果 (Slogan 循环) | 时间显示 | 壁纸轮播 | 主题切换');
     }
 })();
 
@@ -612,7 +612,7 @@
     
     // 创建宠物元素
     const pet = document.createElement('div');
-    pet.className = `pixel-pet__sprite pixel-pet__sprite--${config.type || 'cat'}`;
+    pet.className = 'pixel-pet__sprite pixel-pet__sprite--cat';
     
     // 创建爱心特效容器
     const heartContainer = document.createElement('div');
