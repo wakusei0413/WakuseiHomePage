@@ -34,12 +34,12 @@ const CONFIG = {
                 icon: 'fab fa-github',        // Font Awesome 图标类
                 color: 'yellow'               // 可选：预设值 'yellow' | 'red' | 'blue'，或 HEX 格式如 '#FF6B6B'
             },
-            {
-                name: 'TWITTER',
-                url: 'https://x.com/ChinaMilBugle',
-                icon: 'fab fa-x-twitter',
+            //{
+              //  name: 'TWITTER',
+                //url: 'https://x.com/ChinaMilBugle',
+                //icon: 'fab fa-x-twitter',
                 // 不设置 color，将按 colorScheme 自动分配
-            },
+            //},
             {
                 name: 'EMAIL',
                 url: 'mailto:wakusei0413@outlook.com',
@@ -78,7 +78,7 @@ const CONFIG = {
     // ============================================================
     footer: {
         // 版权文字（年份自动获取）
-        text: '咕!咕!嘎!嘎!-"萝莉岛"有限公司出品',
+        text: '咕!咕!嘎!嘎!-"罗德岛"有限公司出品',
     },
 
     // ============================================================
@@ -90,7 +90,7 @@ const CONFIG = {
             '安静，吵到我用使用锤子的TNT vibe coding了！',
             '武装保卫开源社区！',
             '说的好！我完全同意。',
-            '正在测试中',
+            '正在测试中...',
             '以真诚待人为荣，以虚伪欺人为耻；以友善热心为荣，以傲慢冷漠为耻；以团结协作为荣，以孤立对抗为耻；以专业敬业为荣，以敷衍了事为耻。',
             '用冰冷的理性温暖世界。',
             '“天下为公”是出自《礼记·礼运》的经典儒家政治理念，意指天下是天下人的天下，而非一人一姓所有。它描述了一个选贤与能、讲信修睦的“大同”理想社会。孙中山先生一生致力于践行此理念，并将其作为其三民主义思想的核心精神。',
@@ -157,23 +157,20 @@ const CONFIG = {
             'https://www.loliapi.com/bg/',
             'https://www.dmoe.cc/random.php'
         ],
-        
+
         // 竞速超时（毫秒）
         raceTimeout: 10000,
-        
+
         // 最大重试次数
         maxRetries: 100,
-        
+
         // 预加载数量（首页必须加载完成才显示）
         preloadCount: 3,
-        
+
         // 无限滚动配置
         infiniteScroll: {
             enabled: true,              // 启用无限滚动
             speed: 1.5,                 // 滚动速度（像素/帧，建议 0.5-3）
-            
-            // 瀑布流配置
-            initialLoad: 5,             // 初始加载数量（必须加载完成才显示主页面）
             batchSize: 5,               // 每次滚动到底部加载的数量
             maxImages: 50,              // 最大保留图片数量（超出后删除最旧的）
         }
@@ -185,9 +182,6 @@ const CONFIG = {
     animation: {
         // 打字机光标样式：'block' █ | 'line' |
         cursorStyle: 'block',
-        
-        // 光标闪烁速度（毫秒）
-        cursorBlinkSpeed: 800,
     },
 
     // ============================================================
@@ -196,18 +190,12 @@ const CONFIG = {
     debug: {
         // 控制台输出日志
         consoleLog: true,
-        
-        // 显示性能信息
-        showPerfInfo: false,
     },
 
     // ============================================================
     // 主题配置
     // ============================================================
     theme: {
-        // 默认主题：'light' | 'dark' | 'system'（跟随系统）
-        default: 'system',
-        
         // Cookie 名称
         cookieName: 'theme',
         
@@ -221,30 +209,17 @@ const CONFIG = {
     // ============================================================
 // 交互特效配置
     effects: {
-        // 点击彩纸特效
-        confetti: {
-            enabled: false,
-            count: 25,              // 彩纸数量
-            colors: ['--accent-yellow', '--accent-red', '--accent-blue', '#FF6B6B', '#4ECDC4'],
-            duration: 1500,         // 动画时长（毫秒）
-            spread: 150,            // 扩散范围（像素）
-        },
-        
         // 滚动触发动画
         scrollReveal: {
             enabled: true,
             offset: 50,             // 触发偏移量
             delay: 50,              // 错开延迟（毫秒）
-            duration: 600,          // 动画时长（毫秒）
-            easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
         },
         
         // 像素小宠物
         pixelPet: {
             enabled: true,
-            type: 'cat',            // 'cat' | 'dog'（预留）
             speed: 0.5,             // 移动速度
-            size: 32,               // 显示尺寸（像素）
             interactions: true,     // 是否允许点击互动
         }
     }
