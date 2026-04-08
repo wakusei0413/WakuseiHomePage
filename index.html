@@ -1,164 +1,156 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WAKUSEI - 个人主页</title>
-    
-    <meta name="description" content="wakusei - 个人主页">
-    <meta name="theme-color" content="#000000">
-    
-    <!-- 主题检测（防止闪烁，必须在 CSS 加载前执行） -->
-    <script>
-        (function() {
-            var theme = 'light'; // 默认浅色
-            
-            // 读取 Cookie
-            var match = document.cookie.match(/(^| )theme=(light|dark)(;|$)/);
-            if (match) {
-                theme = match[2];
-            } else {
-                // 检测系统偏好
-                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    theme = 'dark';
-                }
-            }
-            
-            // 立即设置主题属性
-            document.documentElement.setAttribute('data-theme', theme);
-        })();
-    </script>
-    
-    <!-- 字体 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome 图标 - 动态加载（超时放弃） -->
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-    <!-- 背景噪点 -->
-    <div class="noise-overlay"></div>
-    
-    <!-- 加载遮罩层 -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-panel">
-            <div class="loading-spinner"></div>
-            <div class="loading-text" id="loadingText">少女祈祷中...</div>
-            <div class="loading-progress">
-                <div class="loading-bar" id="loadingBar"></div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>WAKUSEI - 个人主页</title>
+
+        <meta name="description" content="wakusei - 个人主页" />
+        <meta name="theme-color" content="#fffef7" />
+        <meta property="og:title" content="WAKUSEI - 个人主页" />
+        <meta property="og:description" content="wakusei - 个人主页" />
+        <meta property="og:type" content="website" />
+        <link rel="icon" href="res/img/logo.png" type="image/png" />
+
+        <!-- 预连接关键域名 -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+
+        <!-- 字体 -->
+        <link
+            href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+            rel="stylesheet"
+        />
+
+        <!-- Font Awesome 图标 - 动态加载（超时放弃） -->
+        <link rel="stylesheet" href="css/style.css" />
+    </head>
+    <body>
+        <!-- 背景噪点 -->
+        <div class="noise-overlay"></div>
+
+        <!-- 加载遮罩层 -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-panel">
+                <div class="loading-spinner"></div>
+                <div class="loading-text" id="loadingText">少女祈祷中...</div>
+                <div class="loading-progress">
+                    <div class="loading-bar" id="loadingBar"></div>
+                </div>
+                <div class="loading-percent" id="loadingPercent">0%</div>
             </div>
-            <div class="loading-percent" id="loadingPercent">0%</div>
         </div>
-    </div>
-    
-    <!-- 主页面 -->
-    <main class="container" id="mainContent">
-        <!-- ===== 左侧：个人信息 ===== -->
-        <section class="left-panel">
-            <header class="hero">
-                <!-- 头像方块 -->
-                <div class="avatar-box" id="avatarBox">
-                    <img src="res/img/logo.png" alt="Avatar" class="avatar-image">
+
+        <!-- 主页面 -->
+        <main class="container" id="mainContent">
+            <!-- ===== 左侧：个人信息 ===== -->
+            <section class="left-panel">
+                <header class="hero">
+                    <!-- 头像方块 -->
+                    <div class="avatar-box" id="avatarBox">
+                        <img src="res/img/logo.png" alt="Avatar" class="avatar-image" />
+                    </div>
+
+                    <!-- 名称 -->
+                    <h1 class="name">WAKUSEI</h1>
+
+                    <!-- 状态栏 -->
+                    <div class="status-bar">
+                        <span class="status-dot"></span>
+                        <span class="status-text">OPEN TO OPPORTUNITIES</span>
+                    </div>
+
+                    <!-- 简介：打字机效果 -->
+                    <div class="bio-container" id="bioContainer">
+                        <p class="bio">
+                            <span class="typewriter-text" id="typewriterText"></span>
+                            <span class="typewriter-cursor" id="cursor">█</span>
+                        </p>
+                    </div>
+
+                    <!-- 社交链接 -->
+                    <nav class="social-links" id="socialLinks">
+                        <!-- 动态生成，由 main.js 控制 -->
+                    </nav>
+                </header>
+
+                <!-- 底部版权 -->
+                <footer class="footer-left">
+                    <div class="footer-line"></div>
+                    <p class="footer-text" id="footerText">BUILT WITH PASSION • 2024</p>
+                </footer>
+            </section>
+
+            <!-- ===== 右侧：时间 + 壁纸 ===== -->
+            <aside class="right-panel">
+                <!-- 壁纸滚动区域（覆盖整个面板） -->
+                <div class="wallpaper-scroll-area" id="wallpaperScrollArea"></div>
+
+                <!-- 独立阴影层 - 与壁纸解耦，营造画框效果 -->
+                <div class="right-panel-shadow"></div>
+
+                <!-- 时间面板（磨砂玻璃覆盖） -->
+                <div class="info-panel">
+                    <div class="time-widget">
+                        <div class="weekday" id="weekday">星期四</div>
+                        <div class="date-display" id="dateDisplay">四月四日</div>
+                        <div class="clock" id="clock">15:30:35</div>
+                    </div>
                 </div>
-                
-                <!-- 名称 -->
-                <h1 class="name">WAKUSEI</h1>
-                
-                <!-- 状态栏 -->
-                <div class="status-bar">
-                    <span class="status-dot"></span>
-                    <span class="status-text">OPEN TO OPPORTUNITIES</span>
-                </div>
-                
-                <!-- 简介：打字机效果 -->
-                <div class="bio-container" id="bioContainer">
-                    <p class="bio">
-                        <span class="typewriter-text" id="typewriterText"></span><span class="typewriter-cursor" id="cursor">█</span>
-                    </p>
-                </div>
-                
-                <!-- 社交链接 -->
-                <nav class="social-links" id="socialLinks">
-                    <!-- 动态生成，由 main.js 控制 -->
-                </nav>
-            </header>
-            
-            <!-- 底部版权 -->
-            <footer class="footer-left">
-                <div class="footer-line"></div>
-                <p class="footer-text" id="footerText">BUILT WITH PASSION • 2024</p>
-            </footer>
-        </section>
-        
-        <!-- ===== 右侧：时间 + 壁纸 ===== -->
-        <aside class="right-panel">
-            <!-- 壁纸滚动区域（覆盖整个面板） -->
-            <div class="wallpaper-scroll-area" id="wallpaperScrollArea"></div>
-            
-            <!-- 独立阴影层 - 与壁纸解耦，营造画框效果 -->
-            <div class="right-panel-shadow"></div>
-            
-            <!-- 时间面板（磨砂玻璃覆盖） -->
-            <div class="info-panel">
-                <div class="time-widget">
-                    <div class="weekday" id="weekday">星期四</div>
-                    <div class="date-display" id="dateDisplay">四月四日</div>
-                    <div class="clock" id="clock">15:30:35</div>
-                </div>
-            </div>
-            
-            
-        </aside>
-    </main>
-    
-    <!-- 主题切换按钮 -->
-    <button class="theme-toggle" id="themeToggle" aria-label="切换主题" title="切换深色/浅色模式">
-        <!-- 太阳图标（浅色模式显示） -->
-        <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-        </svg>
-        <!-- 月亮图标（深色模式显示） -->
-        <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-        </svg>
-        <span class="sr-only">切换主题</span>
-    </button>
-    
-    <!-- 手机端壁纸切换按钮 -->
-    <button class="wallpaper-toggle" id="wallpaperToggle" aria-label="查看壁纸" title="查看壁纸">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-            <polyline points="21 15 16 10 5 21"></polyline>
-        </svg>
-        <span class="sr-only">查看壁纸</span>
-    </button>
-    
-    <!-- 手机端右侧面板关闭按钮 -->
-    <button class="close-panel" id="closePanel" aria-label="关闭">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-        <span class="sr-only">关闭</span>
-    </button>
-    
-    <!-- JavaScript -->
-    <!-- 配置文件 -->
-    <script src="config.js"></script>
-    <!-- 壁纸模块 -->
-    <script src="js/wallpaper.js"></script>
-    <!-- 主脚本 -->
-    <script src="js/main.js"></script>
-</body>
+            </aside>
+        </main>
+
+        <!-- 手机端壁纸切换按钮 -->
+        <button class="wallpaper-toggle" id="wallpaperToggle" aria-label="查看壁纸" title="查看壁纸">
+            <svg
+                viewBox="0 0 24 24"
+                width="24"
+                height="24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <span class="sr-only">查看壁纸</span>
+        </button>
+
+        <!-- 手机端右侧面板关闭按钮 -->
+        <button class="close-panel" id="closePanel" aria-label="关闭">
+            <svg
+                viewBox="0 0 24 24"
+                width="24"
+                height="24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            <span class="sr-only">关闭</span>
+        </button>
+
+        <!-- JavaScript -->
+        <!-- 配置文件（同步加载，其他脚本依赖 CONFIG） -->
+        <script src="config.js"></script>
+        <!-- 工具模块 -->
+        <script src="js/logger.js"></script>
+        <script src="js/utils.js"></script>
+        <!-- 功能模块 -->
+        <script src="js/typewriter.js"></script>
+        <script src="js/time.js"></script>
+        <script src="js/social.js"></script>
+        <!-- 壁纸模块 -->
+        <script src="js/wallpaper.js"></script>
+        <!-- 主脚本 -->
+        <script src="js/main.js"></script>
+    </body>
 </html>

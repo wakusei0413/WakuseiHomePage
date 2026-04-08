@@ -1,0 +1,22 @@
+{
+    "name": "wakusei-homepage",
+    "version": "0.2.1",
+    "private": true,
+    "description": "Wakusei 个人主页 - 粗放主义设计",
+    "scripts": {
+        "lint": "eslint js/ config.js",
+        "lint:fix": "eslint js/ config.js --fix",
+        "format": "prettier --write \"js/**/*.js\" config.js css/**/*.css index.html",
+        "format:check": "prettier --check \"js/**/*.js\" config.js css/**/*.css index.html",
+        "build": "node build.js",
+        "serve": "npx serve ."
+    },
+    "devDependencies": {
+        "cssnano": "^6.0.0",
+        "eslint": "^8.56.0",
+        "postcss": "^8.4.0",
+        "postcss-cli": "^11.0.0",
+        "prettier": "^3.2.0",
+        "terser": "^5.27.0"
+    }
+}

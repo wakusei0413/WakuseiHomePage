@@ -1,0 +1,27 @@
+{
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "script"
+  },
+  "rules": {
+    "no-undef": "off",
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-console": "off",
+    "prefer-const": "warn",
+    "no-var": "off",
+    "eqeqeq": ["error", "always"],
+    "no-trailing-spaces": "error",
+    "no-multiple-empty-lines": ["error", { "max": 1 }],
+    "semi": ["error", "always"]
+  },
+  "globals": {
+    "CONFIG": "readonly",
+    "WallpaperScroller": "readonly",
+    "Logger": "readonly",
+    "Utils": "readonly"
+  }
+}
