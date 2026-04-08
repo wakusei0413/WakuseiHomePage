@@ -443,21 +443,27 @@ WakuseiHomePage/
     - 新增 `logger.js` — 统一日志工具，消除 9 处重复 debug 判断
     - 新增 `utils.js` — `debounce` 防抖函数，3 处 resize 监听已应用
 - **⚡ 性能优化**
-    - CSS `will-change` 改为 hover 时才启用，减少持续内存占用
+    - CSS `will-change` 永久启用，避免首次 hover 创建合成层的延迟
     - 壁纸模块：竞速失败时彻底取消请求（`removeAttribute('src')`）
     - 壁纸模块：`destroy()` 清理 `cancelAnimationFrame`，防止泄漏
     - 壁纸模块：`_cleanup()` 清理 dataset 属性，协助 GC
     - 添加 CSS Containment（`contain: layout style paint`）到关键容器
-    - 壁纸占位改用 `aspect-ratio: 16/9` 替代 `min-height`，布局更稳定
+    - 壁纸保持原始比例显示，添加 `min-height: 180px` 防止塌陷与粗放主义分隔线
+- **🐛 Hover 边缘闪烁修复**
+    - 为左侧栏所有 hover 位移元素添加 `::before` 伪元素作为静态悬停热区
+    - 解决 hover 时元素 translate 移走导致鼠标脱离、`:hover` 反复切换的闪烁问题
+- **🎬 Hover 动画优化**
+    - 将 hover transition 从 `0.15s` 缩短为 `0.08s`，响应更即时
 - **🧹 CSS 清理**
     - 删除 `.info-panel` 的重复 CSS 定义（约 40 行）
     - 合并 `html` 选择器的重复规则
     - 统一所有硬编码 z-index 为 CSS 变量（新增 `--z-loading`）
     - 合并 3 处 scrollbar 隐藏规则为一处
-    - 去除深色模式下多余的 `!important`
-- **🔐 主题持久化**
-    - 从 Cookie 迁移到 localStorage（保留 Cookie 降级）
-    - 防闪烁脚本同步更新为 localStorage 优先
+- **🗑️ 深色模式移除**
+    - 删除 CSS 中全部 `[data-theme='dark']` 规则（31 条）
+    - 删除 HTML 中主题切换按钮、FOUC 防闪烁脚本、`theme.js` 引用
+    - 删除 `js/theme.js` 文件
+    - `theme-color` meta 改为固定 `#fffef7`
 - **🌐 加载性能**
     - 添加 `<link rel="preconnect" href="https://cdn.jsdelivr.net">` 预连接
     - 添加 OG meta 标签（`og:title`、`og:description`、`og:type`）
