@@ -21,7 +21,7 @@
             var color = link.color;
             var isHexColor = false;
 
-            if (color && color.startsWith('#')) {
+            if (color && color.indexOf('#') === 0) {
                 isHexColor = true;
             } else if (!color) {
                 if (colorScheme === 'same') {
@@ -34,8 +34,9 @@
             var a = document.createElement('a');
             a.href = link.url;
             a.setAttribute('aria-label', link.name);
-            a.target = link.url.startsWith('mailto:') ? '_self' : '_blank';
-            a.rel = link.url.startsWith('mailto:') ? '' : 'noopener noreferrer';
+            var isMailto = link.url.indexOf('mailto:') === 0;
+            a.target = isMailto ? '_self' : '_blank';
+            a.rel = isMailto ? '' : 'noopener noreferrer';
 
             var icon = document.createElement('i');
             icon.className = link.icon;

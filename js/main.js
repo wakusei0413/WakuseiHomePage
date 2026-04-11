@@ -125,14 +125,22 @@
         if (!isMobile()) return;
         var scrollContainer = isMobile() ? container : leftPanel;
         var scrolled = scrollContainer.scrollTop > 50;
-        avatarBox.classList.toggle('scrolled', scrolled);
+        if (scrolled) {
+            avatarBox.classList.add('scrolled');
+        } else {
+            avatarBox.classList.remove('scrolled');
+        }
     }
 
     avatarBox.addEventListener('click', function () {
         if (!isMobile()) return;
         var scrollContainer = isMobile() ? container : leftPanel;
         if (scrollContainer.scrollTop > 50) {
-            scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+            if ('scrollBehavior' in document.documentElement.style) {
+                scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                scrollContainer.scrollTo(0, 0);
+            }
         }
     });
 
