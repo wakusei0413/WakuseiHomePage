@@ -189,7 +189,7 @@
                 function (result) {
                     return result;
                 },
-                function (err) {
+                function (_err) {
                     Logger.log('[壁纸] 加载中... (' + attempt + '/' + self.maxRetries + ')');
                     attempt++;
                     if (attempt <= self.maxRetries) {
