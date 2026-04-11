@@ -49,7 +49,8 @@ async function build() {
             const filePath = path.join(jsDir, file);
             const code = fs.readFileSync(filePath, 'utf8');
             const result = await minify(code, {
-                compress: { drop_console: false },
+                compress: { drop_console: false, ecma: 5 },
+                output: { ecma: 5 },
                 mangle: true
             });
             fs.writeFileSync(filePath, result.code);
