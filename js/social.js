@@ -75,8 +75,12 @@
         }
 
         var avatarImg = document.querySelector('.avatar-image');
-        if (avatarImg && config.avatar) {
-            avatarImg.src = config.avatar;
+        var avatarBox = document.getElementById('avatarBox');
+        if (config.avatar) {
+            if (avatarImg) avatarImg.src = config.avatar;
+            if (avatarBox && !('objectFit' in document.documentElement.style)) {
+                avatarBox.style.backgroundImage = 'url(' + config.avatar + ')';
+            }
         }
 
         var footerTextEl = document.getElementById('footerText');
@@ -88,6 +92,14 @@
 
         Logger.log('[配置] 个人信息已应用');
     }
+
+    function detectObjectFit() {
+        if (!('objectFit' in document.documentElement.style)) {
+            document.documentElement.className += ' no-object-fit';
+        }
+    }
+
+    detectObjectFit();
 
     window.initSocialLinks = initSocialLinks;
     window.applyProfileConfig = applyProfileConfig;
