@@ -6,7 +6,13 @@
     'use strict';
 
     function isLegacyCompatMode() {
-        return document.documentElement.classList.contains('legacy-compat');
+        var root = document.documentElement;
+        if (!root) return false;
+        if (root.classList) {
+            return root.classList.contains('legacy-compat');
+        }
+
+        return /(^|\s)legacy-compat(\s|$)/.test(root.className || '');
     }
 
     function initSocialLinks() {
@@ -50,6 +56,9 @@
             if (isHexColor) {
                 a.className = 'social-link social-link--custom';
                 a.style.setProperty('--custom-color', color);
+                if (legacyCompatMode) {
+                    a.style.color = color;
+                }
             } else {
                 a.className = 'social-link social-link--' + color;
             }
