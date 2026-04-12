@@ -2,7 +2,7 @@
 
 一个采用粗放主义（Brutalist）设计风格的个人主页，具有磨砂玻璃效果、动态壁纸轮播、打字机 Slogan 展示等功能。
 
-![版本](https://img.shields.io/badge/version-0.2.2-blue)
+![版本](https://img.shields.io/badge/version-0.5.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 本项目在 [LINUX DO](https://linux.do) 社区进行开源推广
@@ -435,6 +435,24 @@ WakuseiHomePage/
 ---
 
 ## 🔧 更新日志
+
+### v0.5.0
+
+- **🌐 旧浏览器自动兼容模式**
+    - 自动检测 IE、旧版 Edge/Firefox/Chrome、不支持 `classList` / `IntersectionObserver` / CSS 自定义属性的浏览器
+    - 兼容模式下仅保留左侧基本布局：头像、姓名、状态、社交链接、页脚
+    - 隐藏右侧面板、Slogan 打字机、壁纸滚动、噪点特效、加载动画等高级功能
+    - 禁用所有动画和悬停位移，保证基础可用性
+    - 检测失败时默认进入兼容模式（fail-safe）
+- **🔧 兼容性细节**
+    - `classList` 不可用时回退到 `className` 字符串操作
+    - CSS 变量不支持时提供硬编码回退值
+    - 社交链接自定义颜色在兼容模式下使用内联样式回退
+    - 禁用社交链接 `::before`/`::after` 伪元素点击热区，避免垂直排列时重叠
+    - 解除兼容模式下根元素 `overflow: hidden` 滚动锁定
+- **🛠️ 开发工具链**
+    - 新增 `AGENTS.md` 项目说明文件
+    - 新增设计规格和实现计划文档目录 `docs/superpowers/`
 
 ### v0.2.1
 
