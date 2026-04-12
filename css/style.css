@@ -1163,3 +1163,125 @@ body {
     background-position: center;
     background-repeat: no-repeat;
 }
+
+/* ===== 旧版浏览器兼容模式 ===== */
+.legacy-compat .noise-overlay,
+.legacy-compat .right-panel,
+.legacy-compat .bio-container,
+.legacy-compat .wallpaper-toggle,
+.legacy-compat .close-panel,
+.legacy-compat .loading-spinner,
+.legacy-compat .loading-progress,
+.legacy-compat .loading-percent,
+.legacy-compat .right-panel-shadow,
+.legacy-compat .info-panel {
+    display: none;
+}
+
+.legacy-compat body {
+    overflow: auto;
+}
+
+.legacy-compat .container {
+    display: block;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+    filter: none;
+    pointer-events: auto;
+}
+
+.legacy-compat .left-panel {
+    width: 100%;
+    max-width: 680px;
+    min-width: 0;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+    border-right: 0;
+    box-shadow: none;
+    overflow: visible;
+    contain: none;
+}
+
+.legacy-compat .left-panel .hero,
+.legacy-compat .avatar-box,
+.legacy-compat .social-link,
+.legacy-compat .status-dot,
+.legacy-compat .typewriter-cursor,
+.legacy-compat .loading-panel,
+.legacy-compat .loading-text {
+    animation: none;
+    transition: none;
+    transform: none;
+}
+
+.legacy-compat .avatar-box {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 2rem;
+    cursor: default;
+    box-shadow: none;
+}
+
+.legacy-compat .avatar-box:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.legacy-compat .avatar-box::before,
+.legacy-compat .avatar-box::after {
+    content: none;
+    display: none;
+}
+
+.legacy-compat .social-links {
+    display: block;
+}
+
+.legacy-compat .social-link {
+    display: block;
+    width: 100%;
+    max-width: none;
+    padding: 1rem 1.25rem;
+    margin: 0;
+    text-align: left;
+    box-shadow: none;
+}
+
+.legacy-compat .social-link + .social-link {
+    margin-top: 1rem;
+}
+
+.legacy-compat .loading-overlay {
+    background: #fffef7;
+    transition: none;
+}
+
+.legacy-compat .loading-panel {
+    gap: 0;
+    padding: 1.5rem;
+    border-width: 4px;
+    box-shadow: none;
+}
+
+.legacy-compat .loading-text {
+    min-height: 0;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    text-transform: none;
+}
+
+@media (max-width: 600px) {
+    .legacy-compat .left-panel {
+        padding: 1.5rem 1rem;
+    }
+
+    .legacy-compat .name {
+        font-size: 2.25rem;
+    }
+
+    .legacy-compat .avatar-box {
+        width: 96px;
+        height: 96px;
+    }
+}
