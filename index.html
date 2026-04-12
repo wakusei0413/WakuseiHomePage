@@ -13,6 +13,37 @@
         <meta property="og:type" content="website" />
         <link rel="icon" href="res/img/logo.png" type="image/png" />
 
+        <script>
+            (function () {
+                var root = document.documentElement;
+
+                function isLegacyBrowser() {
+                    try {
+                        var supportsCssVars = !!(
+                            window.CSS &&
+                            typeof window.CSS.supports === 'function' &&
+                            window.CSS.supports('--legacy-test', '0')
+                        );
+                        var isOldEdge = !!window.StyleMedia && !/Edg\//.test(window.navigator.userAgent);
+
+                        return (
+                            !!document.documentMode ||
+                            isOldEdge ||
+                            !root.classList ||
+                            !window.IntersectionObserver ||
+                            !supportsCssVars
+                        );
+                    } catch (error) {
+                        return true;
+                    }
+                }
+
+                if (isLegacyBrowser()) {
+                    root.className += (root.className ? ' ' : '') + 'legacy-compat';
+                }
+            })();
+        </script>
+
         <!-- 预连接关键域名 -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -35,7 +66,7 @@
         <div class="loading-overlay" id="loadingOverlay">
             <div class="loading-panel">
                 <div class="loading-spinner"></div>
-                <div class="loading-text" id="loadingText">少女祈祷中...</div>
+                <div class="loading-text" id="loadingText" data-legacy-text="Loading...">少女祈祷中...</div>
                 <div class="loading-progress">
                     <div class="loading-bar" id="loadingBar"></div>
                 </div>
