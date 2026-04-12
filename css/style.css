@@ -1178,7 +1178,9 @@ body {
     display: none;
 }
 
+.legacy-compat,
 .legacy-compat body {
+    height: auto;
     overflow: auto;
 }
 
@@ -1246,6 +1248,13 @@ body {
     margin: 0;
     text-align: left;
     box-shadow: none;
+}
+
+.legacy-compat .social-link::before,
+.legacy-compat .social-link::after {
+    content: none;
+    display: none;
+    pointer-events: none;
 }
 
 .legacy-compat .social-link + .social-link {
