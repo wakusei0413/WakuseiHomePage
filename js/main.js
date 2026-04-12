@@ -16,14 +16,32 @@
 })();
 
 function isLegacyCompatMode() {
-    return document.documentElement.classList.contains('legacy-compat');
+    var root = document.documentElement;
+    if (!root) return false;
+    if (root.classList) {
+        return root.classList.contains('legacy-compat');
+    }
+
+    return /(^|\s)legacy-compat(\s|$)/.test(root.className || '');
 }
 
 function revealMainContent() {
     var main = document.querySelector('.container');
     var overlay = document.getElementById('loadingOverlay');
-    if (main) main.classList.add('visible');
-    if (overlay) overlay.classList.add('hidden');
+
+    function addClass(el, className) {
+        if (!el) return;
+        if (el.classList) {
+            el.classList.add(className);
+            return;
+        }
+        if (!new RegExp('(^|\\s)' + className + '(\\s|$)').test(el.className || '')) {
+            el.className = (el.className ? el.className + ' ' : '') + className;
+        }
+    }
+
+    addClass(main, 'visible');
+    addClass(overlay, 'hidden');
 }
 
 function simplifyLegacyLoadingText() {
