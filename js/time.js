@@ -65,22 +65,17 @@
                 dateEl.textContent = month + day + '日';
             }
 
-            function pad2(n) {
-                n = String(n);
-                return n.length < 2 ? '0' + n : n;
-            }
-
             if (clockEl) {
                 var hours = now.getHours();
-                var minutes = pad2(now.getMinutes());
-                var seconds = pad2(now.getSeconds());
+                var minutes = String(now.getMinutes()).padStart(2, '0');
+                var seconds = String(now.getSeconds()).padStart(2, '0');
 
                 if (config.format === '12h') {
                     var period = hours >= 12 ? 'PM' : 'AM';
                     hours = hours % 12 || 12;
-                    clockEl.textContent = pad2(hours) + ':' + minutes + ':' + seconds + ' ' + period;
+                    clockEl.textContent = String(hours).padStart(2, '0') + ':' + minutes + ':' + seconds + ' ' + period;
                 } else {
-                    clockEl.textContent = pad2(hours) + ':' + minutes + ':' + seconds;
+                    clockEl.textContent = String(hours).padStart(2, '0') + ':' + minutes + ':' + seconds;
                 }
             }
         }
