@@ -5,6 +5,10 @@
 (function () {
     'use strict';
 
+    function isLegacyCompatMode() {
+        return document.documentElement.classList.contains('legacy-compat');
+    }
+
     function initSocialLinks() {
         if (!CONFIG.socialLinks || !CONFIG.socialLinks.links) return;
 
@@ -14,6 +18,7 @@
         var links = CONFIG.socialLinks.links;
         var colorScheme = CONFIG.socialLinks.colorScheme || 'cycle';
         var colors = ['yellow', 'red', 'blue'];
+        var legacyCompatMode = isLegacyCompatMode();
 
         socialContainer.innerHTML = '';
 
@@ -38,10 +43,6 @@
             a.target = isMailto ? '_self' : '_blank';
             a.rel = isMailto ? '' : 'noopener noreferrer';
 
-            var icon = document.createElement('i');
-            icon.className = link.icon;
-            icon.setAttribute('aria-hidden', 'true');
-
             var label = document.createElement('span');
             label.className = 'link-label';
             label.textContent = link.name;
@@ -53,7 +54,13 @@
                 a.className = 'social-link social-link--' + color;
             }
 
-            a.appendChild(icon);
+            if (!legacyCompatMode && link.icon) {
+                var icon = document.createElement('i');
+                icon.className = link.icon;
+                icon.setAttribute('aria-hidden', 'true');
+                a.appendChild(icon);
+            }
+
             a.appendChild(label);
             socialContainer.appendChild(a);
         });
