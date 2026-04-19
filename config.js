@@ -76,6 +76,12 @@ var CONFIG = {
                 color: '#f58f1a'
             },
             {
+                name: 'STATUS',
+                url: 'https://status.wakusei.top/',
+                icon: 'fa-solid fa-arrow-up-right-dots',
+                color: '#caa62e'
+            },
+            {
                 name: 'TESTING',
                 url: 'https://testing.wakusei.top/',
                 icon: 'fa-solid fa-flask',
