@@ -46,10 +46,16 @@
         return NUMBERS[num] || num.toString();
     }
 
+    var timerId = null;
+
     function initTime() {
         var weekdayEl = document.getElementById('weekday');
         var dateEl = document.getElementById('dateDisplay');
         var clockEl = document.getElementById('clock');
+
+        if (timerId !== null) {
+            clearInterval(timerId);
+        }
 
         function updateTime() {
             var now = new Date();
@@ -81,8 +87,16 @@
         }
 
         updateTime();
-        setInterval(updateTime, CONFIG.time.updateInterval || 1000);
+        timerId = setInterval(updateTime, CONFIG.time.updateInterval || 1000);
+    }
+
+    function destroyTime() {
+        if (timerId !== null) {
+            clearInterval(timerId);
+            timerId = null;
+        }
     }
 
     window.initTime = initTime;
+    window.destroyTime = destroyTime;
 })();

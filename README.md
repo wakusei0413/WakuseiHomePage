@@ -2,7 +2,7 @@
 
 一个采用粗放主义（Brutalist）设计风格的个人主页，具有磨砂玻璃效果、动态壁纸轮播、打字机 Slogan 展示等功能。
 
-![版本](https://img.shields.io/badge/version-0.5.0-blue)
+![版本](https://img.shields.io/badge/version-0.5.5-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 本项目在 [LINUX DO](https://linux.do) 社区进行开源推广
@@ -12,7 +12,7 @@
 - 🎨 **粗放主义设计** - 大胆的边框、阴影和几何形状
 - 🖼️ **动态壁纸** - 支持 Pixiv 随机图片和 Picsum 备用源
 - ⌨️ **打字机效果** - 循环展示个性化 Slogan
-- 📱 **响应式布局** - 移动端优化，支持面板滑动切换
+- 📱 **响应式布局** - 移动端优化，移动端仅显示左侧信息面板
 - 🔗 **可配置社交链接** - 通过配置文件轻松添加/修改链接
 - 🎯 **Font Awesome 图标** - 丰富的图标库支持
 - 🔧 **开发工具链** - ESLint + Prettier + 构建脚本
@@ -435,6 +435,14 @@ WakuseiHomePage/
 ---
 
 ## 🔧 更新日志
+
+### v0.5.5
+
+- **📱 移动端布局简化**
+    - 移动端（≤900px）隐藏右侧壁纸面板，仅保留左侧信息面板全幅显示
+    - 移除移动端壁纸切换按钮（`wallpaper-toggle`）和关闭按钮（`close-panel`）
+    - 禁用移动端面板滑入切换逻辑，移除相关事件监听
+    - 桌面端布局不受影响，右侧壁纸面板正常显示
 
 ### v0.5.0
 

@@ -15,38 +15,17 @@
     Logger.log('Slogan 数量:', CONFIG.slogans.list.length);
 })();
 
-function isLegacyCompatMode() {
-    var root = document.documentElement;
-    if (!root) return false;
-    if (root.classList) {
-        return root.classList.contains('legacy-compat');
-    }
-
-    return /(^|\s)legacy-compat(\s|$)/.test(root.className || '');
-}
-
 function revealMainContent() {
     var main = document.querySelector('.container');
     var overlay = document.getElementById('loadingOverlay');
 
-    function addClass(el, className) {
-        if (!el) return;
-        if (el.classList) {
-            el.classList.add(className);
-            return;
-        }
-        if (!new RegExp('(^|\\s)' + className + '(\\s|$)').test(el.className || '')) {
-            el.className = (el.className ? el.className + ' ' : '') + className;
-        }
-    }
-
-    addClass(main, 'visible');
-    addClass(overlay, 'hidden');
+    Utils.addClass(main, 'visible');
+    Utils.addClass(overlay, 'hidden');
 }
 
 function simplifyLegacyLoadingText() {
     var loadingText = document.getElementById('loadingText');
-    if (!isLegacyCompatMode() || !loadingText) return;
+    if (!Utils.isLegacyCompatMode() || !loadingText) return;
 
     var legacyText = loadingText.getAttribute('data-legacy-text');
     if (legacyText) {
@@ -56,7 +35,7 @@ function simplifyLegacyLoadingText() {
 
 // ========== 动态加载 Font Awesome（5秒超时放弃）==========
 (function loadFontAwesome() {
-    if (isLegacyCompatMode()) {
+    if (Utils.isLegacyCompatMode()) {
         Logger.log('[兼容模式] 跳过 Font Awesome');
         return;
     }
@@ -74,21 +53,21 @@ function simplifyLegacyLoadingText() {
     var timer = setTimeout(function () {
         if (!isLoaded) {
             document.head.removeChild(link);
-            console.warn('Font Awesome 加载超时，已放弃加载');
+            Logger.warn('[Font Awesome] 加载超时，已放弃加载');
         }
     }, timeout);
 
     link.onload = function () {
         isLoaded = true;
         clearTimeout(timer);
-        console.log('Font Awesome 加载成功');
+        Logger.log('[Font Awesome] 加载成功');
     };
 
     link.onerror = function () {
         isLoaded = true;
         clearTimeout(timer);
         document.head.removeChild(link);
-        console.warn('Font Awesome 加载失败');
+        Logger.warn('[Font Awesome] 加载失败');
     };
 
     document.head.appendChild(link);
@@ -96,7 +75,7 @@ function simplifyLegacyLoadingText() {
 
 // ========== 壁纸初始化（模块化调用）==========
 (function initWallpaper() {
-    if (isLegacyCompatMode()) {
+    if (Utils.isLegacyCompatMode()) {
         Logger.log('[兼容模式] 跳过壁纸模块');
         revealMainContent();
         return;
@@ -128,7 +107,7 @@ function simplifyLegacyLoadingText() {
 
 // ========== 滚动触发动画 ==========
 (function initScrollAnimations() {
-    if (isLegacyCompatMode()) {
+    if (Utils.isLegacyCompatMode()) {
         Logger.log('[兼容模式] 跳过滚动动画');
         return;
     }
@@ -169,7 +148,7 @@ function simplifyLegacyLoadingText() {
 
 // ========== 移动端粘性头像 ==========
 (function initMobileStickyAvatar() {
-    if (isLegacyCompatMode()) {
+    if (Utils.isLegacyCompatMode()) {
         Logger.log('[兼容模式] 跳过移动端粘性头像');
         return;
     }
@@ -180,13 +159,9 @@ function simplifyLegacyLoadingText() {
 
     if (!container || !avatarBox) return;
 
-    function isMobile() {
-        return window.innerWidth <= 900;
-    }
-
     function handleScroll() {
-        if (!isMobile()) return;
-        var scrollContainer = isMobile() ? container : leftPanel;
+        if (!Utils.isMobile()) return;
+        var scrollContainer = Utils.isMobile() ? container : leftPanel;
         var scrolled = scrollContainer.scrollTop > 50;
         if (scrolled) {
             avatarBox.classList.add('scrolled');
@@ -196,8 +171,8 @@ function simplifyLegacyLoadingText() {
     }
 
     avatarBox.addEventListener('click', function () {
-        if (!isMobile()) return;
-        var scrollContainer = isMobile() ? container : leftPanel;
+        if (!Utils.isMobile()) return;
+        var scrollContainer = Utils.isMobile() ? container : leftPanel;
         if (scrollContainer.scrollTop > 50) {
             if ('scrollBehavior' in document.documentElement.style) {
                 scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
@@ -213,7 +188,7 @@ function simplifyLegacyLoadingText() {
     window.addEventListener(
         'resize',
         Utils.debounce(function () {
-            if (!isMobile()) {
+            if (!Utils.isMobile()) {
                 avatarBox.classList.remove('scrolled');
             }
         }, 150)
@@ -222,57 +197,14 @@ function simplifyLegacyLoadingText() {
     Logger.log('[粘性头像] 已初始化');
 })();
 
-// ========== 手机端壁纸面板切换 ==========
+// ========== 手机端壁纸面板切换（已禁用，移动端不显示右侧面板） ==========
 (function initMobileWallpaperToggle() {
-    if (isLegacyCompatMode()) {
+    if (Utils.isLegacyCompatMode()) {
         Logger.log('[兼容模式] 跳过移动端壁纸切换');
         return;
     }
 
-    var toggleBtn = document.getElementById('wallpaperToggle');
-    var closeBtn = document.getElementById('closePanel');
-    var rightPanel = document.querySelector('.right-panel');
-
-    if (!toggleBtn || !closeBtn || !rightPanel) return;
-
-    function isMobile() {
-        return window.innerWidth <= 900;
-    }
-
-    function showPanel() {
-        rightPanel.classList.add('active');
-        toggleBtn.classList.add('active');
-        closeBtn.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function hidePanel() {
-        rightPanel.classList.remove('active');
-        toggleBtn.classList.remove('active');
-        closeBtn.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    toggleBtn.addEventListener('click', function () {
-        if (rightPanel.classList.contains('active')) {
-            hidePanel();
-        } else {
-            showPanel();
-        }
-    });
-
-    closeBtn.addEventListener('click', hidePanel);
-
-    window.addEventListener(
-        'resize',
-        Utils.debounce(function () {
-            if (!isMobile()) {
-                hidePanel();
-            }
-        }, 150)
-    );
-
-    Logger.log('[壁纸面板] 已初始化');
+    Logger.log('[壁纸面板] 移动端右侧面板已禁用，跳过切换初始化');
 })();
 
 // ========== 初始化完成 ==========
@@ -281,7 +213,7 @@ function simplifyLegacyLoadingText() {
     initSocialLinks();
     applyProfileConfig();
 
-    if (isLegacyCompatMode()) {
+    if (Utils.isLegacyCompatMode()) {
         revealMainContent();
         Logger.log('[兼容模式] 仅保留基础资料与社交链接');
     } else {

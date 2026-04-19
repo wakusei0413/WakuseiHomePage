@@ -868,30 +868,8 @@ body {
         box-shadow: 8px 8px 0 var(--fg);
     }
 
-    /* 右侧面板：默认隐藏，全屏覆盖 */
     .right-panel {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: var(--z-content);
-        display: flex;
-        background-color: transparent;
-        flex-direction: column;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateX(100%);
-        transition:
-            opacity 0.3s ease-out,
-            visibility 0.3s ease-out,
-            transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .right-panel.active {
-        opacity: 1;
-        visibility: visible;
-        transform: translateX(0);
+        display: none;
     }
 
     .social-links {
@@ -1022,10 +1000,6 @@ body {
     border: 0;
 }
 
-/* 响应式调整 */
-@media (max-width: 600px) {
-}
-
 /* ===== 手机端壁纸切换按钮 ===== */
 .wallpaper-toggle {
     position: fixed;
@@ -1074,19 +1048,16 @@ body {
     background: var(--accent-yellow, #ffe600);
 }
 
-/* 手机端显示按钮 */
+/* 手机端隐藏壁纸切换按钮 */
 @media (max-width: 900px) {
     .wallpaper-toggle {
-        display: flex;
+        display: none !important;
     }
 }
 
 @media (max-width: 600px) {
     .wallpaper-toggle {
-        width: 48px;
-        height: 48px;
-        bottom: 75px;
-        right: 15px;
+        display: none !important;
     }
 }
 
@@ -1130,10 +1101,7 @@ body {
 
 @media (max-width: 600px) {
     .close-panel {
-        width: 48px;
-        height: 48px;
-        top: 15px;
-        right: 15px;
+        display: none !important;
     }
 }
 

@@ -5,16 +5,6 @@
 (function () {
     'use strict';
 
-    function isLegacyCompatMode() {
-        var root = document.documentElement;
-        if (!root) return false;
-        if (root.classList) {
-            return root.classList.contains('legacy-compat');
-        }
-
-        return /(^|\s)legacy-compat(\s|$)/.test(root.className || '');
-    }
-
     function initSocialLinks() {
         if (!CONFIG.socialLinks || !CONFIG.socialLinks.links) return;
 
@@ -24,7 +14,7 @@
         var links = CONFIG.socialLinks.links;
         var colorScheme = CONFIG.socialLinks.colorScheme || 'cycle';
         var colors = ['yellow', 'red', 'blue'];
-        var legacyCompatMode = isLegacyCompatMode();
+        var legacyCompatMode = Utils.isLegacyCompatMode();
 
         socialContainer.innerHTML = '';
 

@@ -22,6 +22,12 @@
     "CONFIG": "readonly",
     "WallpaperScroller": "readonly",
     "Logger": "readonly",
-    "Utils": "readonly"
+    "Utils": "readonly",
+    "initTypewriter": "readonly",
+    "destroyTypewriter": "readonly",
+    "initTime": "readonly",
+    "destroyTime": "readonly",
+    "initSocialLinks": "readonly",
+    "applyProfileConfig": "readonly"
   }
 }

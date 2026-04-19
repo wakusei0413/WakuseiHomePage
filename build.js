@@ -7,6 +7,23 @@ const path = require('path');
 
 const DIST = path.join(__dirname, 'dist');
 
+function clearDir(dir) {
+    if (!fs.existsSync(dir)) {
+        return;
+    }
+
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+        const entryPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            clearDir(entryPath);
+            fs.rmdirSync(entryPath);
+        } else {
+            fs.unlinkSync(entryPath);
+        }
+    }
+}
+
 function ensureDir(dir) {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -31,6 +48,7 @@ async function build() {
     console.log('Building WakuseiHomePage...');
 
     ensureDir(DIST);
+    clearDir(DIST);
 
     // Copy static assets
     copyDir(path.join(__dirname, 'res'), path.join(DIST, 'res'));

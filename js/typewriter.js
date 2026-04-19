@@ -5,6 +5,8 @@
 (function () {
     'use strict';
 
+    var pendingTimers = [];
+
     function initTypewriter() {
         var textEl = document.getElementById('typewriterText');
         var cursor = document.getElementById('cursor');
@@ -48,7 +50,7 @@
                 if (i < text.length) {
                     textEl.textContent += text.charAt(i);
                     i++;
-                    setTimeout(type, typeSpeed);
+                    pendingTimers.push(setTimeout(type, typeSpeed));
                 } else {
                     if (callback) callback();
                 }
@@ -63,7 +65,7 @@
                 if (i > 0) {
                     textEl.textContent = currentText.substring(0, i - 1);
                     i--;
-                    setTimeout(clear, 20);
+                    pendingTimers.push(setTimeout(clear, 20));
                 } else {
                     if (callback) callback();
                 }
@@ -77,11 +79,13 @@
 
             typeText(slogan, function () {
                 if (loop) {
-                    setTimeout(function () {
-                        clearText(function () {
-                            setTimeout(runTypewriter, 300);
-                        });
-                    }, pauseDuration);
+                    pendingTimers.push(
+                        setTimeout(function () {
+                            clearText(function () {
+                                pendingTimers.push(setTimeout(runTypewriter, 300));
+                            });
+                        }, pauseDuration)
+                    );
                 } else {
                     if (cursor) {
                         cursor.style.animation = 'blink 1.5s step-end infinite';
@@ -91,8 +95,16 @@
             });
         }
 
-        setTimeout(runTypewriter, typeSpeed * 5);
+        pendingTimers.push(setTimeout(runTypewriter, typeSpeed * 5));
+    }
+
+    function destroyTypewriter() {
+        for (var i = 0; i < pendingTimers.length; i++) {
+            clearTimeout(pendingTimers[i]);
+        }
+        pendingTimers = [];
     }
 
     window.initTypewriter = initTypewriter;
+    window.destroyTypewriter = destroyTypewriter;
 })();
