@@ -7,25 +7,25 @@
 
 // ========== 配置验证 ==========
 (function () {
-    if (typeof CONFIG === 'undefined') {
+    if (typeof App === 'undefined' || !App.config) {
         console.error('配置文件未加载！请确保 config.js 在 main.js 之前引入');
         return;
     }
-    Logger.log('%c配置已加载 \u2713', 'color: #FFE600; font-size: 12px;');
-    Logger.log('Slogan 数量:', CONFIG.slogans.list.length);
+    App.logger.log('%c配置已加载 \u2713', 'color: #FFE600; font-size: 12px;');
+    App.logger.log('Slogan 数量:', App.config.slogans.list.length);
 })();
 
 function revealMainContent() {
     var main = document.querySelector('.container');
     var overlay = document.getElementById('loadingOverlay');
 
-    Utils.addClass(main, 'visible');
-    Utils.addClass(overlay, 'hidden');
+    App.utils.addClass(main, 'visible');
+    App.utils.addClass(overlay, 'hidden');
 }
 
 function simplifyLegacyLoadingText() {
     var loadingText = document.getElementById('loadingText');
-    if (!Utils.isLegacyCompatMode() || !loadingText) return;
+    if (!App.utils.isLegacyCompatMode() || !loadingText) return;
 
     var legacyText = loadingText.getAttribute('data-legacy-text');
     if (legacyText) {
@@ -35,8 +35,8 @@ function simplifyLegacyLoadingText() {
 
 // ========== 动态加载 Font Awesome（5秒超时放弃）==========
 (function loadFontAwesome() {
-    if (Utils.isLegacyCompatMode()) {
-        Logger.log('[兼容模式] 跳过 Font Awesome');
+    if (App.utils.isLegacyCompatMode()) {
+        App.logger.log('[兼容模式] 跳过 Font Awesome');
         return;
     }
 
@@ -53,21 +53,21 @@ function simplifyLegacyLoadingText() {
     var timer = setTimeout(function () {
         if (!isLoaded) {
             document.head.removeChild(link);
-            Logger.warn('[Font Awesome] 加载超时，已放弃加载');
+            App.logger.warn('[Font Awesome] 加载超时，已放弃加载');
         }
     }, timeout);
 
     link.onload = function () {
         isLoaded = true;
         clearTimeout(timer);
-        Logger.log('[Font Awesome] 加载成功');
+        App.logger.log('[Font Awesome] 加载成功');
     };
 
     link.onerror = function () {
         isLoaded = true;
         clearTimeout(timer);
         document.head.removeChild(link);
-        Logger.warn('[Font Awesome] 加载失败');
+        App.logger.warn('[Font Awesome] 加载失败');
     };
 
     document.head.appendChild(link);
@@ -75,30 +75,30 @@ function simplifyLegacyLoadingText() {
 
 // ========== 壁纸初始化（模块化调用）==========
 (function initWallpaper() {
-    if (Utils.isLegacyCompatMode()) {
-        Logger.log('[兼容模式] 跳过壁纸模块');
+    if (App.utils.isLegacyCompatMode()) {
+        App.logger.log('[兼容模式] 跳过壁纸模块');
         revealMainContent();
         return;
     }
 
-    if (typeof WallpaperScroller === 'undefined') {
+    if (typeof App.wallpaper === 'undefined') {
         console.error('[壁纸] WallpaperScroller 模块未加载');
         revealMainContent();
         return;
     }
 
     try {
-        var wallpaper = new WallpaperScroller(
+        var wallpaper = new App.wallpaper(
             'wallpaperScrollArea',
-            CONFIG.wallpaper,
-            CONFIG.loading,
+            App.config.wallpaper,
+            App.config.loading,
             function onWallpaperReady() {
                 revealMainContent();
             }
         );
 
         wallpaper.init();
-        Logger.log('[壁纸] 模块已初始化');
+        App.logger.log('[壁纸] 模块已初始化');
     } catch (error) {
         console.error('[壁纸] 初始化失败', error);
         revealMainContent();
@@ -107,12 +107,12 @@ function simplifyLegacyLoadingText() {
 
 // ========== 滚动触发动画 ==========
 (function initScrollAnimations() {
-    if (Utils.isLegacyCompatMode()) {
-        Logger.log('[兼容模式] 跳过滚动动画');
+    if (App.utils.isLegacyCompatMode()) {
+        App.logger.log('[兼容模式] 跳过滚动动画');
         return;
     }
 
-    var config = CONFIG.effects && CONFIG.effects.scrollReveal;
+    var config = App.config.effects && App.config.effects.scrollReveal;
     if (!config || !config.enabled) return;
 
     var targetSelectors = ['.social-link', '.info-panel', '.wallpaper-info', '.avatar-box', '.name', '.status-bar'];
@@ -143,13 +143,13 @@ function simplifyLegacyLoadingText() {
     targets.forEach(function (el) {
         observer.observe(el);
     });
-    Logger.log('[滚动动画] 已初始化，监听元素:', targets.length);
+    App.logger.log('[滚动动画] 已初始化，监听元素:', targets.length);
 })();
 
 // ========== 移动端粘性头像 ==========
 (function initMobileStickyAvatar() {
-    if (Utils.isLegacyCompatMode()) {
-        Logger.log('[兼容模式] 跳过移动端粘性头像');
+    if (App.utils.isLegacyCompatMode()) {
+        App.logger.log('[兼容模式] 跳过移动端粘性头像');
         return;
     }
 
@@ -160,8 +160,8 @@ function simplifyLegacyLoadingText() {
     if (!container || !avatarBox) return;
 
     function handleScroll() {
-        if (!Utils.isMobile()) return;
-        var scrollContainer = Utils.isMobile() ? container : leftPanel;
+        if (!App.utils.isMobile()) return;
+        var scrollContainer = App.utils.isMobile() ? container : leftPanel;
         var scrolled = scrollContainer.scrollTop > 50;
         if (scrolled) {
             avatarBox.classList.add('scrolled');
@@ -171,8 +171,8 @@ function simplifyLegacyLoadingText() {
     }
 
     avatarBox.addEventListener('click', function () {
-        if (!Utils.isMobile()) return;
-        var scrollContainer = Utils.isMobile() ? container : leftPanel;
+        if (!App.utils.isMobile()) return;
+        var scrollContainer = App.utils.isMobile() ? container : leftPanel;
         if (scrollContainer.scrollTop > 50) {
             if ('scrollBehavior' in document.documentElement.style) {
                 scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
@@ -187,40 +187,40 @@ function simplifyLegacyLoadingText() {
 
     window.addEventListener(
         'resize',
-        Utils.debounce(function () {
-            if (!Utils.isMobile()) {
+        App.utils.debounce(function () {
+            if (!App.utils.isMobile()) {
                 avatarBox.classList.remove('scrolled');
             }
         }, 150)
     );
 
-    Logger.log('[粘性头像] 已初始化');
+    App.logger.log('[粘性头像] 已初始化');
 })();
 
 // ========== 手机端壁纸面板切换（已禁用，移动端不显示右侧面板） ==========
 (function initMobileWallpaperToggle() {
-    if (Utils.isLegacyCompatMode()) {
-        Logger.log('[兼容模式] 跳过移动端壁纸切换');
+    if (App.utils.isLegacyCompatMode()) {
+        App.logger.log('[兼容模式] 跳过移动端壁纸切换');
         return;
     }
 
-    Logger.log('[壁纸面板] 移动端右侧面板已禁用，跳过切换初始化');
+    App.logger.log('[壁纸面板] 移动端右侧面板已禁用，跳过切换初始化');
 })();
 
 // ========== 初始化完成 ==========
 (function initComplete() {
     simplifyLegacyLoadingText();
-    initSocialLinks();
-    applyProfileConfig();
+    App.social.initLinks();
+    App.social.applyProfile();
 
-    if (Utils.isLegacyCompatMode()) {
+    if (App.utils.isLegacyCompatMode()) {
         revealMainContent();
-        Logger.log('[兼容模式] 仅保留基础资料与社交链接');
+        App.logger.log('[兼容模式] 仅保留基础资料与社交链接');
     } else {
-        initTypewriter();
-        initTime();
+        App.typewriter.init();
+        App.time.init();
     }
 
-    Logger.log('%c个人主页脚本已加载', 'color: #FFE600; font-size: 12px;');
-    Logger.log('功能：打字机效果 (Slogan 循环) | 时间显示 | 壁纸轮播');
+    App.logger.log('%c个人主页脚本已加载', 'color: #FFE600; font-size: 12px;');
+    App.logger.log('功能：打字机效果 (Slogan 循环) | 时间显示 | 壁纸轮播');
 })();

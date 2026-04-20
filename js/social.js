@@ -6,15 +6,15 @@
     'use strict';
 
     function initSocialLinks() {
-        if (!CONFIG.socialLinks || !CONFIG.socialLinks.links) return;
+        if (!App.config.socialLinks || !App.config.socialLinks.links) return;
 
         var socialContainer = document.getElementById('socialLinks');
         if (!socialContainer) return;
 
-        var links = CONFIG.socialLinks.links;
-        var colorScheme = CONFIG.socialLinks.colorScheme || 'cycle';
+        var links = App.config.socialLinks.links;
+        var colorScheme = App.config.socialLinks.colorScheme || 'cycle';
         var cycleColors = ['#ffe600', '#ff3e3e', '#3e59ff'];
-        var legacyCompatMode = Utils.isLegacyCompatMode();
+        var legacyCompatMode = App.utils.isLegacyCompatMode();
 
         socialContainer.innerHTML = '';
 
@@ -57,11 +57,11 @@
             socialContainer.appendChild(a);
         });
 
-        Logger.log('[配置] 已生成 ' + links.length + ' 个社交链接');
+        App.logger.log('[配置] 已生成 ' + links.length + ' 个社交链接');
     }
 
     function applyProfileConfig() {
-        var config = CONFIG.profile;
+        var config = App.config.profile;
 
         var nameEl = document.querySelector('.name');
         if (nameEl && config.name) {
@@ -83,13 +83,13 @@
         }
 
         var footerTextEl = document.getElementById('footerText');
-        if (footerTextEl && CONFIG.footer) {
-            var text = CONFIG.footer.text || 'BUILT WITH PASSION';
+        if (footerTextEl && App.config.footer) {
+            var text = App.config.footer.text || 'BUILT WITH PASSION';
             var year = new Date().getFullYear();
             footerTextEl.textContent = text + ' \u2022 ' + year;
         }
 
-        Logger.log('[配置] 个人信息已应用');
+        App.logger.log('[配置] 个人信息已应用');
     }
 
     function detectObjectFit() {
@@ -100,6 +100,6 @@
 
     detectObjectFit();
 
-    window.initSocialLinks = initSocialLinks;
-    window.applyProfileConfig = applyProfileConfig;
+    window.App = window.App || {};
+    window.App.social = { initLinks: initSocialLinks, applyProfile: applyProfileConfig };
 })();

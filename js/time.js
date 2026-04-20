@@ -59,7 +59,7 @@
 
         function updateTime() {
             var now = new Date();
-            var config = CONFIG.time;
+            var config = App.config.time;
 
             if (weekdayEl && config.showWeekday !== false) {
                 weekdayEl.textContent = WEEKDAYS[now.getDay()];
@@ -87,7 +87,7 @@
         }
 
         updateTime();
-        timerId = setInterval(updateTime, CONFIG.time.updateInterval || 1000);
+        timerId = setInterval(updateTime, App.config.time.updateInterval || 1000);
     }
 
     function destroyTime() {
@@ -97,6 +97,6 @@
         }
     }
 
-    window.initTime = initTime;
-    window.destroyTime = destroyTime;
+    window.App = window.App || {};
+    window.App.time = { init: initTime, destroy: destroyTime };
 })();

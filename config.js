@@ -229,3 +229,8 @@ var CONFIG = {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = CONFIG;
 }
+
+if (typeof window.App === 'undefined') {
+    window.App = {};
+}
+window.App.config = CONFIG;

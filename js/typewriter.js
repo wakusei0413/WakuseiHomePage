@@ -14,18 +14,18 @@
 
         if (!textEl) return;
 
-        var slogans = CONFIG.slogans.list;
-        var typeSpeed = CONFIG.slogans.typeSpeed || 60;
-        var pauseDuration = CONFIG.slogans.pauseDuration || 5000;
-        var loop = CONFIG.slogans.loop !== false;
-        var mode = CONFIG.slogans.mode || 'random';
+        var slogans = App.config.slogans.list;
+        var typeSpeed = App.config.slogans.typeSpeed || 60;
+        var pauseDuration = App.config.slogans.pauseDuration || 5000;
+        var loop = App.config.slogans.loop !== false;
+        var mode = App.config.slogans.mode || 'random';
 
-        var currentIndex = 0;
+        var currentIndex = -1;
 
         if (container) container.style.minHeight = '100px';
 
-        if (cursor && CONFIG.animation) {
-            if (CONFIG.animation.cursorStyle === 'line') {
+        if (cursor && App.config.animation) {
+            if (App.config.animation.cursorStyle === 'line') {
                 cursor.textContent = '|';
             }
         }
@@ -75,7 +75,10 @@
 
         function runTypewriter() {
             var slogan = getNextSlogan();
-            Logger.log('[Slogan ' + (currentIndex + 1) + '/' + slogans.length + ']:', slogan.substring(0, 30) + '...');
+            App.logger.log(
+                '[Slogan ' + (currentIndex + 1) + '/' + slogans.length + ']:',
+                slogan.substring(0, 30) + '...'
+            );
 
             typeText(slogan, function () {
                 if (loop) {
@@ -105,6 +108,6 @@
         pendingTimers = [];
     }
 
-    window.initTypewriter = initTypewriter;
-    window.destroyTypewriter = destroyTypewriter;
+    window.App = window.App || {};
+    window.App.typewriter = { init: initTypewriter, destroy: destroyTypewriter };
 })();

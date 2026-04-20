@@ -41,7 +41,8 @@
         }
     }
 
-    window.Utils = {
+    window.App = window.App || {};
+    window.App.utils = {
         debounce: debounce,
         isLegacyCompatMode: isLegacyCompatMode,
         isMobile: isMobile,

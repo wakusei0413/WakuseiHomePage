@@ -11,7 +11,7 @@
     'use strict';
 
     function isDebugEnabled() {
-        return typeof CONFIG !== 'undefined' && CONFIG.debug && CONFIG.debug.consoleLog;
+        return typeof App !== 'undefined' && App.config && App.config.debug && App.config.debug.consoleLog;
     }
 
     var Logger = {
@@ -30,5 +30,6 @@
         }
     };
 
-    window.Logger = Logger;
+    window.App = window.App || {};
+    window.App.logger = Logger;
 })();

@@ -26,7 +26,7 @@
         this.apis =
             this.wallpaperConfig.apis ||
             (function () {
-                Logger.warn('[壁纸] 未配置壁纸 API，壁纸功能不可用');
+                App.logger.warn('[壁纸] 未配置壁纸 API，壁纸功能不可用');
                 return [];
             })();
         this.raceTimeout = this.wallpaperConfig.raceTimeout || 10000;
@@ -46,12 +46,12 @@
 
         this.container = document.getElementById(this.containerId);
         if (!this.container) {
-            Logger.error('[壁纸] 容器元素未找到:', this.containerId);
+            App.logger.error('[壁纸] 容器元素未找到:', this.containerId);
             return;
         }
 
         if (!this.infiniteScrollEnabled) {
-            Logger.log('[壁纸] 无限滚动已禁用');
+            App.logger.log('[壁纸] 无限滚动已禁用');
             return;
         }
 
@@ -64,7 +64,7 @@
                 self._startAutoScroll();
             })
             .catch(function (err) {
-                Logger.error('[壁纸] 初始化失败:', err);
+                App.logger.error('[壁纸] 初始化失败:', err);
                 self.onReady();
             });
     };
@@ -219,7 +219,7 @@
             attempt++;
 
             return self._raceLoadImage(index).catch(function (err) {
-                Logger.log('[壁纸] 加载中... (' + attempt + '/' + self.maxRetries + ')');
+                App.logger.log('[壁纸] 加载中... (' + attempt + '/' + self.maxRetries + ')');
                 if (attempt >= self.maxRetries) {
                     throw err;
                 }
@@ -252,7 +252,7 @@
             })
             .catch(function () {
                 delete placeholder.dataset.loading;
-                Logger.error('[壁纸] 懒加载失败:', placeholder.dataset.index);
+                App.logger.error('[壁纸] 懒加载失败:', placeholder.dataset.index);
             });
     };
 
@@ -354,7 +354,7 @@
                         updateProgress();
                     })
                     .catch(function () {
-                        Logger.error('[壁纸] 第 ' + (index + 1) + ' 张加载失败');
+                        App.logger.error('[壁纸] 第 ' + (index + 1) + ' 张加载失败');
                         loadedCount++;
                         updateProgress();
                     });
@@ -371,5 +371,6 @@
         });
     };
 
-    window.WallpaperScroller = WallpaperScroller;
+    window.App = window.App || {};
+    window.App.wallpaper = WallpaperScroller;
 })();
