@@ -607,58 +607,19 @@ body {
     }
 }
 
-.social-link--yellow {
-    box-shadow: 6px 6px 0 #ffe600;
-    box-shadow: var(--shadow-offset-sm, 6px) var(--shadow-offset-sm, 6px) 0 var(--accent-yellow, #ffe600);
-}
-
-.social-link--yellow:hover {
-    transform: translate(-4px, -4px);
-    box-shadow: 10px 10px 0 #ffe600;
-    box-shadow: 10px 10px 0 var(--accent-yellow, #ffe600);
-    background-color: #ffe600;
-    background-color: var(--accent-yellow, #ffe600);
-}
-
-.social-link--red {
-    box-shadow: 6px 6px 0 #ff3e3e;
-    box-shadow: var(--shadow-offset-sm, 6px) var(--shadow-offset-sm, 6px) 0 var(--accent-red, #ff3e3e);
-}
-
-.social-link--red:hover {
-    transform: translate(-4px, -4px);
-    box-shadow: 10px 10px 0 #ff3e3e;
-    box-shadow: 10px 10px 0 var(--accent-red, #ff3e3e);
-    background-color: #ff3e3e;
-    background-color: var(--accent-red, #ff3e3e);
-}
-
-.social-link--blue {
-    box-shadow: 6px 6px 0 #3e59ff;
-    box-shadow: var(--shadow-offset-sm, 6px) var(--shadow-offset-sm, 6px) 0 var(--accent-blue, #3e59ff);
-}
-
-.social-link--blue:hover {
-    transform: translate(-4px, -4px);
-    box-shadow: 10px 10px 0 #3e59ff;
-    box-shadow: 10px 10px 0 var(--accent-blue, #3e59ff);
-    background-color: #3e59ff;
-    background-color: var(--accent-blue, #3e59ff);
-}
-
-/* 自定义颜色链接（HEX 颜色） */
+/* 社交链接颜色（统一使用 --custom-color） */
 .social-link--custom {
-    --custom-color: #ff6b6b;
-    box-shadow: 6px 6px 0 #ff6b6b;
-    box-shadow: var(--shadow-offset-sm, 6px) var(--shadow-offset-sm, 6px) 0 var(--custom-color, #ff6b6b);
+    --custom-color: #ffe600;
+    box-shadow: 6px 6px 0 #ffe600;
+    box-shadow: var(--shadow-offset-sm, 6px) var(--shadow-offset-sm, 6px) 0 var(--custom-color, #ffe600);
 }
 
 .social-link--custom:hover {
     transform: translate(-4px, -4px);
-    box-shadow: 10px 10px 0 #ff6b6b;
-    box-shadow: 10px 10px 0 var(--custom-color, #ff6b6b);
-    background-color: #ff6b6b;
-    background-color: var(--custom-color, #ff6b6b);
+    box-shadow: 10px 10px 0 #ffe600;
+    box-shadow: 10px 10px 0 var(--custom-color, #ffe600);
+    background-color: #ffe600;
+    background-color: var(--custom-color, #ffe600);
 }
 
 .link-label {

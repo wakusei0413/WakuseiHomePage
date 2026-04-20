@@ -127,7 +127,7 @@ profile: {
 ```javascript
 socialLinks: {
     // 颜色分配策略
-    // 'cycle' - 循环使用 yellow → red → blue
+    // 'cycle' - 循环使用 #ffe600 → #ff3e3e → #3e59ff
     // 'same'  - 全部使用同一种颜色
     colorScheme: 'cycle',
 
@@ -137,13 +137,13 @@ socialLinks: {
             name: 'GITHUB',                    // 按钮显示文字
             url: 'https://github.com/xxx',     // 跳转链接
             icon: 'fab fa-github',             // Font Awesome 图标类
-            color: 'yellow'                    // 颜色（可选）
+            color: '#ffe600'                    // HEX 颜色
         },
         {
             name: 'BILIBILI',
             url: 'https://space.bilibili.com/xxx',
             icon: 'fab fa-bilibili',
-            color: '#FF6B6B'                   // 支持自定义 HEX 颜色
+            color: '#FF6B6B'                   // HEX 颜色
         },
         // 添加更多链接...
     ]
@@ -157,26 +157,23 @@ socialLinks: {
 | `name`  | string | ✅   | 按钮上显示的文字，如 `'GITHUB'`、`'哔哩哔哩'`              |
 | `url`   | string | ✅   | 点击跳转的链接，支持 `https://` 或 `mailto:`               |
 | `icon`  | string | ✅   | Font Awesome 图标类，如 `fab fa-github`、`fas fa-envelope` |
-| `color` | string | ❌   | 按钮颜色，支持预设值或 HEX 格式                            |
+| `color` | string | ❌   | 按钮 HEX 颜色，如 `'#ffe600'`、`'#ff3e3e'`、`'#3e59ff'`      |
 
-#### 颜色配置方式
+#### 颜色配置
 
-**方式一：使用预设颜色（推荐）**
-
-```javascript
-color: 'yellow'; // 黄色边框和阴影
-color: 'red'; // 红色边框和阴影
-color: 'blue'; // 蓝色边框和阴影
-```
-
-**方式二：使用自定义 HEX 颜色**
+所有颜色均使用 HEX 格式，确保精准可控：
 
 ```javascript
+color: '#ffe600'; // 主题黄
+color: '#ff3e3e'; // 主题红
+color: '#3e59ff'; // 主题蓝
 color: '#FF6B6B'; // 珊瑚红
 color: '#4ECDC4'; // 青绿色
 color: '#A8E6CF'; // 薄荷绿
 color: '#FFD93D'; // 明黄色
 ```
+
+不设置 `color` 时，将按 `colorScheme` 策略自动循环分配 `#ffe600 → #ff3e3e → #3e59ff`。
 
 #### 常用 Font Awesome 图标参考
 
@@ -211,7 +208,7 @@ links: [
         name: '个人博客',
         url: 'https://myblog.com',
         icon: 'fas fa-blog',
-        color: 'yellow'
+        color: '#ffe600'
     }
 ];
 ```

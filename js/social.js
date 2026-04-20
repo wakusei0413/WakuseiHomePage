@@ -13,22 +13,19 @@
 
         var links = CONFIG.socialLinks.links;
         var colorScheme = CONFIG.socialLinks.colorScheme || 'cycle';
-        var colors = ['yellow', 'red', 'blue'];
+        var cycleColors = ['#ffe600', '#ff3e3e', '#3e59ff'];
         var legacyCompatMode = Utils.isLegacyCompatMode();
 
         socialContainer.innerHTML = '';
 
         links.forEach(function (link, index) {
             var color = link.color;
-            var isHexColor = false;
 
-            if (color && color.indexOf('#') === 0) {
-                isHexColor = true;
-            } else if (!color) {
+            if (!color) {
                 if (colorScheme === 'same') {
-                    color = colors[0];
+                    color = cycleColors[0];
                 } else {
-                    color = colors[index % colors.length];
+                    color = cycleColors[index % cycleColors.length];
                 }
             }
 
@@ -39,19 +36,15 @@
             a.target = isMailto ? '_self' : '_blank';
             a.rel = isMailto ? '' : 'noopener noreferrer';
 
+            a.className = 'social-link social-link--custom';
+            a.style.setProperty('--custom-color', color);
+            if (legacyCompatMode) {
+                a.style.color = color;
+            }
+
             var label = document.createElement('span');
             label.className = 'link-label';
             label.textContent = link.name;
-
-            if (isHexColor) {
-                a.className = 'social-link social-link--custom';
-                a.style.setProperty('--custom-color', color);
-                if (legacyCompatMode) {
-                    a.style.color = color;
-                }
-            } else {
-                a.className = 'social-link social-link--' + color;
-            }
 
             if (!legacyCompatMode && link.icon) {
                 var icon = document.createElement('i');

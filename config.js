@@ -39,7 +39,7 @@ var CONFIG = {
     // 社交链接配置
     // ============================================================
     socialLinks: {
-        // 颜色分配策略: 'cycle' (循环 yellow→red→blue) | 'same' (全部使用同色系)
+        // 颜色分配策略: 'cycle' (循环 #ffe600→#ff3e3e→#3e59ff) | 'same' (全部使用同色系)
         // 如果某个链接设置了 color 属性，则优先使用该颜色
         colorScheme: 'cycle',
 
@@ -49,19 +49,19 @@ var CONFIG = {
                 name: 'GITHUB',
                 url: 'https://github.com/wakusei0413',
                 icon: 'fab fa-github', // Font Awesome 图标类
-                color: 'yellow' // 可选：预设值 'yellow' | 'red' | 'blue'，或 HEX 格式如 '#FF6B6B'
+                color: '#ffe600' // HEX 格式颜色
             },
-            //{
-            //  name: 'TWITTER',
-            //url: 'https://x.com/ChinaMilBugle',
-            //icon: 'fab fa-x-twitter',
-            // 不设置 color，将按 colorScheme 自动分配
-            //},
+            {
+                name: 'Linux.Do',
+                url: 'https://linux.do/u/wakusei/summary',
+                icon: 'fa-solid fa-bars-staggered',
+                color: '#f2411d'
+            },
             {
                 name: 'EMAIL',
                 url: 'mailto:wakusei0413@outlook.com',
                 icon: 'fas fa-envelope',
-                color: 'blue'
+                color: '#3e59ff'
             },
             {
                 name: 'BILIBILI',
