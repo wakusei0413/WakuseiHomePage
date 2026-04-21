@@ -2,112 +2,97 @@
  * 打字机效果模块
  * 功能：循环展示 Slogan，支持随机/顺序模式
  */
-(function () {
-    'use strict';
 
-    var pendingTimers = [];
+import { CONFIG } from '../config.js';
+import { logger } from './logger.js';
+import { createSloganSelector } from './slogan-selector.js';
 
-    function initTypewriter() {
-        var textEl = document.getElementById('typewriterText');
-        var cursor = document.getElementById('cursor');
-        var container = document.getElementById('bioContainer');
+let pendingTimers = [];
 
-        if (!textEl) return;
+function initTypewriter() {
+    const textEl = document.getElementById('typewriterText');
+    const cursor = document.getElementById('cursor');
+    const container = document.getElementById('bioContainer');
 
-        var slogans = App.config.slogans.list;
-        var typeSpeed = App.config.slogans.typeSpeed || 60;
-        var pauseDuration = App.config.slogans.pauseDuration || 5000;
-        var loop = App.config.slogans.loop !== false;
-        var mode = App.config.slogans.mode || 'random';
+    if (!textEl) return;
 
-        var currentIndex = -1;
+    const slogans = CONFIG.slogans.list;
+    const typeSpeed = CONFIG.slogans.typeSpeed || 60;
+    const pauseDuration = CONFIG.slogans.pauseDuration || 5000;
+    const loop = CONFIG.slogans.loop !== false;
+    const mode = CONFIG.slogans.mode || 'random';
 
-        if (container) container.style.minHeight = '100px';
+    const selector = createSloganSelector(mode, slogans);
 
-        if (cursor && App.config.animation) {
-            if (App.config.animation.cursorStyle === 'line') {
-                cursor.textContent = '|';
-            }
+    if (container) container.style.minHeight = '100px';
+
+    if (cursor && CONFIG.animation) {
+        if (CONFIG.animation.cursorStyle === 'line') {
+            cursor.textContent = '|';
         }
+    }
 
-        function getNextSlogan() {
-            if (mode === 'random') {
-                var newIndex;
-                do {
-                    newIndex = Math.floor(Math.random() * slogans.length);
-                } while (newIndex === currentIndex && slogans.length > 1);
-                currentIndex = newIndex;
+    function typeText(text, callback) {
+        textEl.textContent = '';
+        let i = 0;
+        function type() {
+            if (i < text.length) {
+                textEl.textContent += text.charAt(i);
+                i++;
+                pendingTimers.push(setTimeout(type, typeSpeed));
             } else {
-                currentIndex = (currentIndex + 1) % slogans.length;
+                if (callback) callback();
             }
-            return slogans[currentIndex];
         }
-
-        function typeText(text, callback) {
-            textEl.textContent = '';
-            var i = 0;
-            function type() {
-                if (i < text.length) {
-                    textEl.textContent += text.charAt(i);
-                    i++;
-                    pendingTimers.push(setTimeout(type, typeSpeed));
-                } else {
-                    if (callback) callback();
-                }
-            }
-            type();
-        }
-
-        function clearText(callback) {
-            var currentText = textEl.textContent;
-            var i = currentText.length;
-            function clear() {
-                if (i > 0) {
-                    textEl.textContent = currentText.substring(0, i - 1);
-                    i--;
-                    pendingTimers.push(setTimeout(clear, 20));
-                } else {
-                    if (callback) callback();
-                }
-            }
-            clear();
-        }
-
-        function runTypewriter() {
-            var slogan = getNextSlogan();
-            App.logger.log(
-                '[Slogan ' + (currentIndex + 1) + '/' + slogans.length + ']:',
-                slogan.substring(0, 30) + '...'
-            );
-
-            typeText(slogan, function () {
-                if (loop) {
-                    pendingTimers.push(
-                        setTimeout(function () {
-                            clearText(function () {
-                                pendingTimers.push(setTimeout(runTypewriter, 300));
-                            });
-                        }, pauseDuration)
-                    );
-                } else {
-                    if (cursor) {
-                        cursor.style.animation = 'blink 1.5s step-end infinite';
-                        cursor.style.opacity = '0.5';
-                    }
-                }
-            });
-        }
-
-        pendingTimers.push(setTimeout(runTypewriter, typeSpeed * 5));
+        type();
     }
 
-    function destroyTypewriter() {
-        for (var i = 0; i < pendingTimers.length; i++) {
-            clearTimeout(pendingTimers[i]);
+    function clearText(callback) {
+        const currentText = textEl.textContent;
+        let i = currentText.length;
+        function clear() {
+            if (i > 0) {
+                textEl.textContent = currentText.substring(0, i - 1);
+                i--;
+                pendingTimers.push(setTimeout(clear, 20));
+            } else {
+                if (callback) callback();
+            }
         }
-        pendingTimers = [];
+        clear();
     }
 
-    window.App = window.App || {};
-    window.App.typewriter = { init: initTypewriter, destroy: destroyTypewriter };
-})();
+    function runTypewriter() {
+        const result = selector.next();
+        const slogan = result.text;
+        logger.log('[Slogan ' + (result.index + 1) + '/' + slogans.length + ']:', slogan.substring(0, 30) + '...');
+
+        typeText(slogan, function () {
+            if (loop) {
+                pendingTimers.push(
+                    setTimeout(function () {
+                        clearText(function () {
+                            pendingTimers.push(setTimeout(runTypewriter, 300));
+                        });
+                    }, pauseDuration)
+                );
+            } else {
+                if (cursor) {
+                    cursor.style.animation = 'blink 1.5s step-end infinite';
+                    cursor.style.opacity = '0.5';
+                }
+            }
+        });
+    }
+
+    pendingTimers.push(setTimeout(runTypewriter, typeSpeed * 5));
+}
+
+function destroyTypewriter() {
+    for (let i = 0; i < pendingTimers.length; i++) {
+        clearTimeout(pendingTimers[i]);
+    }
+    pendingTimers = [];
+}
+
+export { initTypewriter, destroyTypewriter };
