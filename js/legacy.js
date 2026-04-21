@@ -10,6 +10,7 @@
 
     // ===== 配置（需与 config.js 保持同步）=====
     var CONFIG = {
+        version: '0.6.2',
         profile: {
             name: '遊星 Wakusei',
             status: '正在过大关.jpg',

@@ -2,7 +2,7 @@
 
 一个采用粗放主义（Brutalist）设计风格的个人主页，具有磨砂玻璃效果、动态壁纸轮播、打字机 Slogan 展示等功能。
 
-![版本](https://img.shields.io/badge/version-0.6.1-blue)
+![版本](https://img.shields.io/badge/version-0.6.2-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 本项目在 [LINUX DO](https://linux.do) 社区进行开源推广
@@ -432,6 +432,22 @@ WakuseiHomePage/
 ---
 
 ## 🔧 更新日志
+
+### v0.6.2
+
+- **🔢 版本号统一**
+    - 统一 `config.js`、`package.json`、`js/legacy.js` 版本号为 `0.6.2`
+- **🐛 修复 typewriter.js 内存泄漏**
+    - 废除 `pendingTimers[]` 只增不减的数组，改为单 `activeTimer` 变量
+    - 每次 `setTimer` 自动清理旧 timer，杜绝长期运行后数组膨胀
+- **🐛 修复 wallpaper.js 竞速空数组挂起**
+    - `_raceLoadImage` 增加前置断言：若 `apis` 为空数组，立即 `Promise.reject`
+    - 避免白等 10s timeout 后才报错
+- **🔧 build.js 自动同步 config.js → legacy.js**
+    - 构建时通过动态 `import()` 读取 `config.js`，自动提取并注入 `dist/js/legacy.js`
+    - 生产构建不再依赖人工同步，消除配置漂移风险
+- **🛡️ 增加 noscript 兜底样式**
+    - `index.html` 增加 `<noscript>` 块：禁用 JS 时自动移除 loading 遮罩、恢复页面可见与可交互
 
 ### v0.6.0
 

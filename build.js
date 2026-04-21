@@ -4,6 +4,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { pathToFileURL } = require('url');
 
 const DIST = path.join(__dirname, 'dist');
 
@@ -56,6 +57,28 @@ async function build() {
     copyDir(path.join(__dirname, 'js'), path.join(DIST, 'js'));
     fs.copyFileSync(path.join(__dirname, 'config.js'), path.join(DIST, 'config.js'));
     fs.copyFileSync(path.join(__dirname, 'LICENSE'), path.join(DIST, 'LICENSE'));
+
+    // Sync config.js → legacy.js (keep legacy fallback in sync automatically)
+    const configModule = await import(pathToFileURL(path.join(__dirname, 'config.js')).href);
+    const CONFIG = configModule.CONFIG;
+
+    const legacyConfig = {
+        version: CONFIG.version,
+        profile: CONFIG.profile,
+        socialLinks: CONFIG.socialLinks,
+        footer: CONFIG.footer,
+        debug: CONFIG.debug
+    };
+
+    const legacyPath = path.join(DIST, 'js', 'legacy.js');
+    let legacyCode = fs.readFileSync(legacyPath, 'utf8');
+    const replacement = 'var CONFIG = ' + JSON.stringify(legacyConfig, null, 4) + ';';
+    legacyCode = legacyCode.replace(
+        /var CONFIG = \{[\s\S]*?\};\s*(?=\/\/ ===== 最小 Polyfills)/,
+        replacement + '\n\n'
+    );
+    fs.writeFileSync(legacyPath, legacyCode);
+    console.log('  Synced: config.js → js/legacy.js');
 
     // Minify JS
     try {

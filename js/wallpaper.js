@@ -158,6 +158,10 @@ WallpaperScroller.prototype._clearImageRequest = function (img) {
 WallpaperScroller.prototype._raceLoadImage = function (index) {
     const self = this;
 
+    if (!self.apis || self.apis.length === 0) {
+        return Promise.reject(new Error('No wallpaper APIs configured'));
+    }
+
     return new Promise(function (resolve, reject) {
         const images = self.apis.map(function () {
             return new Image();

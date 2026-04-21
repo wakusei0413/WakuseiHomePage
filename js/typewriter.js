@@ -7,7 +7,12 @@ import { CONFIG } from '../config.js';
 import { logger } from './logger.js';
 import { createSloganSelector } from './slogan-selector.js';
 
-let pendingTimers = [];
+let activeTimer = null;
+
+function setTimer(fn, delay) {
+    if (activeTimer) clearTimeout(activeTimer);
+    activeTimer = setTimeout(fn, delay);
+}
 
 function initTypewriter() {
     const textEl = document.getElementById('typewriterText');
@@ -39,8 +44,9 @@ function initTypewriter() {
             if (i < text.length) {
                 textEl.textContent += text.charAt(i);
                 i++;
-                pendingTimers.push(setTimeout(type, typeSpeed));
+                setTimer(type, typeSpeed);
             } else {
+                activeTimer = null;
                 if (callback) callback();
             }
         }
@@ -54,8 +60,9 @@ function initTypewriter() {
             if (i > 0) {
                 textEl.textContent = currentText.substring(0, i - 1);
                 i--;
-                pendingTimers.push(setTimeout(clear, 20));
+                setTimer(clear, 20);
             } else {
+                activeTimer = null;
                 if (callback) callback();
             }
         }
@@ -69,14 +76,13 @@ function initTypewriter() {
 
         typeText(slogan, function () {
             if (loop) {
-                pendingTimers.push(
-                    setTimeout(function () {
-                        clearText(function () {
-                            pendingTimers.push(setTimeout(runTypewriter, 300));
-                        });
-                    }, pauseDuration)
-                );
+                setTimer(function () {
+                    clearText(function () {
+                        setTimer(runTypewriter, 300);
+                    });
+                }, pauseDuration);
             } else {
+                activeTimer = null;
                 if (cursor) {
                     cursor.style.animation = 'blink 1.5s step-end infinite';
                     cursor.style.opacity = '0.5';
@@ -85,14 +91,14 @@ function initTypewriter() {
         });
     }
 
-    pendingTimers.push(setTimeout(runTypewriter, typeSpeed * 5));
+    setTimer(runTypewriter, typeSpeed * 5);
 }
 
 function destroyTypewriter() {
-    for (let i = 0; i < pendingTimers.length; i++) {
-        clearTimeout(pendingTimers[i]);
+    if (activeTimer) {
+        clearTimeout(activeTimer);
+        activeTimer = null;
     }
-    pendingTimers = [];
 }
 
 export { initTypewriter, destroyTypewriter };
