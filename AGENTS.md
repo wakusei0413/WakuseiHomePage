@@ -7,6 +7,7 @@
 - `config.js` exports `CONFIG` as an ESM named export (`export const CONFIG`). It is the main customization surface; most content changes should happen there.
 - `js/validate-config.js` validates CONFIG at startup — missing or mistyped fields produce console errors and prevent initialization.
 - Module dependency graph: `app.js` → `config.js`, `polyfills.js` (side-effect), `logger.js`, `utils.js`, `validate-config.js`, `typewriter.js`, `time.js`, `social.js`, `wallpaper.js`, `slogan-selector.js`
+- `js/legacy.js` is a standalone ES5 IIFE for legacy browsers (IE, old Edge) that don't support ES Modules. Loaded via `<script nomodule>`. Contains CONFIG data that must stay in sync with `config.js`.
 
 ## Commands
 
