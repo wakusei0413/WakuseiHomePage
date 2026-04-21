@@ -56,7 +56,10 @@
         />
 
         <!-- Font Awesome 图标 - 动态加载（超时放弃） -->
-        <link rel="stylesheet" href="css/style.css" />
+        <link rel="stylesheet" href="css/base.css" />
+        <link rel="stylesheet" href="css/layout.css" />
+        <link rel="stylesheet" href="css/components.css" />
+        <link rel="stylesheet" href="css/responsive.css" />
     </head>
     <body>
         <!-- 背景噪点 -->
@@ -170,21 +173,7 @@
             <span class="sr-only">关闭</span>
         </button>
 
-        <!-- JavaScript -->
-        <!-- 配置文件（同步加载，其他脚本依赖 CONFIG） -->
-        <script src="config.js"></script>
-        <!-- Polyfill -->
-        <script src="js/polyfills.js"></script>
-        <!-- 工具模块 -->
-        <script src="js/logger.js"></script>
-        <script src="js/utils.js"></script>
-        <!-- 功能模块 -->
-        <script src="js/typewriter.js"></script>
-        <script src="js/time.js"></script>
-        <script src="js/social.js"></script>
-        <!-- 壁纸模块 -->
-        <script src="js/wallpaper.js"></script>
-        <!-- 主脚本 -->
-        <script src="js/main.js"></script>
+        <!-- JavaScript（ES Module 单入口） -->
+        <script type="module" src="js/app.js"></script>
     </body>
 </html>
