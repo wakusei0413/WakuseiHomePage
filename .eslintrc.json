@@ -5,7 +5,7 @@
   },
   "parserOptions": {
     "ecmaVersion": 2022,
-    "sourceType": "script"
+    "sourceType": "module"
   },
   "rules": {
     "no-undef": "off",
@@ -19,6 +19,9 @@
     "semi": ["error", "always"]
   },
   "globals": {
-    "App": "readonly"
+    "window": "readonly",
+    "document": "readonly",
+    "NodeList": "readonly",
+    "Element": "readonly"
   }
 }
