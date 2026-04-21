@@ -129,8 +129,12 @@
         }
 
         var avatarImg = document.querySelector('.avatar-image');
-        if (config.avatar && avatarImg) {
-            avatarImg.src = config.avatar;
+        var avatarBox = document.getElementById('avatarBox');
+        if (config.avatar) {
+            if (avatarImg) avatarImg.src = config.avatar;
+            if (avatarBox && !('objectFit' in document.documentElement.style)) {
+                avatarBox.style.backgroundImage = 'url(' + config.avatar + ')';
+            }
         }
 
         var footerTextEl = document.getElementById('footerText');
@@ -203,9 +207,9 @@
     // ===== 执行初始化 =====
     function init() {
         simplifyLegacyLoadingText();
+        detectObjectFit();
         applyProfileConfig();
         initSocialLinks();
-        detectObjectFit();
         revealMainContent();
         log('[兼容模式] 仅保留基础资料与社交链接');
     }
