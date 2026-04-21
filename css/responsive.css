@@ -1,0 +1,170 @@
+/* ========================================
+   粗放主义 - 响应式层：断点、移动端适配
+   ======================================== */
+
+/* ===== 大屏断点 ===== */
+@media (max-width: 1200px) {
+    .left-panel {
+        width: 35%;
+    }
+
+    .right-panel {
+        width: 65%;
+    }
+}
+
+/* ===== 平板/移动端：单栏布局 ===== */
+@media (max-width: 900px) {
+    /* 移动端：单栏布局 */
+    /* 允许移动端页面滚动 */
+    html,
+    body {
+        overflow-y: auto;
+        height: auto;
+    }
+
+    .container {
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .left-panel {
+        width: 100%;
+        min-width: 100%;
+        height: auto;
+        flex-shrink: 0;
+        border-right-width: 0;
+        border-bottom: var(--border-width) solid var(--fg);
+        padding: var(--space-lg);
+        overflow-y: visible;
+    }
+
+    /* 粘性头部 */
+    .hero {
+        position: sticky;
+        top: 0;
+        background: var(--bg);
+        z-index: 10;
+        padding: var(--space-sm) 0;
+        margin: calc(var(--space-sm) * -1) 0;
+    }
+
+    /* 头像缩小效果 */
+    .avatar-box {
+        transition:
+            width 0.3s ease,
+            height 0.3s ease,
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+
+    .avatar-box.scrolled {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px;
+        margin-bottom: var(--space-sm);
+        box-shadow: 6px 6px 0 var(--fg);
+    }
+
+    .avatar-box.scrolled:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 8px 8px 0 var(--fg);
+    }
+
+    .right-panel {
+        display: none;
+    }
+
+    .social-links {
+        flex-wrap: wrap;
+    }
+
+    @supports (display: grid) {
+        .social-links {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .social-link {
+        flex: 0 0 calc(50% - 0.5rem);
+        max-width: calc(50% - 0.5rem);
+    }
+
+    @supports (display: grid) {
+        .social-link {
+            flex: none;
+            max-width: none;
+        }
+    }
+
+    /* 手机端隐藏壁纸切换按钮 */
+    .wallpaper-toggle {
+        display: none !important;
+    }
+}
+
+/* ===== 小屏断点 ===== */
+@media (max-width: 600px) {
+    .left-panel {
+        padding: var(--space-md);
+    }
+
+    .bio-container {
+        padding: var(--space-sm);
+    }
+
+    .info-panel {
+        padding: var(--space-md);
+    }
+
+    .weekday {
+        font-size: 2.5rem;
+    }
+
+    .clock {
+        font-size: 1.5rem;
+    }
+
+    .wallpaper-toggle {
+        display: none !important;
+    }
+
+    .close-panel {
+        display: none !important;
+    }
+
+    .legacy-compat .left-panel {
+        padding: 1.5rem 1rem;
+    }
+
+    .legacy-compat .name {
+        font-size: 2.25rem;
+    }
+
+    .legacy-compat .avatar-box {
+        width: 96px;
+        height: 96px;
+    }
+}
+
+/* ===== 减少动画偏好 ===== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===== 响应式：hover 热区 ===== */
+@media (max-width: 900px) {
+    .avatar-box.scrolled:hover::before {
+        transform: translate(2px, 2px);
+    }
+}

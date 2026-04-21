@@ -9,7 +9,8 @@
         "format": "prettier --write \"js/**/*.js\" config.js css/**/*.css index.html",
         "format:check": "prettier --check \"js/**/*.js\" config.js css/**/*.css index.html",
         "build": "node build.js",
-        "serve": "npx serve ."
+        "serve": "npx serve dist",
+        "test": "node --test tests/*.test.mjs"
     },
     "devDependencies": {
         "cssnano": "^6.0.0",

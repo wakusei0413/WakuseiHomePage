@@ -1,0 +1,190 @@
+/* ========================================
+   粗放主义 - 布局层：两栏布局、面板结构
+   ======================================== */
+
+/* ===== 主容器：两栏布局 ===== */
+.container {
+    display: flex;
+    flex-wrap: nowrap;
+    height: 100vh;
+    overflow: hidden;
+    transition:
+        grid-template-columns var(--transition-normal),
+        filter 0.5s ease-out;
+    opacity: 1;
+    visibility: visible;
+    filter: blur(30px);
+    pointer-events: none;
+}
+
+.container.visible {
+    opacity: 1;
+    visibility: visible;
+    filter: blur(0);
+    pointer-events: auto;
+}
+
+/* ===== 左侧面板 ===== */
+.left-panel {
+    width: 500px;
+    flex-shrink: 0;
+    min-width: 320px;
+    padding: 3rem;
+    padding: var(--space-xl, 3rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border-right: 4px solid #0a0a0a;
+    border-right: var(--border-width, 4px) solid var(--fg, #0a0a0a);
+    background-color: #fffef7;
+    background-color: var(--bg, #fffef7);
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    z-index: 50;
+    z-index: var(--z-content, 50);
+    contain: layout style paint;
+    box-shadow:
+        15px 0 40px rgba(0, 0, 0, 0.2),
+        0 0 60px rgba(0, 0, 0, 0.1);
+    transition:
+        width var(--transition-normal),
+        padding var(--transition-normal),
+        border-right-width var(--transition-normal);
+}
+
+.left-panel .hero {
+    width: 100%;
+    text-align: left;
+    animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===== 右侧面板 ===== */
+.right-panel {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    background-color: transparent;
+    color: #fffef7;
+    color: var(--bg, #fffef7);
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== 右侧：信息面板 ===== */
+.info-panel {
+    padding: 1.5rem;
+    padding: var(--space-md, 1.5rem);
+    padding-bottom: 0;
+    background: rgba(10, 10, 10, 0.92);
+    border-bottom: 1px solid rgba(255, 254, 247, 0.15);
+    box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.35),
+        0 16px 64px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 254, 247, 0.12),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+        inset 0 0 0 1px rgba(255, 254, 247, 0.05);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    z-index: var(--z-content, 50);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .info-panel {
+        background: rgba(10, 10, 10, 0.75);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+    }
+}
+
+.info-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 254, 247, 0.2), transparent);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.info-panel::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background:
+        linear-gradient(180deg, rgba(255, 150, 80, 0.12) 0%, transparent 12%),
+        linear-gradient(90deg, rgba(255, 100, 100, 0.1) 0%, transparent 15%),
+        linear-gradient(270deg, rgba(100, 180, 255, 0.1) 0%, transparent 15%),
+        linear-gradient(0deg, rgba(150, 100, 255, 0.12) 0%, transparent 12%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ===== 右侧面板阴影层 - 独立于壁纸 ===== */
+.right-panel-shadow {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow:
+        inset -12px 0 30px rgba(0, 0, 0, 0.15),
+        inset 12px 0 30px rgba(0, 0, 0, 0.15),
+        inset 0 12px 30px rgba(0, 0, 0, 0.15),
+        inset 0 -12px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== 壁纸容器 ===== */
+.wallpaper-scroll-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 0;
+    z-index: var(--z-wallpaper, 0);
+    background-color: #fffef7;
+    background-color: var(--bg, #fffef7);
+    scrollbar-width: none;
+    contain: layout style paint;
+
+    /* 禁用用户交互 */
+    pointer-events: none;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.wallpaper-image {
+    width: 100%;
+    min-height: 180px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    position: relative;
+    border-bottom: var(--border-heavy) solid var(--border-color);
+}
+
+.wallpaper-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+}
+
+.wallpaper-image.loaded img {
+    opacity: 1;
+}

@@ -67,8 +67,9 @@ async function build() {
             const filePath = path.join(jsDir, file);
             const code = fs.readFileSync(filePath, 'utf8');
             const result = await minify(code, {
-                compress: { drop_console: false },
-                mangle: true
+                compress: { drop_console: true },
+                mangle: true,
+                module: true
             });
             fs.writeFileSync(filePath, result.code);
             console.log(`  Minified: js/${file}`);
@@ -91,11 +92,16 @@ async function build() {
     try {
         const postcss = require('postcss');
         const cssnano = require('cssnano');
-        const cssFile = path.join(DIST, 'css', 'style.css');
-        const cssCode = fs.readFileSync(cssFile, 'utf8');
-        const result = await postcss([cssnano]).process(cssCode, { from: cssFile });
-        fs.writeFileSync(cssFile, result.css);
-        console.log('  Minified: css/style.css');
+        const cssDir = path.join(DIST, 'css');
+        const cssFiles = fs.readdirSync(cssDir).filter((f) => f.endsWith('.css'));
+
+        for (const file of cssFiles) {
+            const cssFile = path.join(cssDir, file);
+            const cssCode = fs.readFileSync(cssFile, 'utf8');
+            const result = await postcss([cssnano]).process(cssCode, { from: cssFile });
+            fs.writeFileSync(cssFile, result.css);
+            console.log(`  Minified: css/${file}`);
+        }
     } catch (e) {
         if (e.code === 'MODULE_NOT_FOUND') {
             console.log('  postcss/cssnano not found, skipping CSS minification. Run: npm install');
@@ -108,6 +114,9 @@ async function build() {
     let html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
     // Minify HTML (basic: remove extra whitespace in production)
     html = html.replace(/\n\s*\n/g, '\n');
+    if (!html.includes('type="module"')) {
+        console.warn('  Warning: index.html does not contain type="module" script tag');
+    }
     fs.writeFileSync(path.join(DIST, 'index.html'), html);
     console.log('  Copied: index.html');
 
