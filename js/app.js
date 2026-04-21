@@ -7,8 +7,15 @@ import { CONFIG } from '../config.js';
 import './polyfills.js';
 import { logger } from './logger.js';
 import { utils } from './utils.js';
-import { initTypewriter, destroyTypewriter } from './typewriter.js';
-import { initTime, destroyTime } from './time.js';
+import {
+    initMobileStickyAvatar,
+    initScrollAnimations,
+    revealMainContent,
+    showConfigFailureState,
+    simplifyLegacyLoadingText
+} from './bootstrap.js';
+import { initTypewriter } from './typewriter.js';
+import { initTime } from './time.js';
 import { initSocialLinks, applyProfileConfig } from './social.js';
 import { WallpaperScroller } from './wallpaper.js';
 import { validate } from './validate-config.js';
@@ -16,37 +23,12 @@ import { validate } from './validate-config.js';
 // ========== 配置验证 ==========
 const validationResult = validate(CONFIG);
 if (!validationResult.valid) {
-    validationResult.errors.forEach(function (e) {
-        console.error('[CONFIG] ' + e);
-    });
-    // 仍然显示页面内容，但跳过模块初始化
-    const mainEl = document.querySelector('.container');
-    const overlayEl = document.getElementById('loadingOverlay');
-    if (mainEl) mainEl.classList.add('visible');
-    if (overlayEl) overlayEl.classList.add('hidden');
+    showConfigFailureState(validationResult.errors);
     throw new Error('Config validation failed: ' + validationResult.errors.join('; '));
 }
 
 logger.log('%c配置已加载 \u2713', 'color: #FFE600; font-size: 12px;');
 logger.log('Slogan 数量:', CONFIG.slogans.list.length);
-
-function revealMainContent() {
-    const main = document.querySelector('.container');
-    const overlay = document.getElementById('loadingOverlay');
-
-    utils.addClass(main, 'visible');
-    utils.addClass(overlay, 'hidden');
-}
-
-function simplifyLegacyLoadingText() {
-    const loadingText = document.getElementById('loadingText');
-    if (!utils.isLegacyCompatMode() || !loadingText) return;
-
-    const legacyText = loadingText.getAttribute('data-legacy-text');
-    if (legacyText) {
-        loadingText.textContent = legacyText;
-    }
-}
 
 // ========== 动态加载 Font Awesome（5秒超时放弃）==========
 (function loadFontAwesome() {
@@ -115,95 +97,13 @@ function simplifyLegacyLoadingText() {
 })();
 
 // ========== 滚动触发动画 ==========
-(function initScrollAnimations() {
-    if (utils.isLegacyCompatMode()) {
-        logger.log('[兼容模式] 跳过滚动动画');
-        return;
-    }
-
-    const config = CONFIG.effects && CONFIG.effects.scrollReveal;
-    if (!config || !config.enabled) return;
-
-    const targetSelectors = ['.social-link', '.info-panel', '.wallpaper-info', '.avatar-box', '.name', '.status-bar'];
-
-    const targets = document.querySelectorAll(targetSelectors.join(','));
-    if (!targets.length) return;
-
-    targets.forEach(function (el, index) {
-        el.classList.add('scroll-reveal');
-        el.style.transitionDelay = index * config.delay + 'ms';
-    });
-
-    const observer = new IntersectionObserver(
-        function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('scroll-reveal--visible');
-                }
-            });
-        },
-        {
-            root: null,
-            rootMargin: '0px 0px -' + config.offset + 'px 0px',
-            threshold: 0.1
-        }
-    );
-
-    targets.forEach(function (el) {
-        observer.observe(el);
-    });
-    logger.log('[滚动动画] 已初始化，监听元素:', targets.length);
+(function bootstrapScrollAnimations() {
+    initScrollAnimations(CONFIG.effects && CONFIG.effects.scrollReveal);
 })();
 
 // ========== 移动端粘性头像 ==========
-(function initMobileStickyAvatar() {
-    if (utils.isLegacyCompatMode()) {
-        logger.log('[兼容模式] 跳过移动端粘性头像');
-        return;
-    }
-
-    const container = document.querySelector('.container');
-    const leftPanel = document.querySelector('.left-panel');
-    const avatarBox = document.getElementById('avatarBox');
-
-    if (!container || !avatarBox) return;
-
-    function handleScroll() {
-        if (!utils.isMobile()) return;
-        const scrollContainer = utils.isMobile() ? container : leftPanel;
-        const scrolled = scrollContainer.scrollTop > 50;
-        if (scrolled) {
-            avatarBox.classList.add('scrolled');
-        } else {
-            avatarBox.classList.remove('scrolled');
-        }
-    }
-
-    avatarBox.addEventListener('click', function () {
-        if (!utils.isMobile()) return;
-        const scrollContainer = utils.isMobile() ? container : leftPanel;
-        if (scrollContainer.scrollTop > 50) {
-            if ('scrollBehavior' in document.documentElement.style) {
-                scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
-            } else {
-                scrollContainer.scrollTo(0, 0);
-            }
-        }
-    });
-
-    container.addEventListener('scroll', handleScroll);
-    leftPanel.addEventListener('scroll', handleScroll);
-
-    window.addEventListener(
-        'resize',
-        utils.debounce(function () {
-            if (!utils.isMobile()) {
-                avatarBox.classList.remove('scrolled');
-            }
-        }, 150)
-    );
-
-    logger.log('[粘性头像] 已初始化');
+(function bootstrapMobileStickyAvatar() {
+    initMobileStickyAvatar();
 })();
 
 // ========== 手机端壁纸面板切换（已禁用）==========

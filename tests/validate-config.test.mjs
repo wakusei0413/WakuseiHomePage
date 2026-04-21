@@ -38,4 +38,22 @@ describe('validate-config', () => {
         assert.strictEqual(result.valid, false);
         assert.ok(result.errors.some(e => e.includes('name')));
     });
+
+    it('reports error for missing profile.avatar', () => {
+        const config = JSON.parse(JSON.stringify(CONFIG));
+        delete config.profile.avatar;
+        const result = validate(config);
+        assert.strictEqual(result.valid, false);
+        assert.ok(result.errors.includes('avatar is missing'));
+    });
+
+    it('reports error for invalid wallpaper.apis entries', () => {
+        const config = JSON.parse(JSON.stringify(CONFIG));
+        config.wallpaper.apis = ['https://example.com', '', null, 123];
+        const result = validate(config);
+        assert.strictEqual(result.valid, false);
+        assert.ok(result.errors.includes('wallpaper.apis[1] must be a non-empty string'));
+        assert.ok(result.errors.includes('wallpaper.apis[2] must be a non-empty string'));
+        assert.ok(result.errors.includes('wallpaper.apis[3] must be a non-empty string'));
+    });
 });

@@ -222,10 +222,7 @@ WallpaperScroller.prototype._loadWithRetry = function (index) {
             if (attempt >= self.maxRetries) {
                 throw err;
             }
-            const delay = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
-            return new Promise(function (resolve) {
-                setTimeout(resolve, delay);
-            }).then(function () {
+            return self._waitForRetry(self._getRetryDelay(attempt)).then(function () {
                 return tryLoad();
             });
         });
@@ -261,18 +258,36 @@ WallpaperScroller.prototype._createPlaceholder = function () {
     return div;
 };
 
+WallpaperScroller.prototype._appendPlaceholder = function () {
+    const placeholder = this._createPlaceholder();
+    placeholder.dataset.index = this.imageCounter++;
+    this.container.appendChild(placeholder);
+    this.images.push(placeholder);
+    return placeholder;
+};
+
+WallpaperScroller.prototype._observePlaceholder = function (placeholder) {
+    this.observer.observe(placeholder);
+};
+
+WallpaperScroller.prototype._getRetryDelay = function (attempt) {
+    return Math.min(1000 * Math.pow(2, attempt - 1), 8000);
+};
+
+WallpaperScroller.prototype._waitForRetry = function (delay) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, delay);
+    });
+};
+
 WallpaperScroller.prototype._addPlaceholders = function (count) {
     let i;
     for (i = 0; i < count; i++) {
-        const placeholder = this._createPlaceholder();
-        placeholder.dataset.index = this.imageCounter++;
-        this.container.appendChild(placeholder);
-        this.images.push(placeholder);
-        this.observer.observe(placeholder);
+        this._observePlaceholder(this._appendPlaceholder());
     }
 };
 
-WallpaperScroller.prototype._cleanup = function () {
+WallpaperScroller.prototype._cleanupOverflowImages = function () {
     while (this.images.length > this.maxImages) {
         const old = this.images.shift();
         this.observer.unobserve(old);
@@ -281,6 +296,10 @@ WallpaperScroller.prototype._cleanup = function () {
         delete old.dataset.loading;
         old.remove();
     }
+};
+
+WallpaperScroller.prototype._cleanup = function () {
+    this._cleanupOverflowImages();
 };
 
 WallpaperScroller.prototype._autoScroll = function () {
@@ -293,7 +312,7 @@ WallpaperScroller.prototype._autoScroll = function () {
 
     if (this.container.scrollHeight - scrollBottom < this.loadThreshold) {
         this._addPlaceholders(this.batchSize);
-        this._cleanup();
+        this._cleanupOverflowImages();
     }
 
     this.autoScrollId = requestAnimationFrame(function () {
@@ -327,11 +346,7 @@ WallpaperScroller.prototype._loadInitialImages = function () {
     }
 
     for (i = 0; i < this.preloadCount; i++) {
-        const placeholder = this._createPlaceholder();
-        placeholder.dataset.index = this.imageCounter++;
-        this.container.appendChild(placeholder);
-        this.images.push(placeholder);
-        placeholders.push(placeholder);
+        placeholders.push(this._appendPlaceholder());
     }
 
     function updateProgress() {
@@ -359,7 +374,7 @@ WallpaperScroller.prototype._loadInitialImages = function () {
         })
     ).then(function () {
         placeholders.forEach(function (placeholder) {
-            self.observer.observe(placeholder);
+            self._observePlaceholder(placeholder);
         });
 
         if (self.textInterval) {

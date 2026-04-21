@@ -6,60 +6,65 @@
 export function validate(config) {
     const errors = [];
 
-    function exists(obj, path) {
+    function getPathValue(obj, path) {
         const parts = path.split('.');
         let current = obj;
         for (let i = 0; i < parts.length; i++) {
             if (current === undefined || current === null) {
-                errors.push(path + ' is missing');
-                return false;
+                return { missing: true, value: undefined };
             }
             current = current[parts[i]];
         }
-        if (current === undefined || current === null) {
-            errors.push(path + ' is missing');
-            return false;
-        }
-        return true;
+        return {
+            missing: current === undefined || current === null,
+            value: current
+        };
     }
 
-    function required(obj, path, type, extra) {
-        const parts = path.split('.');
-        let current = obj;
-        for (let i = 0; i < parts.length; i++) {
-            if (current === undefined || current === null) {
-                errors.push(path + ' is missing');
-                return;
-            }
-            current = current[parts[i]];
-        }
-        if (current === undefined || current === null) {
+    function exists(obj, path) {
+        if (getPathValue(obj, path).missing) {
             errors.push(path + ' is missing');
             return;
         }
+    }
+
+    function validateValue(path, value, type, extra, label) {
+        const errorPath = label || path;
+
         if (type === 'string') {
-            if (typeof current !== 'string') {
-                errors.push(path + ' must be a string');
-            } else if (extra === 'nonEmpty' && current.length === 0) {
-                errors.push(path + ' must be non-empty');
+            if (typeof value !== 'string') {
+                errors.push(errorPath + ' must be a string');
+            } else if (extra === 'nonEmpty' && value.length === 0) {
+                errors.push(errorPath + ' must be non-empty');
             }
         } else if (type === 'number') {
-            if (typeof current !== 'number') {
-                errors.push(path + ' must be a number');
-            } else if (extra === 'positive' && current <= 0) {
-                errors.push(path + ' must be a positive number');
+            if (typeof value !== 'number') {
+                errors.push(errorPath + ' must be a number');
+            } else if (extra === 'positive' && value <= 0) {
+                errors.push(errorPath + ' must be a positive number');
             }
         } else if (type === 'array') {
-            if (!Array.isArray(current)) {
-                errors.push(path + ' must be an array');
-            } else if (extra === 'nonEmpty' && current.length === 0) {
-                errors.push(path + ' must be a non-empty array');
+            if (!Array.isArray(value)) {
+                errors.push(errorPath + ' must be an array');
+            } else if (extra === 'nonEmpty' && value.length === 0) {
+                errors.push(errorPath + ' must be a non-empty array');
             }
         } else if (type === 'enum') {
-            if (!extra.includes(current)) {
-                errors.push(path + ' must be one of: ' + extra.join(', '));
+            if (!extra.includes(value)) {
+                errors.push(errorPath + ' must be one of: ' + extra.join(', '));
             }
         }
+    }
+
+    function required(obj, path, type, extra, label) {
+        const result = getPathValue(obj, path);
+        const errorPath = label || path;
+
+        if (result.missing) {
+            errors.push(errorPath + ' is missing');
+            return;
+        }
+        validateValue(path, result.value, type, extra, label);
     }
 
     // Top-level keys (existence only — they are objects)
@@ -72,9 +77,9 @@ export function validate(config) {
     exists(config, 'debug');
 
     if (config.profile) {
-        required(config.profile, 'name', 'string', 'nonEmpty');
-        required(config.profile, 'status', 'string');
-        required(config.profile, 'avatar', 'string');
+        required(config, 'profile.name', 'string', 'nonEmpty', 'name');
+        required(config, 'profile.status', 'string', undefined, 'status');
+        required(config, 'profile.avatar', 'string', undefined, 'avatar');
     }
 
     if (config.socialLinks) {
@@ -115,6 +120,13 @@ export function validate(config) {
 
     if (config.wallpaper) {
         required(config.wallpaper, 'apis', 'array', 'nonEmpty');
+        if (Array.isArray(config.wallpaper.apis)) {
+            config.wallpaper.apis.forEach(function (api, i) {
+                if (typeof api !== 'string' || api.length === 0) {
+                    errors.push('wallpaper.apis[' + i + '] must be a non-empty string');
+                }
+            });
+        }
         required(config.wallpaper, 'raceTimeout', 'number', 'positive');
         required(config.wallpaper, 'maxRetries', 'number', 'positive');
         required(config.wallpaper, 'preloadCount', 'number', 'positive');
