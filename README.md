@@ -2,7 +2,7 @@
 
 一个采用粗放主义（Brutalist）设计风格的个人主页，具有磨砂玻璃效果、动态壁纸轮播、打字机 Slogan 展示等功能。
 
-![版本](https://img.shields.io/badge/version-0.5.5-blue)
+![版本](https://img.shields.io/badge/version-0.6.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 本项目在 [LINUX DO](https://linux.do) 社区进行开源推广
@@ -432,6 +432,22 @@ WakuseiHomePage/
 ---
 
 ## 🔧 更新日志
+
+### v0.6.0
+
+- **🔧 ES Modules 模块化重构**
+    - 将 9 个独立 `<script>` 标签迁移为单入口 ES Module 架构（`js/app.js`）
+    - 所有模块改为 `import`/`export` 显式依赖，移除 `window.App` 全局命名空间
+    - 保留 `<script nomodule>` 旧浏览器回退（`js/legacy.js`）
+- **✅ 配置校验**
+    - 新增 `js/validate-config.js`，启动时校验 CONFIG 字段
+    - 缺失或类型错误会在控制台输出警告并阻止初始化
+- **🤖 最小 CI**
+    - 新增 GitHub Actions 工作流（`.github/workflows/ci.yml`）
+    - 推送/PR 到 main 时自动运行 lint、format:check、build
+- **🧪 测试迁移**
+    - 旧 `.js` 测试替换为 `.mjs` ESM 导入（17/17 通过）
+    - 新增 `validate-config.test.mjs`
 
 ### v0.5.5
 
