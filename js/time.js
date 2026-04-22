@@ -7,43 +7,14 @@ import { CONFIG } from '../config.js';
 
 const WEEKDAYS = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 const MONTHS = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
-const NUMBERS = [
-    '〇',
-    '一',
-    '二',
-    '三',
-    '四',
-    '五',
-    '六',
-    '七',
-    '八',
-    '九',
-    '十',
-    '十一',
-    '十二',
-    '十三',
-    '十四',
-    '十五',
-    '十六',
-    '十七',
-    '十八',
-    '十九',
-    '二十',
-    '二十一',
-    '二十二',
-    '二十三',
-    '二十四',
-    '二十五',
-    '二十六',
-    '二十七',
-    '二十八',
-    '二十九',
-    '三十',
-    '三十一'
-];
+const CN_ONES = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
 
 function numberToChinese(num) {
-    return NUMBERS[num] || num.toString();
+    if (num <= 10) return CN_ONES[num] || '〇';
+    if (num < 20) return '十' + CN_ONES[num % 10];
+    const tens = Math.floor(num / 10);
+    const ones = num % 10;
+    return (tens === 2 ? '二' : '三') + '十' + CN_ONES[ones];
 }
 
 let timerId = null;
@@ -57,37 +28,51 @@ function initTime() {
         clearInterval(timerId);
     }
 
+    const cfg = CONFIG.time;
+    const showWeekday = cfg.showWeekday !== false;
+    const showDate = cfg.showDate !== false;
+    const is12h = cfg.format === '12h';
+    const interval = cfg.updateInterval || 1000;
+
+    if (weekdayEl && !showWeekday) {
+        weekdayEl.style.display = 'none';
+    }
+    if (dateEl && !showDate) {
+        dateEl.style.display = 'none';
+    }
+
+    function pad(n) {
+        return n < 10 ? '0' + n : String(n);
+    }
+
     function updateTime() {
         const now = new Date();
-        const config = CONFIG.time;
 
-        if (weekdayEl && config.showWeekday !== false) {
+        if (weekdayEl && showWeekday) {
             weekdayEl.textContent = WEEKDAYS[now.getDay()];
         }
 
-        if (dateEl && config.showDate !== false) {
-            const month = MONTHS[now.getMonth()];
-            const day = numberToChinese(now.getDate());
-            dateEl.textContent = month + day + '日';
+        if (dateEl && showDate) {
+            dateEl.textContent = MONTHS[now.getMonth()] + numberToChinese(now.getDate()) + '日';
         }
 
         if (clockEl) {
             let hours = now.getHours();
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const minutes = pad(now.getMinutes());
+            const seconds = pad(now.getSeconds());
 
-            if (config.format === '12h') {
+            if (is12h) {
                 const period = hours >= 12 ? 'PM' : 'AM';
                 hours = hours % 12 || 12;
-                clockEl.textContent = String(hours).padStart(2, '0') + ':' + minutes + ':' + seconds + ' ' + period;
+                clockEl.textContent = pad(hours) + ':' + minutes + ':' + seconds + ' ' + period;
             } else {
-                clockEl.textContent = String(hours).padStart(2, '0') + ':' + minutes + ':' + seconds;
+                clockEl.textContent = pad(hours) + ':' + minutes + ':' + seconds;
             }
         }
     }
 
     updateTime();
-    timerId = setInterval(updateTime, CONFIG.time.updateInterval || 1000);
+    timerId = setInterval(updateTime, interval);
 }
 
 function destroyTime() {

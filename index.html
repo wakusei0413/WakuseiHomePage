@@ -12,39 +12,36 @@
         <meta property="og:description" content="wakusei - 个人主页" />
         <meta property="og:type" content="website" />
         <link rel="icon" href="res/img/logo.png" type="image/png" />
+        <link rel="preload" href="res/img/logo.png" as="image" />
 
         <script>
             (function () {
                 var root = document.documentElement;
-
-                function isLegacyBrowser() {
-                    try {
-                        var supportsCssVars = !!(
-                            window.CSS &&
-                            typeof window.CSS.supports === 'function' &&
-                            window.CSS.supports('--legacy-test', '0')
-                        );
-                        var isOldEdge = !!window.StyleMedia && !/Edg\//.test(window.navigator.userAgent);
-
-                        return (
-                            !!document.documentMode ||
-                            isOldEdge ||
-                            !root.classList ||
-                            !window.IntersectionObserver ||
-                            !supportsCssVars
-                        );
-                    } catch (error) {
-                        return true;
+                try {
+                    var supportsCssVars = !!(
+                        window.CSS &&
+                        window.CSS.supports &&
+                        window.CSS.supports('--legacy-test', '0')
+                    );
+                    var isOldEdge = !!window.StyleMedia && !/Edg\//.test(window.navigator.userAgent);
+                    if (
+                        !!document.documentMode ||
+                        isOldEdge ||
+                        !root.classList ||
+                        !window.IntersectionObserver ||
+                        !supportsCssVars
+                    ) {
+                        root.className += (root.className ? ' ' : '') + 'legacy-compat';
                     }
-                }
-
-                if (isLegacyBrowser()) {
+                } catch (e) {
                     root.className += (root.className ? ' ' : '') + 'legacy-compat';
                 }
             })();
         </script>
 
-        <!-- 预连接关键域名 -->
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />

@@ -17,18 +17,12 @@ function initSocialLinks() {
     const colorScheme = CONFIG.socialLinks.colorScheme || 'cycle';
     const cycleColors = ['#ffe600', '#ff3e3e', '#3e59ff'];
     const legacyCompatMode = utils.isLegacyCompatMode();
-
-    socialContainer.innerHTML = '';
+    const fragment = document.createDocumentFragment();
 
     links.forEach(function (link, index) {
         let color = link.color;
-
         if (!color) {
-            if (colorScheme === 'same') {
-                color = cycleColors[0];
-            } else {
-                color = cycleColors[index % cycleColors.length];
-            }
+            color = colorScheme === 'same' ? cycleColors[0] : cycleColors[index % cycleColors.length];
         }
 
         const a = document.createElement('a');
@@ -37,7 +31,6 @@ function initSocialLinks() {
         const isMailto = link.url.indexOf('mailto:') === 0;
         a.target = isMailto ? '_self' : '_blank';
         a.rel = isMailto ? '' : 'noopener noreferrer';
-
         a.className = 'social-link social-link--custom';
         a.style.setProperty('--custom-color', color);
         if (legacyCompatMode) {
@@ -56,9 +49,11 @@ function initSocialLinks() {
         }
 
         a.appendChild(label);
-        socialContainer.appendChild(a);
+        fragment.appendChild(a);
     });
 
+    socialContainer.innerHTML = '';
+    socialContainer.appendChild(fragment);
     logger.log('[配置] 已生成 ' + links.length + ' 个社交链接');
 }
 
@@ -86,9 +81,7 @@ function applyProfileConfig() {
 
     const footerTextEl = document.getElementById('footerText');
     if (footerTextEl && CONFIG.footer) {
-        const text = CONFIG.footer.text || 'BUILT WITH PASSION';
-        const year = new Date().getFullYear();
-        footerTextEl.textContent = text + ' \u2022 ' + year;
+        footerTextEl.textContent = (CONFIG.footer.text || 'BUILT WITH PASSION') + ' \u2022 ' + new Date().getFullYear();
     }
 
     logger.log('[配置] 个人信息已应用');

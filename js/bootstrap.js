@@ -46,7 +46,6 @@ export function initScrollAnimations(scrollRevealConfig, deps) {
     if (!scrollRevealConfig || !scrollRevealConfig.enabled) return;
 
     const targetSelectors = ['.social-link', '.info-panel', '.wallpaper-info', '.avatar-box', '.name', '.status-bar'];
-
     const targets = documentRef.querySelectorAll(targetSelectors.join(','));
     if (!targets.length) return;
 
@@ -96,10 +95,11 @@ export function initMobileStickyAvatar(deps) {
 
     if (!container || !avatarBox) return;
 
+    let isMobileCached = utilsRef.isMobile();
+
     function handleScroll() {
-        if (!utilsRef.isMobile()) return;
-        const scrolled = container.scrollTop > 50;
-        if (scrolled) {
+        if (!isMobileCached) return;
+        if (container.scrollTop > 50) {
             avatarBox.classList.add('scrolled');
         } else {
             avatarBox.classList.remove('scrolled');
@@ -107,7 +107,7 @@ export function initMobileStickyAvatar(deps) {
     }
 
     avatarBox.addEventListener('click', function () {
-        if (!utilsRef.isMobile()) return;
+        if (!isMobileCached) return;
         if (container.scrollTop > 50) {
             if ('scrollBehavior' in documentRef.documentElement.style) {
                 container.scrollTo({ top: 0, behavior: 'smooth' });
@@ -122,7 +122,8 @@ export function initMobileStickyAvatar(deps) {
     windowRef.addEventListener(
         'resize',
         utilsRef.debounce(function () {
-            if (!utilsRef.isMobile()) {
+            isMobileCached = utilsRef.isMobile();
+            if (!isMobileCached) {
                 avatarBox.classList.remove('scrolled');
             }
         }, 150)

@@ -31,105 +31,73 @@ logger.log('%c配置已加载 \u2713', 'color: #FFE600; font-size: 12px;');
 logger.log('Slogan 数量:', CONFIG.slogans.list.length);
 
 // ========== 动态加载 Font Awesome（5秒超时放弃）==========
-(function loadFontAwesome() {
-    if (utils.isLegacyCompatMode()) {
-        logger.log('[兼容模式] 跳过 Font Awesome');
-        return;
-    }
-
+if (!utils.isLegacyCompatMode()) {
     const fontAwesomeUrl = 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css';
-    const timeout = 5000;
-
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = fontAwesomeUrl;
     link.crossOrigin = 'anonymous';
 
     let isLoaded = false;
-
     const timer = setTimeout(function () {
-        if (!isLoaded) {
-            document.head.removeChild(link);
+        if (!isLoaded && link.parentNode) {
+            link.parentNode.removeChild(link);
             logger.warn('[Font Awesome] 加载超时，已放弃加载');
         }
-    }, timeout);
+    }, 5000);
 
     link.onload = function () {
         isLoaded = true;
         clearTimeout(timer);
         logger.log('[Font Awesome] 加载成功');
     };
-
     link.onerror = function () {
         isLoaded = true;
         clearTimeout(timer);
-        document.head.removeChild(link);
+        if (link.parentNode) link.parentNode.removeChild(link);
         logger.warn('[Font Awesome] 加载失败');
     };
-
     document.head.appendChild(link);
-})();
+}
 
 // ========== 壁纸初始化 ==========
-(function initWallpaper() {
-    if (utils.isLegacyCompatMode()) {
-        logger.log('[兼容模式] 跳过壁纸模块');
-        revealMainContent();
-        return;
-    }
-
+if (utils.isLegacyCompatMode()) {
+    logger.log('[兼容模式] 跳过壁纸模块');
+    revealMainContent();
+} else {
     try {
         const wallpaper = new WallpaperScroller(
             'wallpaperScrollArea',
             CONFIG.wallpaper,
             CONFIG.loading,
-            function onWallpaperReady() {
-                revealMainContent();
-            }
+            revealMainContent
         );
-
         wallpaper.init();
         logger.log('[壁纸] 模块已初始化');
     } catch (error) {
         logger.error('[壁纸] 初始化失败', error);
         revealMainContent();
     }
-})();
+}
 
 // ========== 滚动触发动画 ==========
-(function bootstrapScrollAnimations() {
-    initScrollAnimations(CONFIG.effects && CONFIG.effects.scrollReveal);
-})();
+initScrollAnimations(CONFIG.effects && CONFIG.effects.scrollReveal);
 
 // ========== 移动端粘性头像 ==========
-(function bootstrapMobileStickyAvatar() {
-    initMobileStickyAvatar();
-})();
-
-// ========== 手机端壁纸面板切换（已禁用）==========
-(function initMobileWallpaperToggle() {
-    if (utils.isLegacyCompatMode()) {
-        logger.log('[兼容模式] 跳过移动端壁纸切换');
-        return;
-    }
-
-    logger.log('[壁纸面板] 移动端右侧面板已禁用，跳过切换初始化');
-})();
+initMobileStickyAvatar();
 
 // ========== 初始化完成 ==========
-(function initComplete() {
-    simplifyLegacyLoadingText();
-    initSocialLinks();
-    applyProfileConfig();
+simplifyLegacyLoadingText();
+initSocialLinks();
+applyProfileConfig();
 
-    if (utils.isLegacyCompatMode()) {
-        revealMainContent();
-        logger.log('[兼容模式] 仅保留基础资料与社交链接');
-    } else {
-        initTypewriter();
-        initTime();
-    }
+if (utils.isLegacyCompatMode()) {
+    revealMainContent();
+    logger.log('[兼容模式] 仅保留基础资料与社交链接');
+} else {
+    initTypewriter();
+    initTime();
+}
 
-    logger.log('%c个人主页脚本已加载', 'color: #FFE600; font-size: 12px;');
-    logger.log('功能：打字机效果 (Slogan 循环) | 时间显示 | 壁纸轮播');
-})();
+logger.log('%c个人主页脚本已加载', 'color: #FFE600; font-size: 12px;');
+logger.log('功能：打字机效果 (Slogan 循环) | 时间显示 | 壁纸轮播');

@@ -30,7 +30,6 @@
 - `build.js` copies `res/`, `css/`, `js/`, `config.js`, `LICENSE`, and `index.html` into `dist/`, then minifies JS/CSS there.
 - JS modules are minified individually with Terser `module: true` (ESM mode); `config.js` is minified without mangling.
 - `dist/` is ignored by git.
-- `vercel.json` sets `buildCommand` to `null` and `outputDirectory` to `.`. Vercel serves the repo root, not `dist/`, unless that config is changed.
 
 ## Style Constraints From Config
 
