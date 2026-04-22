@@ -27,7 +27,7 @@
 
 ## Build And Deploy Quirks
 
-- `build.js` copies `res/`, `css/`, `js/`, `config.js`, `LICENSE`, and `index.html` into `dist/`, then minifies JS/CSS there.
+- `scripts/build.js` copies `res/`, `css/`, `js/`, `config.js`, `LICENSE`, and `index.html` into `dist/`, then minifies JS/CSS there.
 - JS modules are minified individually with Terser `module: true` (ESM mode); `config.js` is minified without mangling.
 - `dist/` is ignored by git.
 
@@ -39,6 +39,6 @@
 ## Runtime Gotchas
 
 - ES Modules load asynchronously with `defer` semantics. All modules execute after HTML parsing, equivalent to the old `<script>` tags at end of body.
-- `package.json` stays `"type": "commonjs"` (default) because `build.js` uses `require()`. Test files use `.mjs` extension for ESM in Node.
+- `package.json` stays `"type": "commonjs"` (default) because `scripts/build.js` uses `require()`. Test files use `.mjs` extension for ESM in Node.
 - Wallpaper loading depends on external image APIs in `CONFIG.wallpaper.apis`; failures here can affect local manual verification without meaning the app code is broken.
 - Font Awesome is loaded dynamically in `js/app.js` with a 5s timeout, so missing icons during local/network-restricted runs may be external.

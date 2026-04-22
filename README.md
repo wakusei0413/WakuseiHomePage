@@ -2,7 +2,7 @@
 
 ## 遊星的个人主页
 
-![主页截图](res/repo/Screenshot/Mainpage/01.png)
+![主页截图](docs/assets/screenshots/homepage-01.png)
 
 一个采用粗放主义（Brutalist）设计风格的个人主页，具有磨砂玻璃效果、动态壁纸轮播、打字机 Slogan 展示等功能。
 
@@ -413,7 +413,8 @@ WakuseiHomePage/
 ├── index.html              # 主页面
 ├── config.js               # 配置文件（所有可配置项）
 ├── package.json            # Node.js 项目配置（开发工具链）
-├── build.js                # 构建脚本（压缩 JS/CSS）
+├── scripts/
+│   └── build.js            # 构建脚本（压缩 JS/CSS）
 ├── .eslintrc.json          # ESLint 配置
 ├── .prettierrc             # Prettier 配置
 ├── .gitignore              # Git 忽略规则
@@ -436,9 +437,13 @@ WakuseiHomePage/
 │   ├── utils.js            # 工具函数（debounce 等）
 │   ├── polyfills.js        # 兼容性 Polyfills
 │   └── legacy.js           # 旧浏览器回退脚本（ES5）
+├── docs/
+│   ├── assets/
+│   │   └── screenshots/    # README / 文档截图资源
+│   └── superpowers/        # 设计规格与实现计划
 └── res/
     └── img/
-        └── logo.png         # 默认头像
+        └── logo.png        # 默认头像
 ```
 
 ---

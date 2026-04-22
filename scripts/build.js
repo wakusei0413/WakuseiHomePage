@@ -6,7 +6,8 @@ const fs = require('fs');
 const path = require('path');
 const { pathToFileURL } = require('url');
 
-const DIST = path.join(__dirname, 'dist');
+const ROOT = path.resolve(__dirname, '..');
+const DIST = path.join(ROOT, 'dist');
 
 function clearDir(dir) {
     if (!fs.existsSync(dir)) {
@@ -52,14 +53,14 @@ async function build() {
     clearDir(DIST);
 
     // Copy static assets
-    copyDir(path.join(__dirname, 'res'), path.join(DIST, 'res'));
-    copyDir(path.join(__dirname, 'css'), path.join(DIST, 'css'));
-    copyDir(path.join(__dirname, 'js'), path.join(DIST, 'js'));
-    fs.copyFileSync(path.join(__dirname, 'config.js'), path.join(DIST, 'config.js'));
-    fs.copyFileSync(path.join(__dirname, 'LICENSE'), path.join(DIST, 'LICENSE'));
+    copyDir(path.join(ROOT, 'res'), path.join(DIST, 'res'));
+    copyDir(path.join(ROOT, 'css'), path.join(DIST, 'css'));
+    copyDir(path.join(ROOT, 'js'), path.join(DIST, 'js'));
+    fs.copyFileSync(path.join(ROOT, 'config.js'), path.join(DIST, 'config.js'));
+    fs.copyFileSync(path.join(ROOT, 'LICENSE'), path.join(DIST, 'LICENSE'));
 
     // Sync config.js → legacy.js (keep legacy fallback in sync automatically)
-    const configModule = await import(pathToFileURL(path.join(__dirname, 'config.js')).href);
+    const configModule = await import(pathToFileURL(path.join(ROOT, 'config.js')).href);
     const CONFIG = configModule.CONFIG;
 
     const legacyConfig = {
@@ -134,7 +135,7 @@ async function build() {
     }
 
     // Process HTML — update paths for dist
-    let html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+    let html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
     // Minify HTML (basic: remove extra whitespace in production)
     html = html.replace(/\n\s*\n/g, '\n');
     if (!html.includes('type="module"')) {
