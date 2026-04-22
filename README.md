@@ -1,5 +1,7 @@
 # Wakusei HomePage
 
+遊星的个人主页
+
 ![主页截图](res/repo/Screenshot/Mainpage/01.png)
 
 一个采用粗放主义（Brutalist）设计风格的个人主页，具有磨砂玻璃效果、动态壁纸轮播、打字机 Slogan 展示等功能。
