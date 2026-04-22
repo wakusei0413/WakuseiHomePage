@@ -1,6 +1,6 @@
 # Wakusei HomePage
 
-##遊星的个人主页
+## 遊星的个人主页
 
 ![主页截图](res/repo/Screenshot/Mainpage/01.png)
 
