@@ -10,135 +10,189 @@ export function validate(config) {
         const parts = path.split('.');
         let current = obj;
         for (let i = 0; i < parts.length; i++) {
-            if (current === undefined || current === null) {
-                return { missing: true, value: undefined };
-            }
+            if (current === undefined || current === null) return { missing: true, value: undefined };
             current = current[parts[i]];
         }
-        return {
-            missing: current === undefined || current === null,
-            value: current
-        };
+        return { missing: current === undefined || current === null, value: current };
     }
 
-    function exists(obj, path) {
-        if (getPathValue(obj, path).missing) {
+    function exists(path) {
+        if (getPathValue(config, path).missing) {
             errors.push(path + ' is missing');
-            return;
         }
     }
 
-    function validateValue(path, value, type, extra, label) {
-        const errorPath = label || path;
-
-        if (type === 'string') {
-            if (typeof value !== 'string') {
-                errors.push(errorPath + ' must be a string');
-            } else if (extra === 'nonEmpty' && value.length === 0) {
-                errors.push(errorPath + ' must be non-empty');
-            }
-        } else if (type === 'number') {
-            if (typeof value !== 'number') {
-                errors.push(errorPath + ' must be a number');
-            } else if (extra === 'positive' && value <= 0) {
-                errors.push(errorPath + ' must be a positive number');
-            }
-        } else if (type === 'array') {
-            if (!Array.isArray(value)) {
-                errors.push(errorPath + ' must be an array');
-            } else if (extra === 'nonEmpty' && value.length === 0) {
-                errors.push(errorPath + ' must be a non-empty array');
-            }
-        } else if (type === 'enum') {
-            if (!extra.includes(value)) {
-                errors.push(errorPath + ' must be one of: ' + extra.join(', '));
-            }
-        }
-    }
-
-    function required(obj, path, type, extra, label) {
-        const result = getPathValue(obj, path);
-        const errorPath = label || path;
-
+    function required(path, type, extra, label) {
+        const result = getPathValue(config, path);
+        const key = label || path;
         if (result.missing) {
-            errors.push(errorPath + ' is missing');
+            errors.push(key + ' is missing');
             return;
         }
-        validateValue(path, result.value, type, extra, label);
+        const val = result.value;
+        if (type === 'string') {
+            if (typeof val !== 'string') errors.push(key + ' must be a string');
+            else if (extra === 'nonEmpty' && !val.length) errors.push(key + ' must be non-empty');
+        } else if (type === 'number') {
+            if (typeof val !== 'number') errors.push(key + ' must be a number');
+            else if (extra === 'positive' && val <= 0) errors.push(key + ' must be a positive number');
+        } else if (type === 'array') {
+            if (!Array.isArray(val)) errors.push(key + ' must be an array');
+            else if (extra === 'nonEmpty' && !val.length) errors.push(key + ' must be a non-empty array');
+        } else if (type === 'enum' && !extra.includes(val)) {
+            errors.push(key + ' must be one of: ' + extra.join(', '));
+        }
     }
 
-    // Top-level keys (existence only — they are objects)
-    exists(config, 'profile');
-    exists(config, 'socialLinks');
-    exists(config, 'slogans');
-    exists(config, 'wallpaper');
-    exists(config, 'time');
-    exists(config, 'loading');
-    exists(config, 'debug');
+    function validateLink(link, i) {
+        const p = 'socialLinks.links[' + i + ']';
+        if (typeof link.name !== 'string' || !link.name.length) errors.push(p + '.name must be a non-empty string');
+        if (typeof link.url !== 'string' || !link.url.length) errors.push(p + '.url must be a non-empty string');
+        if (link.icon !== undefined && typeof link.icon !== 'string') errors.push(p + '.icon must be a string');
+        if (link.color !== undefined && typeof link.color !== 'string') errors.push(p + '.color must be a string');
+    }
+
+    function validateStringArray(arr, path) {
+        arr.forEach(function (item, i) {
+            if (typeof item !== 'string' || !item.length) errors.push(path + '[' + i + '] must be a non-empty string');
+        });
+    }
+
+    // Top-level keys
+    [
+        'profile',
+        'socialLinks',
+        'slogans',
+        'wallpaper',
+        'time',
+        'loading',
+        'debug',
+        'footer',
+        'animation',
+        'effects'
+    ].forEach(exists);
 
     if (config.profile) {
-        required(config, 'profile.name', 'string', 'nonEmpty', 'name');
-        required(config, 'profile.status', 'string', undefined, 'status');
-        required(config, 'profile.avatar', 'string', undefined, 'avatar');
+        required('profile.name', 'string', 'nonEmpty', 'name');
+        required('profile.status', 'string', undefined, 'status');
+        required('profile.avatar', 'string', undefined, 'avatar');
     }
 
     if (config.socialLinks) {
-        required(config.socialLinks, 'links', 'array', 'nonEmpty');
+        required('socialLinks.links', 'array', 'nonEmpty');
         if (Array.isArray(config.socialLinks.links)) {
-            config.socialLinks.links.forEach(function (link, i) {
-                const prefix = 'socialLinks.links[' + i + ']';
-                if (typeof link.name !== 'string' || link.name.length === 0) {
-                    errors.push(prefix + '.name must be a non-empty string');
-                }
-                if (typeof link.url !== 'string' || link.url.length === 0) {
-                    errors.push(prefix + '.url must be a non-empty string');
-                }
-                if (link.icon !== undefined && typeof link.icon !== 'string') {
-                    errors.push(prefix + '.icon must be a string');
-                }
-                if (link.color !== undefined && typeof link.color !== 'string') {
-                    errors.push(prefix + '.color must be a string');
-                }
-            });
+            config.socialLinks.links.forEach(validateLink);
         }
-        required(config.socialLinks, 'colorScheme', 'enum', ['cycle', 'same']);
+        required('socialLinks.colorScheme', 'enum', ['cycle', 'same']);
     }
 
     if (config.slogans) {
-        required(config.slogans, 'list', 'array', 'nonEmpty');
+        required('slogans.list', 'array', 'nonEmpty');
         if (Array.isArray(config.slogans.list)) {
             config.slogans.list.forEach(function (s, i) {
-                if (typeof s !== 'string') {
-                    errors.push('slogans.list[' + i + '] must be a string');
-                }
+                if (typeof s !== 'string') errors.push('slogans.list[' + i + '] must be a string');
             });
         }
-        required(config.slogans, 'mode', 'enum', ['random', 'sequence']);
-        required(config.slogans, 'typeSpeed', 'number', 'positive');
-        required(config.slogans, 'pauseDuration', 'number', 'positive');
+        required('slogans.mode', 'enum', ['random', 'sequence']);
+        required('slogans.typeSpeed', 'number', 'positive');
+        required('slogans.pauseDuration', 'number', 'positive');
+        if (config.slogans.loop !== undefined && typeof config.slogans.loop !== 'boolean') {
+            errors.push('slogans.loop must be a boolean');
+        }
     }
 
     if (config.wallpaper) {
-        required(config.wallpaper, 'apis', 'array', 'nonEmpty');
-        if (Array.isArray(config.wallpaper.apis)) {
-            config.wallpaper.apis.forEach(function (api, i) {
-                if (typeof api !== 'string' || api.length === 0) {
-                    errors.push('wallpaper.apis[' + i + '] must be a non-empty string');
-                }
+        required('wallpaper.apis', 'array', 'nonEmpty');
+        if (Array.isArray(config.wallpaper.apis)) validateStringArray(config.wallpaper.apis, 'wallpaper.apis');
+        required('wallpaper.raceTimeout', 'number', 'positive');
+        required('wallpaper.maxRetries', 'number', 'positive');
+        required('wallpaper.preloadCount', 'number', 'positive');
+        if (config.wallpaper.infiniteScroll !== undefined) {
+            required('wallpaper.infiniteScroll.enabled', 'enum', [true, false], 'infiniteScroll.enabled');
+            if (
+                config.wallpaper.infiniteScroll.batchSize !== undefined &&
+                typeof config.wallpaper.infiniteScroll.batchSize !== 'number'
+            ) {
+                errors.push('infiniteScroll.batchSize must be a number');
+            }
+            if (
+                config.wallpaper.infiniteScroll.maxImages !== undefined &&
+                typeof config.wallpaper.infiniteScroll.maxImages !== 'number'
+            ) {
+                errors.push('infiniteScroll.maxImages must be a number');
+            }
+            if (
+                config.wallpaper.infiniteScroll.speed !== undefined &&
+                typeof config.wallpaper.infiniteScroll.speed !== 'number'
+            ) {
+                errors.push('infiniteScroll.speed must be a number');
+            }
+        }
+    }
+    if (config.time) {
+        required('time.format', 'enum', ['24h', '12h']);
+        required('time.updateInterval', 'number', 'positive');
+        if (config.time.showWeekday !== undefined && typeof config.time.showWeekday !== 'boolean') {
+            errors.push('time.showWeekday must be a boolean');
+        }
+        if (config.time.showDate !== undefined && typeof config.time.showDate !== 'boolean') {
+            errors.push('time.showDate must be a boolean');
+        }
+    }
+
+    if (config.loading) {
+        required('loading.texts', 'array', 'nonEmpty');
+        if (Array.isArray(config.loading.texts)) {
+            config.loading.texts.forEach(function (t, i) {
+                if (typeof t !== 'string' || !t.length)
+                    errors.push('loading.texts[' + i + '] must be a non-empty string');
             });
         }
-        required(config.wallpaper, 'raceTimeout', 'number', 'positive');
-        required(config.wallpaper, 'maxRetries', 'number', 'positive');
-        required(config.wallpaper, 'preloadCount', 'number', 'positive');
+        if (config.loading.textSwitchInterval !== undefined && typeof config.loading.textSwitchInterval !== 'number') {
+            errors.push('loading.textSwitchInterval must be a number');
+        }
     }
 
-    if (config.time) {
-        required(config.time, 'format', 'enum', ['24h', '12h']);
-        required(config.time, 'updateInterval', 'number', 'positive');
+    if (config.footer) {
+        if (config.footer.text !== undefined && typeof config.footer.text !== 'string') {
+            errors.push('footer.text must be a string');
+        }
     }
 
-    return {
-        valid: errors.length === 0,
-        errors: errors
-    };
+    if (config.animation) {
+        if (config.animation.cursorStyle !== undefined) {
+            required('animation.cursorStyle', 'enum', ['block', 'line']);
+        }
+    }
+
+    if (config.effects) {
+        if (config.effects.scrollReveal !== undefined) {
+            if (
+                config.effects.scrollReveal.enabled !== undefined &&
+                typeof config.effects.scrollReveal.enabled !== 'boolean'
+            ) {
+                errors.push('effects.scrollReveal.enabled must be a boolean');
+            }
+            if (
+                config.effects.scrollReveal.offset !== undefined &&
+                typeof config.effects.scrollReveal.offset !== 'number'
+            ) {
+                errors.push('effects.scrollReveal.offset must be a number');
+            }
+            if (
+                config.effects.scrollReveal.delay !== undefined &&
+                typeof config.effects.scrollReveal.delay !== 'number'
+            ) {
+                errors.push('effects.scrollReveal.delay must be a number');
+            }
+        }
+    }
+
+    if (config.debug) {
+        if (config.debug.consoleLog !== undefined && typeof config.debug.consoleLog !== 'boolean') {
+            errors.push('debug.consoleLog must be a boolean');
+        }
+    }
+
+    return { valid: errors.length === 0, errors: errors };
 }
