@@ -69,7 +69,7 @@ export const CONFIG = {
     // 底部版权配置
     // ============================================================
     footer: {
-        text: '咕!咕!嘎!嘎!-"罗德岛"有限公司出品'
+        text: '咕!咕!嘎!嘎!-遊星 Wakusei'
     },
 
     // ============================================================
@@ -130,7 +130,7 @@ export const CONFIG = {
         preloadCount: 3,
         infiniteScroll: {
             enabled: true,
-            speed: 1.5,
+            speed: 2,
             batchSize: 5,
             maxImages: 50
         }
