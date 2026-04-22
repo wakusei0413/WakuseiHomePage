@@ -91,7 +91,7 @@ logger.log('Slogan 数量:', CONFIG.slogans.list.length);
         wallpaper.init();
         logger.log('[壁纸] 模块已初始化');
     } catch (error) {
-        console.error('[壁纸] 初始化失败', error);
+        logger.error('[壁纸] 初始化失败', error);
         revealMainContent();
     }
 })();

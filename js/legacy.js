@@ -46,7 +46,7 @@
         footer: {
             text: '咕!咕!嘎!嘎!-"罗德岛"有限公司出品'
         },
-        debug: { consoleLog: true }
+        debug: { consoleLog: false }
     };
 
     // ===== 最小 Polyfills（IE11 兼容）=====
