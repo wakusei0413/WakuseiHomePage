@@ -1,8 +1,10 @@
 # Wakusei HomePage
 
+![主页截图](res/repo/Screenshot/Mainpage/01.png)
+
 一个采用粗放主义（Brutalist）设计风格的个人主页，具有磨砂玻璃效果、动态壁纸轮播、打字机 Slogan 展示等功能。
 
-![版本](https://img.shields.io/badge/version-0.6.2-blue)
+![版本](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 本项目在 [LINUX DO](https://linux.do) 社区进行开源推广
@@ -116,7 +118,7 @@ profile: {
 | -------- | ------ | -------------------- | ------------------------- |
 | `name`   | string | 显示在页面中央的名称 | `'遊星 Wakusei'`          |
 | `status` | string | 状态栏文字           | `'OPEN TO OPPORTUNITIES'` |
-| `avatar` | string | 头像图片路径         | `'res/img/avatar.png'`    |
+| `avatar` | string | 头像图片路径         | `'res/img/logo.png'`      |
 
 ---
 
@@ -164,13 +166,13 @@ socialLinks: {
 所有颜色均使用 HEX 格式，确保精准可控：
 
 ```javascript
-color: '#ffe600'; // 主题黄
-color: '#ff3e3e'; // 主题红
-color: '#3e59ff'; // 主题蓝
-color: '#FF6B6B'; // 珊瑚红
-color: '#4ECDC4'; // 青绿色
-color: '#A8E6CF'; // 薄荷绿
-color: '#FFD93D'; // 明黄色
+color: '#ffe600', // 主题黄
+color: '#ff3e3e', // 主题红
+color: '#3e59ff', // 主题蓝
+color: '#FF6B6B', // 珊瑚红
+color: '#4ECDC4', // 青绿色
+color: '#A8E6CF', // 薄荷绿
+color: '#FFD93D', // 明黄色
 ```
 
 不设置 `color` 时，将按 `colorScheme` 策略自动循环分配 `#ffe600 → #ff3e3e → #3e59ff`。
@@ -412,18 +414,26 @@ WakuseiHomePage/
 ├── build.js                # 构建脚本（压缩 JS/CSS）
 ├── .eslintrc.json          # ESLint 配置
 ├── .prettierrc             # Prettier 配置
-├── .gitignore               # Git 忽略规则
+├── .gitignore              # Git 忽略规则
 ├── README.md               # 本文件
 ├── css/
-│   └── style.css           # 样式文件
+│   ├── base.css            # 基础样式
+│   ├── layout.css          # 布局样式
+│   ├── components.css      # 组件样式
+│   └── responsive.css      # 响应式样式
 ├── js/
-│   ├── main.js             # 主脚本入口
-│   ├── wallpaper.js         # 壁纸滚动模块
-│   ├── typewriter.js        # 打字机效果模块
-│   ├── time.js              # 时间组件模块
-│   ├── social.js            # 社交链接 & 个人信息模块
-│   ├── logger.js            # 日志工具
-│   └── utils.js             # 工具函数（debounce 等）
+│   ├── app.js              # ES Module 主入口
+│   ├── bootstrap.js        # 初始化辅助函数
+│   ├── wallpaper.js        # 壁纸滚动模块
+│   ├── typewriter.js       # 打字机效果模块
+│   ├── time.js             # 时间组件模块
+│   ├── social.js           # 社交链接 & 个人信息模块
+│   ├── validate-config.js  # 配置校验模块
+│   ├── slogan-selector.js  # Slogan 选择器
+│   ├── logger.js           # 日志工具
+│   ├── utils.js            # 工具函数（debounce 等）
+│   ├── polyfills.js        # 兼容性 Polyfills
+│   └── legacy.js           # 旧浏览器回退脚本（ES5）
 └── res/
     └── img/
         └── logo.png         # 默认头像
@@ -432,6 +442,15 @@ WakuseiHomePage/
 ---
 
 ## 🔧 更新日志
+
+### v1.0.0
+
+- **🚀 首个正式版本发布**
+    - 版本号统一升级为 `1.0.0`
+    - 修复 README 中过时的项目结构说明（`main.js` → `app.js`）
+    - 修复 README 中颜色示例的语法错误（分号改为逗号）
+    - 修复 `index.html` 中残留的 `main.js` 注释为 `app.js`
+    - 补充 README 项目结构中缺失的模块文件说明
 
 ### v0.6.2
 
@@ -622,7 +641,7 @@ A:
 
 1. 检查浏览器控制台是否有红色报错
 2. 强制刷新页面：`Ctrl + F5`
-3. 确保 `config.js` 在 `index.html` 中正确引入（在 `main.js` 之前）
+3. 确保 `config.js` 与 `js/app.js` 在同一目录层级（`app.js` 通过 ES Module `import` 加载配置）
 
 ### Q: GitHub Pages 上社交链接不显示？
 
