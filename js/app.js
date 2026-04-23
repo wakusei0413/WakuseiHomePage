@@ -19,6 +19,8 @@ import { initTime } from './time.js';
 import { initSocialLinks, applyProfileConfig } from './social.js';
 import { WallpaperScroller } from './wallpaper.js';
 import { validate } from './validate-config.js';
+import { initAudio, tryPlay } from './audio.js';
+import { initConsent } from './consent.js';
 
 // ========== 配置验证 ==========
 const validationResult = validate(CONFIG);
@@ -29,6 +31,9 @@ if (!validationResult.valid) {
 
 logger.log('%c配置已加载 \u2713', 'color: #FFE600; font-size: 12px;');
 logger.log('Slogan 数量:', CONFIG.slogans.list.length);
+
+// 初始化背景音频（加载阶段预缓冲）
+const audio = initAudio(CONFIG.audio, logger);
 
 // ========== 动态加载 Font Awesome（5秒超时放弃）==========
 if (!utils.isLegacyCompatMode()) {
@@ -89,23 +94,31 @@ if (CONFIG.contentProtection && CONFIG.contentProtection.preventCopyAndDrag) {
     logger.log('%c内容保护已启用', 'color: #FFE600; font-size: 12px;');
 }
 
+// 同意管理器初始化（必须在 revealMainContent 之前捕获 DOM 引用）
+const container = document.getElementById('mainContent');
+const consentOverlay = document.getElementById('consentOverlay');
+
+function triggerAudio() {
+    tryPlay(audio, logger);
+}
+
 // ========== 壁纸初始化 ==========
 if (utils.isLegacyCompatMode()) {
     logger.log('[兼容模式] 跳过壁纸模块');
     revealMainContent();
+    initConsent(container, consentOverlay, triggerAudio, logger);
 } else {
     try {
-        const wallpaper = new WallpaperScroller(
-            'wallpaperScrollArea',
-            CONFIG.wallpaper,
-            CONFIG.loading,
-            revealMainContent
-        );
+        const wallpaper = new WallpaperScroller('wallpaperScrollArea', CONFIG.wallpaper, CONFIG.loading, function () {
+            revealMainContent();
+            initConsent(container, consentOverlay, triggerAudio, logger);
+        });
         wallpaper.init();
         logger.log('[壁纸] 模块已初始化');
     } catch (error) {
         logger.error('[壁纸] 初始化失败', error);
         revealMainContent();
+        initConsent(container, consentOverlay, triggerAudio, logger);
     }
 }
 
@@ -121,7 +134,6 @@ initSocialLinks();
 applyProfileConfig();
 
 if (utils.isLegacyCompatMode()) {
-    revealMainContent();
     logger.log('[兼容模式] 仅保留基础资料与社交链接');
 } else {
     initTypewriter();
