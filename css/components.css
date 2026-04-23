@@ -750,3 +750,79 @@
 .legacy-compat .status-bar {
     border: 3px solid #0a0a0a;
 }
+
+/* ===== 同意覆盖层 ===== */
+.consent-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    /* 半透明黑，让模糊页面若隐若现 */
+    background: rgba(10, 10, 10, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9997;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-out;
+}
+
+.consent-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.consent-overlay.dismissed {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.consent-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+/* IE11 flexbox gap fallback */
+.consent-panel > * + * {
+    margin-top: 1.5rem;
+}
+
+@supports (gap: 1.5rem) {
+    .consent-panel > * + * {
+        margin-top: 0;
+    }
+}
+
+.consent-text {
+    font-family: var(--font-display, 'Space Grotesk', 'Noto Sans SC', sans-serif);
+    font-size: clamp(1.5rem, 4vw, 3rem);
+    font-weight: 700;
+    color: #fffef7;
+    text-align: center;
+    letter-spacing: 0.05em;
+    user-select: none;
+    pointer-events: none;
+}
+
+.consent-cursor {
+    display: block;
+    font-size: 2rem;
+    color: var(--accent-yellow, #ffe600);
+    animation: consent-bounce 1.2s ease-in-out infinite;
+    user-select: none;
+    pointer-events: none;
+}
+
+@keyframes consent-bounce {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(8px);
+    }
+}
