@@ -60,6 +60,35 @@ if (!utils.isLegacyCompatMode()) {
     document.head.appendChild(link);
 }
 
+// ========== 内容保护（禁止复制和拖拽）==========
+if (CONFIG.contentProtection && CONFIG.contentProtection.preventCopyAndDrag) {
+    document.body.classList.add('no-copy');
+
+    function preventDefault(e) {
+        e.preventDefault();
+    }
+
+    document.addEventListener('selectstart', preventDefault);
+    document.addEventListener('contextmenu', preventDefault);
+    document.addEventListener('copy', preventDefault);
+    document.addEventListener('cut', preventDefault);
+    document.addEventListener('dragstart', preventDefault);
+
+    // 阻止通过 mousedown 进行文本选择（允许输入类元素正常交互）
+    document.addEventListener('mousedown', function (e) {
+        const tag = e.target.tagName;
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+        e.preventDefault();
+    });
+
+    // 阻止右键菜单中的复制
+    document.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+    });
+
+    logger.log('%c内容保护已启用', 'color: #FFE600; font-size: 12px;');
+}
+
 // ========== 壁纸初始化 ==========
 if (utils.isLegacyCompatMode()) {
     logger.log('[兼容模式] 跳过壁纸模块');
