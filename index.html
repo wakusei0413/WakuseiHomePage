@@ -170,6 +170,14 @@
             <span class="sr-only">关闭</span>
         </button>
 
+        <!-- 首次访问同意覆盖层 -->
+        <div class="consent-overlay" id="consentOverlay">
+            <div class="consent-panel">
+                <p class="consent-text">点击任意处以继续</p>
+                <span class="consent-cursor">▾</span>
+            </div>
+        </div>
+
         <!-- JavaScript（ES Module 单入口） -->
         <script type="module" src="js/app.js"></script>
         <!-- 旧浏览器回退：不支持 ES Module 的浏览器通过此脚本提供基础功能 -->
