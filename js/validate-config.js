@@ -69,7 +69,8 @@ export function validate(config) {
         'debug',
         'footer',
         'animation',
-        'effects'
+        'effects',
+        'contentProtection'
     ].forEach(exists);
 
     if (config.profile) {
@@ -191,6 +192,15 @@ export function validate(config) {
     if (config.debug) {
         if (config.debug.consoleLog !== undefined && typeof config.debug.consoleLog !== 'boolean') {
             errors.push('debug.consoleLog must be a boolean');
+        }
+    }
+
+    if (config.contentProtection) {
+        if (
+            config.contentProtection.preventCopyAndDrag !== undefined &&
+            typeof config.contentProtection.preventCopyAndDrag !== 'boolean'
+        ) {
+            errors.push('contentProtection.preventCopyAndDrag must be a boolean');
         }
     }
 

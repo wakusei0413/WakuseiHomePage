@@ -120,3 +120,17 @@ body {
     white-space: nowrap;
     border: 0;
 }
+
+/* 内容保护：禁止选中、复制和拖拽 */
+.no-copy,
+.no-copy * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -moz-user-drag: none;
+    -ms-user-drag: none;
+    user-drag: none;
+    -webkit-touch-callout: none;
+}
