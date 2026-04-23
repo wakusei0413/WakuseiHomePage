@@ -46,7 +46,13 @@
         footer: {
             text: '咕!咕!嘎!嘎!-"罗德岛"有限公司出品'
         },
-        debug: { consoleLog: false }
+        debug: { consoleLog: false },
+        audio: {
+            enabled: false,
+            src: 'res/audio/theme.mp3',
+            volume: 0.5,
+            loop: true
+        }
     };
 
     // ===== 最小 Polyfills（IE11 兼容）=====
@@ -85,6 +91,41 @@
             }
             return null;
         };
+    }
+
+    // ===== 首次访问同意（Legacy 模式）=====
+    var consentGranted = false;
+    try {
+        var consentRaw = localStorage.getItem('wakusei_consent_v1');
+        if (consentRaw) {
+            var consentData = JSON.parse(consentRaw);
+            if (consentData && consentData.granted) {
+                consentGranted = true;
+            }
+        }
+    } catch (e) {}
+
+    if (!consentGranted) {
+        // 简化的首次访问提示（legacy 模式下无音频，仅用于视觉一致性）
+        var consentTextEl = document.createElement('div');
+        consentTextEl.className = 'legacy-consent-text';
+        consentTextEl.innerHTML = '点击任意处以继续';
+        consentTextEl.style.cssText =
+            'position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);color:#fffef7;font-size:2rem;font-weight:bold;z-index:9997;cursor:pointer;';
+        document.body.appendChild(consentTextEl);
+
+        var dismissLegacyConsent = function () {
+            if (consentTextEl && consentTextEl.parentNode) {
+                consentTextEl.parentNode.removeChild(consentTextEl);
+            }
+            try {
+                localStorage.setItem('wakusei_consent_v1', JSON.stringify({ granted: true, timestamp: Date.now() }));
+            } catch (e) {}
+        };
+
+        document.addEventListener('click', dismissLegacyConsent, { once: true });
+        document.addEventListener('touchstart', dismissLegacyConsent, { once: true });
+        document.addEventListener('keydown', dismissLegacyConsent, { once: true });
     }
 
     // ===== 日志工具 =====
