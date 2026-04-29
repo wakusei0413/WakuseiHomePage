@@ -2,22 +2,32 @@
     "name": "wakusei-homepage",
     "version": "1.0.0",
     "private": true,
-    "description": "Wakusei 个人主页 - 粗放主义设计",
+    "description": "Wakusei 个人主页 - Astro + SolidJS static site",
     "scripts": {
-        "lint": "eslint js/ config.js",
-        "lint:fix": "eslint js/ config.js --fix",
-        "format": "prettier --write \"js/**/*.js\" config.js css/**/*.css index.html",
-        "format:check": "prettier --check \"js/**/*.js\" config.js css/**/*.css index.html",
-        "build": "node scripts/build.js",
+        "dev": "astro dev",
+        "lint": "eslint \"src/**/*.{ts,tsx}\" \"tests/**/*.test.ts\" astro.config.mjs",
+        "lint:fix": "eslint \"src/**/*.{ts,tsx}\" \"tests/**/*.test.ts\" astro.config.mjs --fix",
+        "format": "prettier --write \"src/**/*.{ts,tsx,astro}\" \"tests/**/*.test.ts\" css/**/*.css astro.config.mjs tsconfig.json package.json",
+        "format:check": "prettier --check \"src/**/*.{ts,tsx,astro}\" \"tests/**/*.test.ts\" css/**/*.css astro.config.mjs tsconfig.json package.json",
+        "build": "astro build",
+        "check": "astro check",
         "serve": "npx serve dist",
-        "test": "node --test tests/*.test.mjs"
+        "preview": "astro preview",
+        "test": "node --import tsx --test tests/*.test.ts"
     },
     "devDependencies": {
-        "cssnano": "^6.0.0",
+        "@astrojs/check": "^0.9.8",
+        "@astrojs/solid-js": "^5.1.0",
+        "@types/node": "^22.14.1",
+        "@typescript-eslint/eslint-plugin": "^7.18.0",
+        "@typescript-eslint/parser": "^7.18.0",
+        "astro": "^5.7.12",
         "eslint": "^8.56.0",
-        "postcss": "^8.4.0",
-        "postcss-cli": "^11.0.0",
         "prettier": "^3.2.0",
-        "terser": "^5.27.0"
+        "prettier-plugin-astro": "^0.14.0",
+        "solid-js": "^1.9.5",
+        "tsx": "^4.19.3",
+        "typescript": "^5.8.3",
+        "zod": "^3.24.4"
     }
 }
