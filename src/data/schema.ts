@@ -75,5 +75,10 @@ export const siteConfigSchema = z.object({
 export type ParsedSiteConfig = z.infer<typeof siteConfigSchema>;
 
 export function parseSiteConfig(value: unknown): ParsedSiteConfig {
-    return siteConfigSchema.parse(value);
+    const result = siteConfigSchema.safeParse(value);
+    if (!result.success) {
+        const issues = result.error.issues.map((issue) => `  - ${issue.path.join('.')}: ${issue.message}`).join('\n');
+        throw new Error(`Site config validation failed:\n${issues}`);
+    }
+    return result.data;
 }
