@@ -3,6 +3,10 @@ import type { SocialLinksConfig } from '../types/site';
 const cycleColors = ['#ffe600', '#ff3e3e', '#3e59ff'];
 
 export function SocialLinks(props: { config: SocialLinksConfig }) {
+    const setHoveredState = (element: HTMLDivElement, hovered: boolean) => {
+        element.classList.toggle('is-hovered', hovered);
+    };
+
     return (
         <nav class="social-links" id="socialLinks">
             {props.config.links.map((link, index) => {
@@ -11,7 +15,15 @@ export function SocialLinks(props: { config: SocialLinksConfig }) {
                 const isMailTo = link.url.startsWith('mailto:');
 
                 return (
-                    <div class="social-link-slot">
+                    <div
+                        class="social-link-slot"
+                        classList={{ 'is-hovered': false }}
+                        onPointerEnter={(event) => setHoveredState(event.currentTarget, true)}
+                        onPointerLeave={(event) => setHoveredState(event.currentTarget, false)}
+                        onPointerDown={(event) => setHoveredState(event.currentTarget, true)}
+                        onPointerUp={(event) => setHoveredState(event.currentTarget, false)}
+                        onBlur={(event) => setHoveredState(event.currentTarget as HTMLDivElement, false)}
+                    >
                         <a
                             href={link.url}
                             aria-label={link.name}

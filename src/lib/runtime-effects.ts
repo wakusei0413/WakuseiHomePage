@@ -47,7 +47,23 @@ export function initScrollAnimations(delay: number, offset: number) {
         (entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    entry.target.classList.add('scroll-reveal--visible');
+                    const target = entry.target as HTMLElement;
+                    target.classList.add('scroll-reveal--visible');
+
+                    const cleanup = () => {
+                        target.removeEventListener('transitionend', onTransitionEnd);
+                        target.classList.remove('scroll-reveal');
+                        target.style.transitionDelay = '';
+                    };
+
+                    const onTransitionEnd = (e: TransitionEvent) => {
+                        if (e.propertyName === 'transform') {
+                            cleanup();
+                        }
+                    };
+                    target.addEventListener('transitionend', onTransitionEnd);
+                    setTimeout(cleanup, 800);
+
                     observer.unobserve(entry.target);
                 }
             });
