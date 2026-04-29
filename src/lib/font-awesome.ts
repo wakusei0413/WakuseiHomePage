@@ -1,6 +1,6 @@
 import type { SocialLink } from '../types/site';
 
-const FONT_AWESOME_URL = 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css';
+const FONT_AWESOME_URL = '/fa/css/all.min.css';
 
 type SchedulerDeps = {
     document?: DocumentLike;
