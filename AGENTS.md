@@ -2,43 +2,53 @@
 
 ## Repo Shape
 
-- This is a plain static site, not a framework app. Runtime entrypoint is `index.html`, which loads a single ES Module entry point `js/app.js`.
-- `js/app.js` imports all modules with explicit `import`/`export` declarations. No `window.App` global namespace — dependencies are resolved through ESM imports.
-- `config.js` exports `CONFIG` as an ESM named export (`export const CONFIG`). It is the main customization surface; most content changes should happen there.
-- `js/validate-config.js` validates CONFIG at startup — missing or mistyped fields produce console errors and prevent initialization.
-- Module dependency graph: `app.js` → `config.js`, `polyfills.js` (side-effect), `logger.js`, `utils.js`, `validate-config.js`, `typewriter.js`, `time.js`, `social.js`, `wallpaper.js`, `slogan-selector.js`
-- `js/legacy.js` is a standalone ES5 IIFE for legacy browsers (IE, old Edge) that don't support ES Modules. Loaded via `<script nomodule>`. Contains CONFIG data that must stay in sync with `config.js`.
+- Astro 5 static site with SolidJS components and TypeScript. Entry point: `src/pages/index.astro` → renders `src/layouts/BaseLayout.astro` wrapping `src/components/HomepageApp.tsx`.
+- Components use SolidJS reactivity (`createSignal`, `onMount`, `onCleanup`). All client components hydrate with `client:load`.
+- `src/data/customize.ts` exports `editableSiteConfig` — the main customization surface; most content changes happen there.
+- `src/data/site.ts` imports `editableSiteConfig`, validates via `src/data/schema.ts` (Zod), and exports `siteConfig` consumed by all components.
+- `src/types/site.ts` defines all TypeScript interfaces. Schema and types must stay in sync.
+- `src/lib/` holds reusable utilities: `logger.ts`, `time.ts`, `slogan-selector.ts`, `font-awesome.ts`, `runtime-effects.ts`, `wallpaper-scroller.ts`.
+- CSS is 4-layer: `css/base.css` → `css/layout.css` → `css/components.css` → `css/responsive.css`, imported by `BaseLayout.astro`.
+- No legacy browser support — v1.5.0 targets modern browsers only.
 
 ## Commands
 
 - Install tooling with `npm install`.
-- Lint checks `js/` and `config.js`: `npm run lint`
+- Lint checks `src/**/*.{ts,tsx}` and `tests/`: `npm run lint`
 - Auto-fix lint issues: `npm run lint:fix`
-- Prettier covers `js/**/*.js`, `config.js`, `css/**/*.css`, and `index.html`: `npm run format` or `npm run format:check`
-- Production build: `npm run build`
-- Run tests: `npm test` (uses Node.js test runner with `.mjs` files)
-- Local static preview: `npx serve .` or `python -m http.server 8080`
+- Prettier covers TS/TSX/Astro/CSS/config files: `npm run format` or `npm run format:check`
+- TypeScript check: `npm run check` (astro check)
+- Run tests: `npm test` (uses Node.js test runner with tsx loader)
+- Development server: `npm run dev`
+- Production build: `npm run build` (astro build → dist/)
+- Static preview: `npx serve dist` or `npm run preview`
 
 ## Verification
 
-- Tests live in `tests/*.test.mjs` and use Node.js built-in test runner with ESM imports.
-- For most changes, the useful verification path is `npm run lint`, `npm run format:check`, `npm test`, then `npm run build`.
-- CI runs on push/PR to `main`: lint, format:check, build (see `.github/workflows/ci.yml`).
+- Tests live in `tests/*.test.ts` and use Node.js built-in test runner with `node --import tsx --test`.
+- For most changes, run: `npm run lint`, `npm run format:check`, `npm test`, then `npm run build`.
+- CI runs on push/PR to `main`: lint → format:check → test → build (see `.github/workflows/ci.yml`).
 
 ## Build And Deploy Quirks
 
-- `scripts/build.js` copies `res/`, `css/`, `js/`, `config.js`, `LICENSE`, and `index.html` into `dist/`, then minifies JS/CSS there.
-- JS modules are minified individually with Terser `module: true` (ESM mode); `config.js` is minified without mangling.
-- `dist/` is ignored by git.
+- `astro build` outputs static HTML/JS/CSS to `dist/`. No custom build script needed.
+- `dist/` is ignored by git. Deployed to Cloudflare Pages.
+- SolidJS components are bundled client-side with `module: true` (ESM).
 
-## Style Constraints From Config
+## Style Constraints
 
-- ESLint is configured for ES modules (`sourceType: "module"`) with `no-var: "error"`.
-- Prettier uses 4-space indentation, semicolons, single quotes, `printWidth: 120`.
+- ESLint: `no-var: "error"`, `eqeqeq: "error"`, semicolons always, no-console off, `@typescript-eslint/recommended`.
+- Prettier: 4-space indentation, semicolons, single quotes, `printWidth: 120`, `trailingComma: "none"`.
+- Astro files use `prettier-plugin-astro`.
+
+## Config Flow
+
+- `src/data/customize.ts` (edit here) → `src/data/site.ts` (re-exports + validates via Zod) → consumed by components and layout.
+- Add new config fields: update `src/types/site.ts`, `src/data/schema.ts`, and `src/data/customize.ts`.
 
 ## Runtime Gotchas
 
-- ES Modules load asynchronously with `defer` semantics. All modules execute after HTML parsing, equivalent to the old `<script>` tags at end of body.
-- `package.json` stays `"type": "commonjs"` (default) because `scripts/build.js` uses `require()`. Test files use `.mjs` extension for ESM in Node.
-- Wallpaper loading depends on external image APIs in `CONFIG.wallpaper.apis`; failures here can affect local manual verification without meaning the app code is broken.
-- Font Awesome is loaded dynamically in `js/app.js` with a 5s timeout, so missing icons during local/network-restricted runs may be external.
+- SolidJS components hydrate client-side. Server-rendered HTML is static; interactivity activates after JS loads.
+- Wallpaper loading depends on external image APIs in `wallpaper.apis`; failures affect loading UX but not core functionality.
+- Font Awesome is loaded dynamically via `requestIdleCallback` with 5s timeout; missing icons in network-restricted environments are expected.
+- Google Fonts load via `rel="preload"` with `onload` swap; `<noscript>` fallback ensures fonts in no-JS scenarios.

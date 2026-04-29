@@ -7,6 +7,7 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
     const [text, setText] = createSignal('');
     const [cursorDimmed, setCursorDimmed] = createSignal(false);
     let timeoutId: number | undefined;
+    let isActive = true;
 
     onMount(() => {
         const selector = createSloganSelector(props.config.mode, props.config.list);
@@ -16,6 +17,10 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
             let charIndex = 0;
 
             const typeNext = () => {
+                if (!isActive) {
+                    return;
+                }
+
                 if (charIndex < next.length) {
                     charIndex += 1;
                     setText(next.slice(0, charIndex));
@@ -32,6 +37,10 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
             };
 
             const deleteNext = () => {
+                if (!isActive) {
+                    return;
+                }
+
                 if (charIndex > 0) {
                     charIndex -= 1;
                     setText(next.slice(0, charIndex));
@@ -49,6 +58,7 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
     });
 
     onCleanup(() => {
+        isActive = false;
         if (timeoutId !== undefined) {
             window.clearTimeout(timeoutId);
         }
