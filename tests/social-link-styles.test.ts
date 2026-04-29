@@ -14,11 +14,14 @@ describe('social link interaction styles', () => {
         );
     });
 
-    it('uses a near-instant vertical lift for social link hover', () => {
-        assert.match(componentsCss, /\.social-link\s*\{[\s\S]*transition:\s*none;/);
+    it('uses a near-instant up-left lift for social link hover', () => {
         assert.match(
             componentsCss,
-            /\.social-link-slot:hover\s+\.social-link--custom,\s*\.social-link-slot:focus-within\s+\.social-link--custom\s*\{[\s\S]*transform:\s*translate3d\(0,\s*-6px,\s*0\);[\s\S]*box-shadow:\s*6px 10px 0 var\(--custom-color,\s*#ffe600\);/
+            /\.social-link\s*\{[\s\S]*transition:\s*transform\s+0\.08s\s+cubic-bezier\(0\.2,\s*0,\s*0,\s*1\),[\s\S]*box-shadow\s+0\.08s\s+cubic-bezier\(0\.2,\s*0,\s*0,\s*1\),[\s\S]*background-color\s+0\.08s\s+cubic-bezier\(0\.2,\s*0,\s*0,\s*1\);/
+        );
+        assert.match(
+            componentsCss,
+            /\.social-link-slot[\s\S]*?\.social-link--custom\s*\{[\s\S]*?transform:\s*translate3d\(-6px,\s*-6px,\s*0\);[\s\S]*?box-shadow:\s*12px 12px 0 var\(--custom-color,\s*#ffe600\);/
         );
     });
 });

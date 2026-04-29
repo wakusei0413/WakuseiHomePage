@@ -68,7 +68,7 @@ export const editableSiteConfig: SiteConfig = {
     },
 
     footer: {
-        text: '呐?呐?嘿?嘿?-遨星 Wakusei'
+        text: '咕?咕?嘎?嘎?-遨星 Wakusei'
     },
 
     // Typewriter text block.
