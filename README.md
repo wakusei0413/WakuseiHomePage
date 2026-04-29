@@ -1,14 +1,12 @@
 # Wakusei HomePage
 
-![Version](https://img.shields.io/badge/version-1.5.0-0a0a0a?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.5.0-9a0a0a?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-ffe600?style=for-the-badge)
 ![Astro](https://img.shields.io/badge/Astro-5-ff5d01?style=for-the-badge&logo=astro&logoColor=white)
 ![SolidJS](https://img.shields.io/badge/SolidJS-1.9-2c4f7c?style=for-the-badge&logo=solid&logoColor=white)
 ![Cloudflare Pages](https://img.shields.io/badge/Cloudflare%20Pages-static-f38020?style=for-the-badge&logo=cloudflarepages&logoColor=white)
 
 这是一个基于 `Astro + SolidJS + TypeScript` 的单页静态个人主页，继续以纯静态资源方式部署到 `Cloudflare Pages`。
-
-这些徽章使用 `shields.io` 生成；在 GitHub 页面展示时，图片通常会经由 `camo.githubusercontent.com` 代理缓存。
 
 ![主页截图](docs/assets/screenshots/homepage-01.png)
 
