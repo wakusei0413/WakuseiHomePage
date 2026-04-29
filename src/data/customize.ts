@@ -1,22 +1,24 @@
-/**
- * 个人主页 - 配置文件
- * 在此编辑所有可配置项
- */
+import type { SiteConfig } from '../types/site';
 
-export const CONFIG = {
+// Edit this file for nearly all everyday homepage changes.
+// Sections are grouped by what usually gets customized together.
+export const editableSiteConfig: SiteConfig = {
     version: '1.0.0',
-    // ============================================================
-    // 个人信息配置
-    // ============================================================
+
+    // Browser and SEO metadata.
+    title: 'WAKUSEI - 个人主页',
+    description: 'wakusei - 个人主页',
+    lang: 'zh-CN',
+    themeColor: '#fffef7',
+
+    // Hero/profile block.
     profile: {
-        name: '遊星 Wakusei',
+        name: '遨星 Wakusei',
         status: '正在武装保卫开源社区！',
-        avatar: 'res/img/logo.png'
+        avatar: '/res/img/logo.png'
     },
 
-    // ============================================================
-    // 社交链接配置
-    // ============================================================
+    // Social links shown under the intro text.
     socialLinks: {
         colorScheme: 'cycle',
         links: [
@@ -65,22 +67,17 @@ export const CONFIG = {
         ]
     },
 
-    // ============================================================
-    // 底部版权配置
-    // ============================================================
     footer: {
-        text: '咕!咕!嘎!嘎!-遊星 Wakusei'
+        text: '呐?呐?嘿?嘿?-遨星 Wakusei'
     },
 
-    // ============================================================
-    // Slogan / 简介配置
-    // ============================================================
+    // Typewriter text block.
     slogans: {
         list: [
-            '安静，吵到我用使用锤子的TNT vibe coding了！',
+            '安静，听到我使用锤子的TNT vibe coding了吗！',
             '武装保卫开源社区！',
-            '说的好！我完全同意。',
-            '正在切换至cloudflare中',
+            '说得好！我完全同意。',
+            '正在切换至 Cloudflare 中...',
             '用冰冷的理性温暖世界。'
         ],
         mode: 'sequence',
@@ -89,9 +86,7 @@ export const CONFIG = {
         loop: true
     },
 
-    // ============================================================
-    // 时间组件配置
-    // ============================================================
+    // Right-side time card.
     time: {
         format: '24h',
         showWeekday: true,
@@ -99,15 +94,13 @@ export const CONFIG = {
         updateInterval: 1000
     },
 
-    // ============================================================
-    // 加载界面配置
-    // ============================================================
+    // Loading overlay text rotation.
     loading: {
         texts: [
             '少女祈祷中...',
             '正在给服务器喂猫粮...',
             '正在数像素...114...514...',
-            '正在和404谈判...',
+            '正在和 o4 谈判...',
             '正在召唤服务器精灵...',
             '正在给图片上色...',
             '正在连接异次元...',
@@ -118,9 +111,7 @@ export const CONFIG = {
         textSwitchInterval: 2000
     },
 
-    // ============================================================
-    // 壁纸配置
-    // ============================================================
+    // Wallpaper sources and scrolling behavior.
     wallpaper: {
         apis: ['https://www.loliapi.com/bg/', 'https://www.dmoe.cc/random.php'],
         raceTimeout: 10000,
@@ -134,30 +125,21 @@ export const CONFIG = {
         }
     },
 
-    // ============================================================
-    // 动画配置
-    // ============================================================
+    // Typewriter cursor style.
     animation: {
         cursorStyle: 'block'
     },
 
-    // ============================================================
-    // 交互保护配置
-    // ============================================================
+    // Runtime interaction guards.
     contentProtection: {
         preventCopyAndDrag: true
     },
 
-    // ============================================================
-    // 调试配置
-    // ============================================================
     debug: {
         consoleLog: false
     },
 
-    // ============================================================
-    // 交互特效配置
-    // ============================================================
+    // Small page effects.
     effects: {
         scrollReveal: {
             enabled: true,
@@ -165,4 +147,12 @@ export const CONFIG = {
             delay: 50
         }
     }
+};
+
+export const quickEditSections = {
+    profile: editableSiteConfig.profile,
+    socialLinks: editableSiteConfig.socialLinks,
+    slogans: editableSiteConfig.slogans,
+    wallpaper: editableSiteConfig.wallpaper,
+    time: editableSiteConfig.time
 };
