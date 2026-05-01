@@ -2,16 +2,19 @@ import { createEffect, createSignal, onCleanup, onMount } from 'solid-js';
 
 import { siteConfig } from '../data/site';
 import { scheduleFontAwesomeLoad } from '../lib/font-awesome';
+import { createI18n } from '../lib/i18n';
 import { createLogger } from '../lib/logger';
 import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations } from '../lib/runtime-effects';
 import { WallpaperScrollerController } from '../lib/wallpaper-scroller';
 import { ClockPanel } from './ClockPanel';
+import { ControlDock } from './ControlDock';
 import { LoadingOverlay } from './LoadingOverlay';
 import { SocialLinks } from './SocialLinks';
 import { TypewriterSlogan } from './TypewriterSlogan';
 
 export function HomepageApp() {
     const logger = createLogger(siteConfig.debug.consoleLog);
+    const i18n = createI18n(siteConfig.i18n);
     const [ready, setReady] = createSignal(false);
     const [loadingText, setLoadingText] = createSignal(siteConfig.loading.texts[0]);
     const [loadingPercent, setLoadingPercent] = createSignal(0);
@@ -89,26 +92,27 @@ export function HomepageApp() {
                             />
                         </div>
 
-                        <h1 class="name">{siteConfig.profile.name}</h1>
+                        <h1 class="name">{i18n.t('profile.name')}</h1>
 
                         <div class="status-bar">
                             <span class="status-dot"></span>
-                            <span class="status-text">{siteConfig.profile.status}</span>
+                            <span class="status-text">{i18n.t('profile.status')}</span>
                         </div>
 
                         <div class="bio-container" id="bioContainer">
                             <TypewriterSlogan
                                 config={siteConfig.slogans}
                                 cursorStyle={siteConfig.animation.cursorStyle}
+                                i18n={i18n}
                             />
                         </div>
 
-                        <SocialLinks config={siteConfig.socialLinks} />
+                        <SocialLinks config={siteConfig.socialLinks} i18n={i18n} />
                     </header>
 
                     <footer class="footer-left">
                         <div class="footer-line"></div>
-                        <p class="footer-text">{`${siteConfig.footer.text} • ${new Date().getFullYear()}`}</p>
+                        <p class="footer-text">{`${i18n.t('footer.text')} • ${new Date().getFullYear()}`}</p>
                     </footer>
                 </section>
 
@@ -116,8 +120,9 @@ export function HomepageApp() {
                     <div class="wallpaper-scroll-area" ref={(element) => (wallpaperRef = element)}></div>
                     <div class="right-panel-shadow"></div>
                     <div class="info-panel">
-                        <ClockPanel config={siteConfig.time} />
+                        <ClockPanel config={siteConfig.time} i18n={i18n} />
                     </div>
+                    <ControlDock config={siteConfig} i18n={i18n} />
                 </aside>
             </main>
 
