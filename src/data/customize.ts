@@ -68,16 +68,16 @@ export const editableSiteConfig: SiteConfig = {
     },
 
     footer: {
-        text: '咕?咕?嘎?嘎?-遨星 Wakusei'
+        text: '咕咕嘎嘎！-遨星 Wakusei'
     },
 
     // Typewriter text block.
     slogans: {
         list: [
-            '安静，听到我使用锤子的TNT vibe coding了吗！',
+            '安静，我在用锤子TNT vibe coding！',
             '武装保卫开源社区！',
             '说得好！我完全同意。',
-            '正在切换至 Cloudflare 中...',
+            '正在切换至Cloudflare中...',
             '用冰冷的理性温暖世界。'
         ],
         mode: 'sequence',
