@@ -3,7 +3,7 @@ import type { SiteConfig } from '../types/site';
 // Edit this file for nearly all everyday homepage changes.
 // Sections are grouped by what usually gets customized together.
 export const editableSiteConfig: SiteConfig = {
-    version: '1.0.0',
+    version: '1.5.0',
 
     // Browser and SEO metadata.
     title: 'WAKUSEI - 个人主页',
@@ -57,13 +57,13 @@ export const editableSiteConfig: SiteConfig = {
                 url: 'https://status.wakusei.top/',
                 icon: 'fa-solid fa-arrow-up-right-dots',
                 color: '#caa62e'
-            },
-            {
-                name: 'TESTING',
-                url: 'https://testing.wakusei.top/',
-                icon: 'fa-solid fa-flask',
-                color: '#16deca'
             }
+            //{
+            //  name: 'TESTING',
+            //url: 'https://testing.wakusei.top/',
+            //icon: 'fa-solid fa-flask',
+            //color: '#16deca'
+            //}
         ]
     },
 

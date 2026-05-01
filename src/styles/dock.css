@@ -1,0 +1,299 @@
+/* ========================================
+   ControlDock - Liquid Glass + MacOS Dock Wave Hover
+   ======================================== */
+
+/* ===== Control Dock ===== */
+.control-dock {
+    position: absolute;
+    right: 50%;
+    bottom: 20px;
+    transform: translateX(50%);
+    z-index: var(--z-dock, 10000);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    padding: 0 16px;
+    background: rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(40px) saturate(220%);
+    -webkit-backdrop-filter: blur(40px) saturate(220%);
+    border-radius: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+    transition:
+        transform 0.3s ease,
+        opacity 0.3s ease,
+        background-color 0.4s ease;
+}
+
+[data-theme='dark'] .control-dock {
+    background: rgba(10, 10, 26, 0.75);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.control-dock-item {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    border: none;
+    background: transparent;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        transform 0.15s ease-out;
+    touch-action: manipulation;
+    margin: 10px 4px;
+    font-size: 16px;
+    position: relative;
+    transform-origin: center bottom;
+    will-change: transform;
+    /* Initial state for wave hover */
+    transform: scale(1) translateY(0);
+}
+
+.control-dock-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.control-dock-item:active {
+    transform: scale(0.92) translateY(0) !important;
+}
+
+.control-dock-divider {
+    width: 1px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0;
+}
+
+/* ===== Popup (PC only) ===== */
+.dock-popup {
+    position: absolute;
+    bottom: calc(100% + 14px);
+    left: 50%;
+    transform: translateX(-50%) translateY(6px) scale(0.96);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    min-width: 160px;
+    padding: 12px 16px;
+    /* 立体玻璃效果 */
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(48px) saturate(240%);
+    -webkit-backdrop-filter: blur(48px) saturate(240%);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    /* 多层阴影：弥散外阴影 + 内高光 + 内阴影厚度 */
+    box-shadow:
+        0 12px 48px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+    color: #e8e8ec;
+    z-index: var(--z-dock, 10000);
+    transition:
+        opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0.25s step-end;
+}
+
+.dock-popup[data-open] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0) scale(1);
+}
+
+[data-theme='dark'] .dock-popup {
+    background: rgba(15, 15, 35, 0.7);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.dock-popup-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+    margin-top: 2px;
+    color: #4fc3f7;
+}
+
+.dock-popup-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.15s ease;
+    margin: 2px 0;
+    color: #fffef7;
+}
+
+.dock-popup-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.dock-popup-option .check-icon {
+    opacity: 0;
+    width: 16px;
+    color: #4fc3f7;
+    flex-shrink: 0;
+    transition: opacity 0.15s ease;
+}
+
+.dock-popup-option.selected .check-icon {
+    opacity: 1;
+}
+
+.dock-popup-option.selected {
+    background: rgba(79, 195, 247, 0.15);
+}
+
+/* ===== Bottom Sheet (Mobile only - hidden on PC) ===== */
+.dock-bottom-sheet {
+    display: none;
+}
+
+.dock-overlay {
+    display: none;
+}
+
+/* ===== Responsive: Show bottom sheet on mobile ===== */
+@media (max-width: 900px) {
+    .dock-bottom-sheet {
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-height: 40vh;
+        border-radius: 24px 24px 0 0;
+        /* 立体玻璃 */
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(48px) saturate(240%);
+        -webkit-backdrop-filter: blur(48px) saturate(240%);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-bottom: none;
+        /* 外上阴影 + 内部折射 */
+        box-shadow:
+            0 -12px 48px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.28),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+        color: #e8e8ec;
+        z-index: var(--z-dock, 10000);
+        padding: 16px 20px;
+        transform: translateY(100%);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+            transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+            visibility 0.35s step-end;
+        will-change: transform;
+    }
+
+    .dock-bottom-sheet[data-open] {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    [data-theme='dark'] .dock-bottom-sheet {
+        background: rgba(15, 15, 35, 0.7);
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .dock-bottom-sheet::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.3);
+        margin: 0 auto 16px auto;
+    }
+
+    .dock-bottom-sheet-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 14px;
+        color: #4fc3f7;
+        text-align: center;
+    }
+
+    .dock-bottom-sheet-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.15s ease;
+        margin: 4px 0;
+        color: #fffef7;
+    }
+
+    .dock-bottom-sheet-option:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .dock-bottom-sheet-option .check-icon {
+        opacity: 0;
+        width: 20px;
+        color: #4fc3f7;
+        flex-shrink: 0;
+        transition: opacity 0.15s ease;
+    }
+
+    .dock-bottom-sheet-option.selected .check-icon {
+        opacity: 1;
+    }
+
+    .dock-bottom-sheet-option.selected {
+        background: rgba(79, 195, 247, 0.15);
+    }
+
+    /* Overlay (mobile only) */
+    .dock-overlay {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0);
+        z-index: calc(var(--z-dock, 10000) - 1);
+        opacity: 0;
+        pointer-events: none;
+        visibility: hidden;
+        transition:
+            background-color 0.35s ease,
+            opacity 0.35s ease,
+            visibility 0.35s step-end;
+    }
+
+    .dock-overlay[data-open] {
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 1;
+        pointer-events: auto;
+        visibility: visible;
+    }
+}
