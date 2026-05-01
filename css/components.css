@@ -935,3 +935,103 @@
 .dock-bottom-sheet-option.selected {
     background: rgba(79, 195, 247, 0.2);
 }
+
+/* ===== Dark Mode Overrides ===== */
+[data-theme='dark'] .noise-overlay {
+    opacity: 0.015;
+}
+
+[data-theme='dark'] .avatar-box {
+    border-color: var(--glass-border);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
+    background-color: var(--bg);
+}
+
+[data-theme='dark'] .avatar-box:hover,
+[data-theme='dark'] .avatar-box:active {
+    transform: translate(-3px, -3px);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.25);
+}
+
+[data-theme='dark'] .avatar-box::before {
+    content: none;
+}
+
+[data-theme='dark'] .status-bar {
+    border-color: var(--glass-border);
+    background-color: var(--glass-bg);
+}
+
+[data-theme='dark'] .status-dot {
+    border-color: var(--glass-border);
+}
+
+[data-theme='dark'] .bio-container {
+    border-color: var(--glass-border);
+    background-color: var(--glass-bg);
+    box-shadow: var(--glass-shadow);
+}
+
+[data-theme='dark'] .social-link {
+    border-color: var(--glass-border);
+    background-color: var(--glass-bg);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] .social-link--custom {
+    --custom-color: var(--custom-color);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] .social-link-slot:hover .social-link--custom,
+[data-theme='dark'] .social-link-slot:focus-within .social-link--custom,
+[data-theme='dark'] .social-link-slot:active .social-link--custom {
+    transform: translate3d(-2px, -2px, 0);
+    box-shadow: 0 0 12px var(--custom-color);
+    background-color: var(--custom-color);
+}
+
+[data-theme='dark'] .loading-overlay {
+    background: var(--bg);
+}
+
+[data-theme='dark'] .loading-panel {
+    border-color: var(--glass-border);
+    background: var(--glass-bg);
+    box-shadow: var(--glass-shadow);
+}
+
+[data-theme='dark'] .loading-spinner {
+    border-color: var(--glass-border);
+    background: var(--bg);
+}
+
+[data-theme='dark'] .loading-progress {
+    border-color: var(--glass-border);
+    background: var(--bg);
+}
+
+[data-theme='dark'] .loading-bar {
+    background: var(--fg);
+}
+
+[data-theme='dark'] .footer-line {
+    background-color: var(--glass-border);
+}
+
+[data-theme='dark'] .wallpaper-toggle {
+    border-color: var(--glass-border);
+    background: var(--glass-bg);
+    color: var(--fg);
+    box-shadow: var(--glass-shadow);
+}
+
+[data-theme='dark'] .wallpaper-toggle:hover {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
+}
+
+[data-theme='dark'] .close-panel {
+    border-color: var(--glass-border);
+    background: rgba(10, 10, 26, 0.85);
+    color: var(--fg);
+}
