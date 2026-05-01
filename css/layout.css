@@ -73,6 +73,35 @@
     z-index: 1;
 }
 
+[data-theme='dark'] .left-panel {
+    border-right-color: var(--glass-border);
+    background-color: rgba(10, 10, 26, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow:
+        15px 0 40px rgba(0, 0, 0, 0.4),
+        0 0 60px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] .info-panel {
+    background: rgba(10, 10, 10, 0.85);
+    border-bottom-color: var(--glass-border);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    [data-theme='dark'] .info-panel {
+        background: rgba(10, 10, 26, 0.75);
+    }
+}
+
+[data-theme='dark'] .wallpaper-scroll-area {
+    background-color: var(--bg);
+}
+
+[data-theme='dark'] .left-panel .hero {
+    background: rgba(10, 10, 26, 0.85);
+}
+
 /* ===== 右侧：信息面板 ===== */
 .info-panel {
     padding: 1.5rem;
