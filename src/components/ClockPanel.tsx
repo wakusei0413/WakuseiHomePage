@@ -1,9 +1,10 @@
 import { createSignal, onCleanup, onMount } from 'solid-js';
 
 import { formatDateParts, formatTimeString } from '../lib/time';
+import type { I18nContext } from '../lib/i18n';
 import type { TimeConfig } from '../types/site';
 
-export function ClockPanel(props: { config: TimeConfig }) {
+export function ClockPanel(props: { config: TimeConfig; i18n: I18nContext }) {
     const [now, setNow] = createSignal(new Date());
 
     onMount(() => {
@@ -16,7 +17,7 @@ export function ClockPanel(props: { config: TimeConfig }) {
         });
     });
 
-    const dateParts = () => formatDateParts(now());
+    const dateParts = () => formatDateParts(now(), props.i18n.locale());
 
     return (
         <div class="time-widget">
