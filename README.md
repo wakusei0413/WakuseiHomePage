@@ -1,6 +1,6 @@
 # Wakusei HomePage
 
-![Version](https://img.shields.io/badge/version-1.5.0-9a0a0a?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.8.0-9a0a0a?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-ffe600?style=for-the-badge)
 ![Astro](https://img.shields.io/badge/Astro-5-ff5d01?style=for-the-badge&logo=astro&logoColor=white)
 ![SolidJS](https://img.shields.io/badge/SolidJS-1.9-2c4f7c?style=for-the-badge&logo=solid&logoColor=white)
@@ -9,6 +9,25 @@
 这是一个基于 `Astro + SolidJS + TypeScript` 的单页静态个人主页，继续以纯静态资源方式部署到 `Cloudflare Pages`。
 
 ![主页截图](docs/assets/screenshots/homepage-01.png)
+
+## 1.8.0 更新
+
+`1.8.0` 引入控制面板 (ControlDock) 和国际化 (i18n) 支持。
+
+主要变化：
+
+- 新增 `ControlDock` 组件：主题切换（浅色/深色）、语言切换（中文/英文）、设置入口
+- 主题状态持久化到 `localStorage`，页面加载时自动恢复，无需闪烁
+- 新增 `/settings` 施工中页面（点击控制面板齿轮图标进入）
+- 新增 `src/data/i18n.ts` 翻译数据，dock 标签、星期、月份均支持中英双语
+- 新增 `src/lib/i18n.ts` i18n 运行时（基于 SolidJS signals）
+- `ClockPanel` 现在根据语言环境显示本地化的星期和月份
+- `SocialLinks` 链接名称支持多语言
+- `TypewriterSlogan` 标语根据语言环境切换
+- 控制面板支持 PC 端液态玻璃弹出面板和移动端底部抽屉两种交互模式
+- PC 端 dock 图标支持软放大悬停效果
+- 新增 `src/styles/dock.css` 控制面板全样式
+- 新增测试覆盖 i18n 配置校验、翻译数据完整性和运行时切换
 
 ## 1.5.0 大版本更新
 
@@ -86,6 +105,7 @@ Cloudflare Pages 仍然按静态站点方式部署：
 
 常用配置区域：
 
+- `i18n`：默认语言、可用语言列表
 - `profile`：头像、名字、状态文案
 - `socialLinks`：社交按钮名称、链接、图标、颜色
 - `slogans`：打字机文案、播放顺序、输入速度、停顿时间
@@ -107,6 +127,7 @@ Cloudflare Pages 仍然按静态站点方式部署：
 修改建议：
 
 - 改文案、链接、颜色、壁纸接口时，优先只改 `src/data/customize.ts`
+- 改 dock 标签翻译、星期月份翻译时，编辑 `src/data/i18n.ts`
 - 改字段结构时，同时更新 `src/data/schema.ts` 和 `src/types/site.ts`
 - 改页面表现或交互时，优先看 `src/components/` 和 `src/lib/`
 - 改社交按钮弹起手感时，看 `src/components/SocialLinks.tsx` 和 `css/components.css`
@@ -118,6 +139,7 @@ Cloudflare Pages 仍然按静态站点方式部署：
 - `src/pages/index.astro`：首页入口
 - `src/layouts/BaseLayout.astro`：基础 HTML、SEO、字体和全局样式入口
 - `src/components/HomepageApp.tsx`：主页主交互容器
+- `src/components/ControlDock.tsx`：控制面板（主题、语言、设置）
 - `src/components/SocialLinks.tsx`：社交导航按钮
 - `src/components/TypewriterSlogan.tsx`：打字机文案
 - `src/components/ClockPanel.tsx`：右侧时间面板
@@ -126,10 +148,11 @@ Cloudflare Pages 仍然按静态站点方式部署：
 主要逻辑工具：
 
 - `src/lib/wallpaper-scroller.ts`：壁纸加载、预加载、滚动和清理
+- `src/lib/i18n.ts`：国际化运行时（语言/主题切换）
 - `src/lib/runtime-effects.ts`：页面运行时交互效果
 - `src/lib/font-awesome.ts`：图标字体延迟加载
 - `src/lib/slogan-selector.ts`：标语顺序和随机选择
-- `src/lib/time.ts`：时间格式化
+- `src/lib/time.ts`：时间格式化（支持多语言）
 
 ## 样式说明
 
@@ -139,6 +162,7 @@ Cloudflare Pages 仍然按静态站点方式部署：
 - `css/layout.css`：左右面板和壁纸区域布局
 - `css/components.css`：头像、社交按钮、加载页、时间面板等组件样式
 - `css/responsive.css`：移动端和窄屏适配
+- `src/styles/dock.css`：控制面板（ControlDock）完整样式
 
 社交导航按钮的弹起手感主要由这两处控制：
 
@@ -171,6 +195,7 @@ Cloudflare Pages 仍然按静态站点方式部署：
 - 壁纸滚动和图片属性
 - Font Awesome 延迟加载
 - 社交按钮样式和即时指针交互
+- i18n 配置校验、翻译数据完整性和运行时切换
 
 完整验证建议使用：
 

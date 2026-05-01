@@ -3,7 +3,7 @@ import type { SiteConfig } from '../types/site';
 // Edit this file for nearly all everyday homepage changes.
 // Sections are grouped by what usually gets customized together.
 export const editableSiteConfig: SiteConfig = {
-    version: '1.5.0',
+    version: '1.8.0',
 
     // Browser and SEO metadata.
     title: 'WAKUSEI - 个人主页',
@@ -147,6 +147,8 @@ export const editableSiteConfig: SiteConfig = {
             delay: 50
         }
     },
+    // Control dock: theme toggle, language switcher, and settings shortcut.
+    // Translations are in src/data/i18n.ts — edit there for dock label customisation.
     i18n: {
         defaultLocale: 'zh-CN',
         locales: ['zh-CN', 'en']
@@ -154,6 +156,7 @@ export const editableSiteConfig: SiteConfig = {
 };
 
 export const quickEditSections = {
+    i18n: editableSiteConfig.i18n,
     profile: editableSiteConfig.profile,
     socialLinks: editableSiteConfig.socialLinks,
     slogans: editableSiteConfig.slogans,
