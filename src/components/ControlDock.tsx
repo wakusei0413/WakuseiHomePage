@@ -210,7 +210,14 @@ export function ControlDock(props: ControlDockProps) {
 
                 <div class="control-dock-divider"></div>
 
-                <button class="control-dock-item" title={t('dock.settings')} aria-label={t('dock.settings')}>
+                <button
+                    class="control-dock-item"
+                    title={t('dock.settings')}
+                    aria-label={t('dock.settings')}
+                    onClick={() => {
+                        window.location.href = '/settings';
+                    }}
+                >
                     <i class="fa-solid fa-gear" aria-hidden="true"></i>
                 </button>
 
