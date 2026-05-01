@@ -14,6 +14,7 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
         const { t } = props.i18n;
         const slogans: string[] = [];
         let i = 1;
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             const key = `slogan.${i}`;
             const value = t(key);
