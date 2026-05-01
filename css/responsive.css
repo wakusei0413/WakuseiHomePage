@@ -106,35 +106,6 @@
         display: none !important;
     }
 
-    .control-dock {
-        position: fixed;
-        left: 50%;
-        top: auto;
-        bottom: 20px;
-        right: auto;
-        transform: translateX(-50%);
-        flex-direction: row;
-        padding: 0 16px;
-        border-radius: 26px;
-    }
-
-    .control-dock-item {
-        width: 36px;
-        height: 36px;
-        margin: 10px 4px;
-        font-size: 13px;
-    }
-
-    .control-dock-divider {
-        width: 1px;
-        height: 20px;
-        margin: 0 4px;
-    }
-
-    .dock-popup {
-        display: none;
-    }
-
     [data-theme='dark'] .hero {
         background: rgba(10, 10, 26, 0.92);
         backdrop-filter: blur(16px);
