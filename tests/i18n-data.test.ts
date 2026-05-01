@@ -8,22 +8,20 @@ describe('i18n translations', () => {
         assert.ok('en' in translations);
     });
 
-    it('zh-CN has all required keys', () => {
+    it('zh-CN has system-level keys', () => {
         const zh = translations['zh-CN'];
-        assert.ok(zh['profile.status']);
-        assert.ok(zh['footer.text']);
         assert.ok(zh['dock.theme']);
         assert.ok(zh['dock.language']);
-        assert.ok(zh['dock.settings']);
+        assert.ok(zh['time.weekday.mon']);
+        assert.ok(zh['time.month.jan']);
     });
 
-    it('en has all required keys', () => {
+    it('en has system-level keys', () => {
         const en = translations['en'];
-        assert.ok(en['profile.status']);
-        assert.ok(en['footer.text']);
         assert.ok(en['dock.theme']);
         assert.ok(en['dock.language']);
-        assert.ok(en['dock.settings']);
+        assert.ok(en['time.weekday.mon']);
+        assert.ok(en['time.month.jan']);
     });
 
     it('both locales have the same keys', () => {

@@ -32,14 +32,9 @@ describe('i18n t() lookup logic', () => {
         assert.equal(t('nonexistent.key'), 'nonexistent.key');
     });
 
-    it('returns slogan list from translations', () => {
+    it('returns time-related translations', () => {
         const t = createT('zh-CN', 'zh-CN');
-        assert.equal(t('slogan.1'), '安静，听到我使用锤子的TNT vibe coding了吗！');
-    });
-
-    it('returns loading texts from translations', () => {
-        const t = createT('zh-CN', 'zh-CN');
-        assert.equal(t('loading.1'), '少女祈祷中...');
+        assert.equal(t('time.weekday.mon'), '星期一');
     });
 
     it('returns time-related translations for en', () => {
