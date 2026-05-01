@@ -1,0 +1,203 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Settings | Under Construction" description="Settings page is under construction">
+    <main class="construction-page">
+        <div class="construction-card">
+            <div class="construction-icon">
+                <i class="fa-solid fa-hard-hat"></i>
+            </div>
+            <h1 class="construction-title">施工中</h1>
+            <p class="construction-subtitle">Under Construction</p>
+            <div class="construction-divider"></div>
+            <p class="construction-text">このページは現在準備中です。</p>
+            <p class="construction-text-secondary">This page is currently being built. Please check back later.</p>
+            <div class="construction-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <span class="progress-label">Coming Soon...</span>
+            </div>
+            <a href="/" class="construction-back">
+                <i class="fa-solid fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </main>
+</BaseLayout>
+
+<style>
+    .construction-page {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 24px;
+        background: var(--bg, #fffef7);
+        transition: background-color 0.3s ease;
+    }
+
+    .construction-card {
+        text-align: center;
+        padding: 48px 40px;
+        max-width: 440px;
+        width: 100%;
+        background: var(--bg-card, #ffffff);
+        border-radius: 24px;
+        border: var(--border-width, 4px) solid var(--border-color, #0a0a0a);
+        box-shadow:
+            10px 10px 0 var(--fg, #0a0a0a),
+            0 24px 80px rgba(0, 0, 0, 0.1);
+        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        transition:
+            background-color 0.3s ease,
+            border-color 0.3s ease,
+            box-shadow 0.3s ease;
+    }
+
+    [data-theme='dark'] .construction-card {
+        background: rgba(10, 10, 26, 0.6);
+        border-color: rgba(255, 255, 255, 0.14);
+        box-shadow:
+            0 24px 80px rgba(0, 0, 0, 0.35),
+            inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(24px) scale(0.97);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .construction-icon {
+        font-size: 56px;
+        color: #ffb74d;
+        margin-bottom: 16px;
+        animation: swing 2s ease-in-out infinite;
+    }
+
+    @keyframes swing {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+    }
+
+    .construction-title {
+        font-family: 'Noto Sans SC', 'Space Grotesk', sans-serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--fg, #0a0a0a);
+        margin: 0 0 4px 0;
+    }
+
+    .construction-subtitle {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--muted, #666666);
+        margin: 0 0 24px 0;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+    }
+
+    .construction-divider {
+        width: 48px;
+        height: 2px;
+        background: var(--border-color, #0a0a0a);
+        opacity: 0.2;
+        margin: 0 auto 24px auto;
+        border-radius: 1px;
+    }
+
+    .construction-text {
+        font-family: 'Noto Sans SC', sans-serif;
+        font-size: 1rem;
+        color: var(--fg, #0a0a0a);
+        opacity: 0.7;
+        margin: 0 0 8px 0;
+        line-height: 1.6;
+    }
+
+    .construction-text-secondary {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.875rem;
+        color: var(--muted, #666666);
+        margin: 0 0 32px 0;
+    }
+
+    .construction-progress {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 32px;
+        padding: 0 8px;
+    }
+
+    .progress-bar {
+        flex: 1;
+        height: 6px;
+        background: var(--border-color, #0a0a0a);
+        opacity: 0.15;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        width: 30%;
+        height: 100%;
+        background: linear-gradient(90deg, #4fc3f7, #ffb74d);
+        border-radius: 3px;
+        animation: progressPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes progressPulse {
+        0%, 100% { width: 25%; }
+        50% { width: 55%; }
+    }
+
+    .progress-label {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.75rem;
+        color: var(--muted, #666666);
+        white-space: nowrap;
+    }
+
+    .construction-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--fg, #0a0a0a);
+        opacity: 0.7;
+        text-decoration: none;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 10px 24px;
+        border-radius: 12px;
+        border: var(--border-width, 2px) solid var(--border-color, #0a0a0a);
+        transition:
+            opacity 0.2s ease,
+            background-color 0.2s ease,
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .construction-back:hover {
+        opacity: 1;
+        background: var(--accent-yellow, #ffe600);
+        box-shadow: 4px 4px 0 var(--fg, #0a0a0a);
+    }
+
+    .construction-back i {
+        font-size: 0.85rem;
+    }
+
+    [data-theme='dark'] .construction-back:hover {
+        background: rgba(79, 195, 247, 0.15);
+        box-shadow: none;
+    }
+</style>
