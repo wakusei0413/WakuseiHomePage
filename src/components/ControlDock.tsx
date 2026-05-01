@@ -12,10 +12,12 @@ interface ControlDockProps {
 export function ControlDock(props: ControlDockProps) {
     const { locale, setLocale, t } = props.i18n;
     const [isDark, setIsDark] = createSignal(false);
-    const [showLanguagePanel, setShowLanguagePanel] = createSignal(false);
     const [isMobile, setIsMobile] = createSignal(false);
 
     let dockRef: HTMLDivElement | undefined;
+    let popupRef: HTMLDivElement | undefined;
+    let overlayRef: HTMLDivElement | undefined;
+    let sheetRef: HTMLDivElement | undefined;
     let outsideClickCleanup: (() => void) | undefined;
 
     onMount(() => {
@@ -41,37 +43,118 @@ export function ControlDock(props: ControlDockProps) {
         };
         mediaQuery.addEventListener('change', handleMediaChange);
         onCleanup(() => mediaQuery.removeEventListener('change', handleMediaChange));
+
+        // MacOS Dock Wave Hover (desktop only)
+        if (!isMobile()) {
+            setupWaveHover();
+        }
     });
 
+    /* ===== MacOS Dock Wave Hover ===== */
+    function setupWaveHover() {
+        if (!dockRef) return;
+
+        const items = dockRef.querySelectorAll('.control-dock-item') as NodeListOf<HTMLElement>;
+        if (items.length === 0) return;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            const rect = dockRef!.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+
+            items.forEach((item) => {
+                const itemRect = item.getBoundingClientRect();
+                const itemCenter = itemRect.left - rect.left + itemRect.width / 2;
+                const distance = Math.abs(mouseX - itemCenter);
+                // Gaussian falloff: scale = 1 + 0.5 * exp(-distance^2 / (2 * 60^2))
+                const scale = 1 + 0.5 * Math.exp(-(distance * distance) / (2 * 60 * 60));
+                const translateY = (1 - scale) * 10;
+                item.style.transform = `scale(${scale}) translateY(${translateY}px)`;
+            });
+        };
+
+        const handleMouseLeave = () => {
+            items.forEach((item) => {
+                item.style.transform = '';
+            });
+        };
+
+        dockRef.addEventListener('mousemove', handleMouseMove);
+        dockRef.addEventListener('mouseleave', handleMouseLeave);
+        onCleanup(() => {
+            dockRef?.removeEventListener('mousemove', handleMouseMove);
+            dockRef?.removeEventListener('mouseleave', handleMouseLeave);
+        });
+    }
+
+    /* ===== Theme Toggle with View Transition ===== */
     function toggleTheme() {
         const newTheme = isDark() ? 'light' : 'dark';
         setIsDark(newTheme === 'dark');
-        applyTheme(newTheme);
+
+        const doc = document as Document & { startViewTransition?: (callback: () => void) => unknown };
+        if (typeof doc.startViewTransition === 'function') {
+            doc.startViewTransition(() => {
+                applyTheme(newTheme);
+            });
+        } else {
+            applyTheme(newTheme);
+        }
+    }
+
+    /* ===== Open / Close Helpers (CSS-driven via data-open) ===== */
+    function isOpen() {
+        if (isMobile()) {
+            return sheetRef?.hasAttribute('data-open') ?? false;
+        }
+        return popupRef?.hasAttribute('data-open') ?? false;
+    }
+
+    function setOpen(open: boolean) {
+        if (outsideClickCleanup) {
+            outsideClickCleanup();
+            outsideClickCleanup = undefined;
+        }
+
+        if (isMobile()) {
+            if (open) {
+                overlayRef?.setAttribute('data-open', '');
+                sheetRef?.setAttribute('data-open', '');
+                setupOutsideClick();
+            } else {
+                overlayRef?.removeAttribute('data-open');
+                sheetRef?.removeAttribute('data-open');
+            }
+        } else {
+            if (open) {
+                popupRef?.setAttribute('data-open', '');
+                setupOutsideClick();
+            } else {
+                popupRef?.removeAttribute('data-open');
+            }
+        }
     }
 
     function toggleLanguagePanel() {
-        setShowLanguagePanel((prev) => !prev);
-        if (!showLanguagePanel()) {
-            setupOutsideClick();
-        }
+        setOpen(!isOpen());
     }
 
     function selectLanguage(lang: Locale) {
         setLocale(lang);
-        setShowLanguagePanel(false);
+        setOpen(false);
     }
 
     function setupOutsideClick() {
-        if (outsideClickCleanup) {
-            outsideClickCleanup();
-        }
-        const handler = (e: MouseEvent) => {
-            if (dockRef && !dockRef.contains(e.target as Node)) {
-                setShowLanguagePanel(false);
-            }
-        };
-        document.addEventListener('click', handler);
-        outsideClickCleanup = () => document.removeEventListener('click', handler);
+        // Use setTimeout to avoid catching the same click that opened the panel
+        window.setTimeout(() => {
+            const handler = (e: MouseEvent) => {
+                const target = e.target as Node;
+                if (dockRef && !dockRef.contains(target)) {
+                    setOpen(false);
+                }
+            };
+            document.addEventListener('click', handler);
+            outsideClickCleanup = () => document.removeEventListener('click', handler);
+        }, 0);
     }
 
     onCleanup(() => {
@@ -83,7 +166,7 @@ export function ControlDock(props: ControlDockProps) {
     const locales = () => props.config.i18n.locales;
 
     return (
-        <div ref={dockRef} class="control-dock">
+        <div ref={dockRef} class="control-dock" role="toolbar" aria-label="Control dock">
             <button
                 class="control-dock-item"
                 classList={{ active: isDark() }}
@@ -98,7 +181,7 @@ export function ControlDock(props: ControlDockProps) {
 
             <button
                 class="control-dock-item"
-                classList={{ active: showLanguagePanel() }}
+                classList={{ active: isOpen() }}
                 onClick={toggleLanguagePanel}
                 title={t('dock.language')}
                 aria-label={t('dock.language')}
@@ -112,38 +195,40 @@ export function ControlDock(props: ControlDockProps) {
                 <i class="fa-solid fa-gear" aria-hidden="true"></i>
             </button>
 
-            {showLanguagePanel() && !isMobile() && (
-                <div class="dock-popup">
-                    <div class="dock-popup-title">{t('dock.language')}</div>
-                    {locales().map((lang) => (
-                        <div
-                            class="dock-popup-option"
-                            classList={{ selected: locale() === lang }}
-                            onClick={() => selectLanguage(lang)}
-                        >
-                            {t(`dock.lang.${lang}`)}
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {showLanguagePanel() && isMobile() && (
-                <>
-                    <div class="dock-overlay visible" onClick={() => setShowLanguagePanel(false)}></div>
-                    <div class="dock-bottom-sheet visible">
-                        <div class="dock-bottom-sheet-title">{t('dock.language')}</div>
-                        {locales().map((lang) => (
-                            <div
-                                class="dock-bottom-sheet-option"
-                                classList={{ selected: locale() === lang }}
-                                onClick={() => selectLanguage(lang)}
-                            >
-                                {t(`dock.lang.${lang}`)}
-                            </div>
-                        ))}
+            {/* ===== PC Popup (always rendered, CSS-driven via data-open) ===== */}
+            <div ref={popupRef} class="dock-popup" role="dialog" aria-label="Language selection">
+                <div class="dock-popup-title">{t('dock.language')}</div>
+                {locales().map((lang) => (
+                    <div
+                        class="dock-popup-option"
+                        classList={{ selected: locale() === lang }}
+                        onClick={() => selectLanguage(lang)}
+                        role="option"
+                        aria-selected={locale() === lang}
+                    >
+                        <span class="check-icon">✓</span>
+                        <span>{t(`dock.lang.${lang}`)}</span>
                     </div>
-                </>
-            )}
+                ))}
+            </div>
+
+            {/* ===== Mobile Bottom Sheet (always rendered, CSS-driven via data-open) ===== */}
+            <div ref={overlayRef} class="dock-overlay" onClick={() => setOpen(false)}></div>
+            <div ref={sheetRef} class="dock-bottom-sheet" role="dialog" aria-label="Language selection">
+                <div class="dock-bottom-sheet-title">{t('dock.language')}</div>
+                {locales().map((lang) => (
+                    <div
+                        class="dock-bottom-sheet-option"
+                        classList={{ selected: locale() === lang }}
+                        onClick={() => selectLanguage(lang)}
+                        role="option"
+                        aria-selected={locale() === lang}
+                    >
+                        <span class="check-icon">✓</span>
+                        <span>{t(`dock.lang.${lang}`)}</span>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
