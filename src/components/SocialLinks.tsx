@@ -1,15 +1,8 @@
 import type { SocialLinksConfig } from '../types/site';
-import type { I18nContext } from '../lib/i18n';
 
 const cycleColors = ['#ffe600', '#ff3e3e', '#3e59ff'];
 
-export function SocialLinks(props: { config: SocialLinksConfig; i18n: I18nContext }) {
-    const getLinkName = (name: string): string => {
-        const key = `social.${name.toLowerCase().replace(/\./g, '')}`;
-        const translated = props.i18n.t(key);
-        return translated === key ? name : translated;
-    };
-
+export function SocialLinks(props: { config: SocialLinksConfig }) {
     const setHoveredState = (element: HTMLDivElement, hovered: boolean) => {
         element.classList.toggle('is-hovered', hovered);
     };
@@ -40,7 +33,7 @@ export function SocialLinks(props: { config: SocialLinksConfig; i18n: I18nContex
                             style={{ '--custom-color': color }}
                         >
                             {link.icon ? <i class={link.icon} aria-hidden="true"></i> : null}
-                            <span class="link-label">{getLinkName(link.name)}</span>
+                            <span class="link-label">{link.name}</span>
                         </a>
                     </div>
                 );

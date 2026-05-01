@@ -92,27 +92,26 @@ export function HomepageApp() {
                             />
                         </div>
 
-                        <h1 class="name">{i18n.t('profile.name')}</h1>
+                        <h1 class="name">{siteConfig.profile.name}</h1>
 
                         <div class="status-bar">
                             <span class="status-dot"></span>
-                            <span class="status-text">{i18n.t('profile.status')}</span>
+                            <span class="status-text">{siteConfig.profile.status}</span>
                         </div>
 
                         <div class="bio-container" id="bioContainer">
                             <TypewriterSlogan
                                 config={siteConfig.slogans}
                                 cursorStyle={siteConfig.animation.cursorStyle}
-                                i18n={i18n}
                             />
                         </div>
 
-                        <SocialLinks config={siteConfig.socialLinks} i18n={i18n} />
+                        <SocialLinks config={siteConfig.socialLinks} />
                     </header>
 
                     <footer class="footer-left">
                         <div class="footer-line"></div>
-                        <p class="footer-text">{`${i18n.t('footer.text')} • ${new Date().getFullYear()}`}</p>
+                        <p class="footer-text">{`${siteConfig.footer.text} • ${new Date().getFullYear()}`}</p>
                     </footer>
                 </section>
 

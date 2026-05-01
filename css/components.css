@@ -763,19 +763,19 @@
 /* ===== Control Dock ===== */
 .control-dock {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    right: 50%;
+    bottom: 20px;
+    transform: translateX(50%);
     z-index: var(--z-dock, 10000);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     gap: 0;
-    padding: 12px 0;
+    padding: 0 12px;
     background: rgba(0, 0, 0, 0.25);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-radius: 30px;
+    border-radius: 26px;
     border: 1px solid rgba(255, 255, 255, 0.18);
     box-shadow:
         0 8px 32px rgba(0, 0, 0, 0.3),
@@ -786,8 +786,8 @@
 }
 
 .control-dock-item {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: none;
     background: rgba(255, 255, 255, 0.1);
@@ -800,8 +800,8 @@
         background-color 0.15s ease,
         transform 0.15s ease;
     touch-action: manipulation;
-    margin: 4px 10px;
-    font-size: 14px;
+    margin: 8px 4px;
+    font-size: 13px;
 }
 
 .control-dock-item:hover {
@@ -818,18 +818,18 @@
 }
 
 .control-dock-divider {
-    width: 20px;
-    height: 1px;
+    width: 1px;
+    height: 20px;
     background: rgba(255, 255, 255, 0.2);
-    margin: 0 auto;
+    margin: 0;
 }
 
 /* ===== Dock Floating Card (PC) ===== */
 .dock-popup {
     position: absolute;
-    right: calc(100% + 12px);
-    top: 50%;
-    transform: translateY(-50%);
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
     min-width: 140px;
     padding: 10px 16px;
     background: rgba(0, 0, 0, 0.45);
