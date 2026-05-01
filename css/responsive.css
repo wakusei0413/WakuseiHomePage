@@ -76,6 +76,26 @@
     }
 
     .right-panel {
+        display: block;
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: var(--z-dock);
+        width: 100vw;
+        min-width: 0;
+        height: 0;
+        flex: 0 0 0;
+        overflow: visible;
+        pointer-events: none;
+    }
+
+    .right-panel .control-dock {
+        pointer-events: auto;
+    }
+
+    .right-panel .wallpaper-scroll-area,
+    .right-panel .right-panel-shadow,
+    .right-panel .info-panel {
         display: none;
     }
 
@@ -157,15 +177,8 @@
     }
 
     .control-dock {
-        bottom: 12px;
-        padding: 0 12px;
-    }
-
-    .control-dock-item {
-        width: 32px;
-        height: 32px;
-        margin: 8px 3px;
-        font-size: 12px;
+        top: var(--space-md);
+        right: var(--space-md);
     }
 }
 
