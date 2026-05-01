@@ -4,16 +4,29 @@ import type { Locale } from '../data/i18n';
 const WEEKDAYS_ZH = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 const WEEKDAYS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONTHS_ZH = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
-const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTHS_EN = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+];
 
 const WEEKDAYS_MAP: Record<string, string[]> = {
     'zh-CN': WEEKDAYS_ZH,
-    'en': WEEKDAYS_EN
+    en: WEEKDAYS_EN
 };
 
 const MONTHS_MAP: Record<string, string[]> = {
     'zh-CN': MONTHS_ZH,
-    'en': MONTHS_EN
+    en: MONTHS_EN
 };
 
 const ONES = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];

@@ -4,7 +4,7 @@ import { formatDateParts, formatTimeString } from '../src/lib/time';
 
 describe('locale-aware time formatting', () => {
     it('formats weekday in Chinese by default', () => {
-        const date = new Date(2026, 0, 5);
+        const date = new Date(2026, 0, 5); // Monday, Jan 5 2026
         const parts = formatDateParts(date);
         assert.equal(parts.weekday, '星期一');
     });
