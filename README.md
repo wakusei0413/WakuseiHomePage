@@ -25,27 +25,8 @@
 - `SocialLinks` 链接名称支持多语言
 - `TypewriterSlogan` 标语根据语言环境切换
 - 控制面板支持 PC 端液态玻璃弹出面板和移动端底部抽屉两种交互模式
-- PC 端 dock 图标支持软放大悬停效果
 - 新增 `src/styles/dock.css` 控制面板全样式
 - 新增测试覆盖 i18n 配置校验、翻译数据完整性和运行时切换
-
-## 1.5.0 大版本更新
-
-`1.5.0` 是一次架构级更新，重点不是重做视觉，而是把旧的纯手写运行时迁移到更清晰、可维护、可测试的 Astro/Solid 结构。
-
-主要变化：
-
-- 从旧的 `index.html + config.js + js/app.js` 运行时迁移到 `Astro + SolidJS + TypeScript`
-- 继续保持静态站点部署，`npm run build` 仍然输出到 `dist/`
-- 内容配置集中到 `src/data/customize.ts`
-- 配置结构使用 `Zod` 做运行时校验，并用 TypeScript 类型约束编辑体验
-- 社交导航按钮改为 Solid 组件，支持即时指针交互和左上弹起效果
-- 壁纸加载逻辑迁移到 `src/lib/wallpaper-scroller.ts`，保留预加载、重试、滚动和图片清理能力
-- 打字机、时间面板、加载遮罩等交互迁移为独立组件
-- 移除旧的 `nomodule` 和 `legacy.js` 兼容链路，目标改为现代浏览器
-- 新增测试覆盖配置校验、标语选择、时间格式、壁纸加载、图标加载和社交按钮交互
-
-部署侧没有引入服务端依赖，不需要 `Astro SSR`、`Cloudflare Functions` 或额外后端服务。
 
 ## 技术栈
 
