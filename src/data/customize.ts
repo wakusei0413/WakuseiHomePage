@@ -146,6 +146,10 @@ export const editableSiteConfig: SiteConfig = {
             offset: 50,
             delay: 50
         }
+    },
+    i18n: {
+        defaultLocale: 'zh-CN',
+        locales: ['zh-CN', 'en']
     }
 };
 

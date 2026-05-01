@@ -2,6 +2,7 @@ export type SocialColorScheme = 'cycle' | 'same';
 export type SloganMode = 'random' | 'sequence';
 export type ClockFormat = '12h' | '24h';
 export type CursorStyle = 'block' | 'line';
+export type Locale = 'zh-CN' | 'en';
 
 export interface ProfileConfig {
     name: string;
@@ -82,6 +83,11 @@ export interface EffectsConfig {
     scrollReveal: ScrollRevealConfig;
 }
 
+export interface I18nConfig {
+    defaultLocale: Locale;
+    locales: Locale[];
+}
+
 export interface SiteConfig {
     version: string;
     title: string;
@@ -99,4 +105,5 @@ export interface SiteConfig {
     contentProtection: ContentProtectionConfig;
     debug: DebugConfig;
     effects: EffectsConfig;
+    i18n: I18nConfig;
 }
