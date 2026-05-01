@@ -35,8 +35,9 @@
     --z-wallpaper: 0;
     --z-content: 50;
     --z-buttons: 1000;
+    --z-dock: 10000;
     --z-loading: 9998;
-    --z-noise: 9999;
+    --z-noise: 10001;
 
     /* 过渡动画参数 */
     --transition-fast: 0.2s ease-out;
@@ -49,6 +50,25 @@
         margin var(--transition-normal), max-width var(--transition-normal), min-height var(--transition-normal);
 
     --transition-all: all var(--transition-normal);
+}
+
+/* ===== 暗色主题 ===== */
+[data-theme='dark'] {
+    --bg: #0a0a1a;
+    --bg-card: rgba(255, 255, 255, 0.06);
+    --fg: #e8e8ec;
+    --muted: #8888a0;
+    --border-color: rgba(255, 255, 255, 0.12);
+    --accent-yellow: #ffd700;
+    --accent-red: #ff6b6b;
+    --accent-blue: #4fc3f7;
+    --border-width: 1px;
+    --border-heavy: 2px;
+    --shadow-offset: 0;
+    --shadow-offset-sm: 0;
+    --glass-bg: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
 }
 
 /* ===== 基础重置 ===== */
