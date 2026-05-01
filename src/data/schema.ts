@@ -7,11 +7,9 @@ const socialLinkSchema = z.object({
     color: z.string().min(1).optional()
 });
 
-const localeSchema = z.enum(['zh-CN', 'en']);
-
 const i18nSchema = z.object({
-    defaultLocale: localeSchema,
-    locales: z.array(localeSchema).min(1)
+    defaultLocale: z.enum(['zh-CN', 'en']),
+    locales: z.array(z.enum(['zh-CN', 'en'])).min(1)
 });
 
 export const siteConfigSchema = z.object({

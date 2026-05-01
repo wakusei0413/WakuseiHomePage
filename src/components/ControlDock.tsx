@@ -80,7 +80,7 @@ export function ControlDock(props: ControlDockProps) {
         }
     });
 
-    const locales = props.config.i18n.locales;
+    const locales = () => props.config.i18n.locales;
 
     return (
         <div ref={dockRef} class="control-dock">
@@ -108,18 +108,14 @@ export function ControlDock(props: ControlDockProps) {
 
             <div class="control-dock-divider"></div>
 
-            <button
-                class="control-dock-item"
-                title={t('dock.settings')}
-                aria-label={t('dock.settings')}
-            >
+            <button class="control-dock-item" title={t('dock.settings')} aria-label={t('dock.settings')}>
                 <i class="fa-solid fa-gear" aria-hidden="true"></i>
             </button>
 
             {showLanguagePanel() && !isMobile() && (
                 <div class="dock-popup">
                     <div class="dock-popup-title">{t('dock.language')}</div>
-                    {locales.map((lang) => (
+                    {locales().map((lang) => (
                         <div
                             class="dock-popup-option"
                             classList={{ selected: locale() === lang }}
@@ -133,13 +129,10 @@ export function ControlDock(props: ControlDockProps) {
 
             {showLanguagePanel() && isMobile() && (
                 <>
-                    <div
-                        class="dock-overlay visible"
-                        onClick={() => setShowLanguagePanel(false)}
-                    ></div>
+                    <div class="dock-overlay visible" onClick={() => setShowLanguagePanel(false)}></div>
                     <div class="dock-bottom-sheet visible">
                         <div class="dock-bottom-sheet-title">{t('dock.language')}</div>
-                        {locales.map((lang) => (
+                        {locales().map((lang) => (
                             <div
                                 class="dock-bottom-sheet-option"
                                 classList={{ selected: locale() === lang }}
