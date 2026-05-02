@@ -2,32 +2,27 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Settings | Under Construction" description="Settings page is under construction">
-    <main class="construction-page">
-        <div class="construction-card">
-            <div class="construction-icon">
-                <i class="fa-solid fa-hard-hat"></i>
+<BaseLayout title="404 - 页面不存在 | Page Not Found" description="This page could not be found">
+    <main class="notfound-page">
+        <div class="notfound-card">
+            <div class="notfound-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
-            <h1 class="construction-title">施工中</h1>
-            <p class="construction-subtitle">Under Construction</p>
-            <div class="construction-divider"></div>
-            <p class="construction-text">このページは現在準備中です。</p>
-            <p class="construction-text-secondary">This page is currently being built. Please check back later.</p>
-            <div class="construction-progress">
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
-                </div>
-                <span class="progress-label">Coming Soon...</span>
-            </div>
-            <a href="/" class="construction-back">
-                <i class="fa-solid fa-arrow-left"></i> Back to Home
+            <h1 class="notfound-title">404</h1>
+            <p class="notfound-subtitle">页面不存在</p>
+            <p class="notfound-subtitle-en">Page Not Found</p>
+            <div class="notfound-divider"></div>
+            <p class="notfound-text">你好像迷路了喵~</p>
+            <p class="notfound-text-secondary">The page you are looking for does not exist or has been moved.</p>
+            <a href="/" class="notfound-back">
+                <i class="fa-solid fa-arrow-left"></i> 返回主页 / Back to Home
             </a>
         </div>
     </main>
 </BaseLayout>
 
 <style>
-    .construction-page {
+    .notfound-page {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -37,7 +32,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         transition: background-color 0.3s ease;
     }
 
-    .construction-card {
+    .notfound-card {
         text-align: center;
         padding: 48px 40px;
         max-width: 440px;
@@ -55,7 +50,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             box-shadow 0.3s ease;
     }
 
-    [data-theme='dark'] .construction-card {
+    [data-theme='dark'] .notfound-card {
         background: rgba(10, 10, 26, 0.6);
         border-color: rgba(255, 255, 255, 0.14);
         box-shadow:
@@ -74,34 +69,45 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
     }
 
-    .construction-icon {
+    .notfound-icon {
         font-size: 56px;
-        color: #ffb74d;
+        color: #ff5252;
         margin-bottom: 16px;
-        animation: swing 2s ease-in-out infinite;
+        animation: pulse 2s ease-in-out infinite;
     }
 
-    @keyframes swing {
+    @keyframes pulse {
         0%,
         100% {
-            transform: rotate(-3deg);
+            transform: scale(1);
+            opacity: 1;
         }
         50% {
-            transform: rotate(3deg);
+            transform: scale(1.08);
+            opacity: 0.85;
         }
     }
 
-    .construction-title {
+    .notfound-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--fg, #0a0a0a);
+        margin: 0 0 4px 0;
+        letter-spacing: 0.05em;
+    }
+
+    .notfound-subtitle {
         font-family: 'Noto Sans SC', 'Space Grotesk', sans-serif;
-        font-size: 2rem;
+        font-size: 1.25rem;
         font-weight: 700;
         color: var(--fg, #0a0a0a);
         margin: 0 0 4px 0;
     }
 
-    .construction-subtitle {
+    .notfound-subtitle-en {
         font-family: 'Space Grotesk', sans-serif;
-        font-size: 1rem;
+        font-size: 0.875rem;
         font-weight: 500;
         color: var(--muted, #666666);
         margin: 0 0 24px 0;
@@ -109,7 +115,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         text-transform: uppercase;
     }
 
-    .construction-divider {
+    .notfound-divider {
         width: 48px;
         height: 2px;
         background: var(--border-color, #0a0a0a);
@@ -118,7 +124,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         border-radius: 1px;
     }
 
-    .construction-text {
+    .notfound-text {
         font-family: 'Noto Sans SC', sans-serif;
         font-size: 1rem;
         color: var(--fg, #0a0a0a);
@@ -127,56 +133,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         line-height: 1.6;
     }
 
-    .construction-text-secondary {
+    .notfound-text-secondary {
         font-family: 'Space Grotesk', sans-serif;
         font-size: 0.875rem;
         color: var(--muted, #666666);
         margin: 0 0 32px 0;
     }
 
-    .construction-progress {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 32px;
-        padding: 0 8px;
-    }
-
-    .progress-bar {
-        flex: 1;
-        height: 6px;
-        background: var(--border-color, #0a0a0a);
-        opacity: 0.15;
-        border-radius: 3px;
-        overflow: hidden;
-    }
-
-    .progress-fill {
-        width: 30%;
-        height: 100%;
-        background: linear-gradient(90deg, #4fc3f7, #ffb74d);
-        border-radius: 3px;
-        animation: progressPulse 2s ease-in-out infinite;
-    }
-
-    @keyframes progressPulse {
-        0%,
-        100% {
-            width: 25%;
-        }
-        50% {
-            width: 55%;
-        }
-    }
-
-    .progress-label {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 0.75rem;
-        color: var(--muted, #666666);
-        white-space: nowrap;
-    }
-
-    .construction-back {
+    .notfound-back {
         display: inline-flex;
         align-items: center;
         gap: 8px;
@@ -196,17 +160,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             box-shadow 0.2s ease;
     }
 
-    .construction-back:hover {
+    .notfound-back:hover {
         opacity: 1;
         background: var(--accent-yellow, #ffe600);
         box-shadow: 4px 4px 0 var(--fg, #0a0a0a);
     }
 
-    .construction-back i {
+    .notfound-back i {
         font-size: 0.85rem;
     }
 
-    [data-theme='dark'] .construction-back:hover {
+    [data-theme='dark'] .notfound-back:hover {
         background: rgba(79, 195, 247, 0.15);
         box-shadow: none;
     }
