@@ -106,12 +106,7 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
                 aria-label="Menu"
             >
                 <div class="sidebar-header">
-                    <img
-                        src={props.config.profile.avatar}
-                        alt=""
-                        class="sidebar-avatar"
-                        decoding="async"
-                    />
+                    <img src={props.config.profile.avatar} alt="" class="sidebar-avatar" decoding="async" />
                     <span class="sidebar-name">{props.config.profile.name}</span>
                 </div>
 
