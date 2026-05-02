@@ -6,7 +6,7 @@ export const editableSiteConfig: SiteConfig = {
     version: '1.8.0',
 
     // Browser and SEO metadata.
-    title: 'WAKUSEI - 个人主页',
+    title: 'WAKUSEI的个人主页',
     description: 'wakusei - 个人主页',
     lang: 'zh-CN',
     themeColor: '#fffef7',
@@ -57,13 +57,13 @@ export const editableSiteConfig: SiteConfig = {
                 url: 'https://status.wakusei.top/',
                 icon: 'fa-solid fa-arrow-up-right-dots',
                 color: '#caa62e'
+            },
+            {
+                name: 'TESTING',
+                url: 'https://testing.wakusei.top/',
+                icon: 'fa-solid fa-flask',
+                color: '#16deca'
             }
-            //{
-            //  name: 'TESTING',
-            //url: 'https://testing.wakusei.top/',
-            //icon: 'fa-solid fa-flask',
-            //color: '#16deca'
-            //}
         ]
     },
 
