@@ -78,31 +78,22 @@
 
 /* ===== Popup (PC only) ===== */
 .dock-popup {
-    position: absolute;
-    bottom: calc(100% + 14px);
-    left: 50%;
+    position: fixed;
     z-index: var(--z-dock, 10000);
     min-width: 160px;
     padding: 12px 16px;
-    /* 立体玻璃效果 */
-    background:
-        linear-gradient(145deg, rgba(58, 68, 92, 0.66), rgba(12, 15, 28, 0.6)),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 48%),
-        rgba(8, 10, 18, 0.58);
-    backdrop-filter: blur(46px) saturate(190%) contrast(0.94) brightness(0.86);
-    -webkit-backdrop-filter: blur(46px) saturate(190%) contrast(0.94) brightness(0.86);
+    /* 深色磨砂玻璃 — 直接作用于页面背景 */
+    background: rgba(10, 10, 22, 0.62);
+    backdrop-filter: blur(48px) saturate(240%);
+    -webkit-backdrop-filter: blur(48px) saturate(240%);
     border-radius: 16px;
-    background-clip: padding-box;
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    /* 多层阴影：弥散外阴影 + 内高光 + 内阴影厚度 */
+    border: 1px solid rgba(255, 255, 255, 0.28);
     box-shadow:
-        0 24px 70px rgba(0, 0, 0, 0.42),
-        inset 0 1px 0 rgba(255, 255, 255, 0.34),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.42),
-        inset 18px 0 42px rgba(255, 255, 255, 0.05);
+        0 12px 48px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.30),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.35);
     color: #e8e8ec;
     overflow: hidden;
-    isolation: isolate;
     /* 默认关闭状态：不可见 + 不可交互 */
     opacity: 0;
     transform: translateX(-50%) translateY(6px) scale(0.96);
@@ -118,28 +109,7 @@
     transform: translateX(-50%) translateY(0) scale(1);
 }
 
-.dock-popup::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.32), transparent 34%),
-        linear-gradient(165deg, rgba(255, 255, 255, 0.18), transparent 36%),
-        linear-gradient(35deg, rgba(79, 195, 247, 0.14), transparent 48%);
-    pointer-events: none;
-    z-index: 0;
-}
 
-.dock-popup::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(rgba(255, 255, 255, 0.34) 0.55px, transparent 0.8px);
-    background-size: 3px 3px;
-    opacity: 0.1;
-    pointer-events: none;
-    z-index: 0;
-}
 
 .dock-popup-title,
 .dock-popup-option {
@@ -148,11 +118,12 @@
 }
 
 [data-theme='dark'] .dock-popup {
-    background:
-        linear-gradient(145deg, rgba(58, 68, 92, 0.68), rgba(12, 15, 28, 0.62)),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 48%),
-        rgba(8, 10, 18, 0.6);
-    border-color: rgba(255, 255, 255, 0.24);
+    background: rgba(12, 12, 30, 0.68);
+    border-color: rgba(255, 255, 255, 0.30);
+    box-shadow:
+        0 12px 48px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.38),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.45);
 }
 
 .dock-popup-title {
@@ -173,22 +144,16 @@
     border-radius: 10px;
     cursor: pointer;
     font-size: 0.9rem;
-    transition:
-        background-color 0.15s ease,
-        border-color 0.15s ease,
-        box-shadow 0.2s ease;
+    transition: background-color 0.2s ease;
     margin: 2px 0;
     color: #fffef7;
-    background: rgba(30, 38, 56, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    backdrop-filter: blur(24px) saturate(170%) brightness(0.9);
-    -webkit-backdrop-filter: blur(24px) saturate(170%) brightness(0.9);
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 .dock-popup-option:hover {
-    background: rgba(52, 65, 88, 0.56);
-    border-color: rgba(255, 255, 255, 0.22);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .dock-popup-option .check-icon {
@@ -204,11 +169,7 @@
 }
 
 .dock-popup-option.selected {
-    background: rgba(56, 76, 104, 0.58);
-    border-color: rgba(255, 255, 255, 0.22);
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.18),
-        0 8px 20px rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.18);
 }
 
 /* ===== Bottom Sheet (Mobile only - hidden on PC) ===== */
@@ -259,20 +220,18 @@
         right: 0;
         max-height: 40vh;
         border-radius: 24px 24px 0 0;
-        /* 立体玻璃 */
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(24, 28, 44, 0.2)), rgba(10, 14, 22, 0.28);
-        backdrop-filter: blur(36px) saturate(190%) brightness(1.08);
-        -webkit-backdrop-filter: blur(36px) saturate(190%) brightness(1.08);
-        border: 1px solid rgba(255, 255, 255, 0.22);
+        /* 深色磨砂玻璃 — 保证亮色背景下仍显暗 */
+        background: rgba(10, 10, 22, 0.62);
+        backdrop-filter: blur(48px) saturate(240%);
+        -webkit-backdrop-filter: blur(48px) saturate(240%);
+        border: 1px solid rgba(255, 255, 255, 0.28);
         border-bottom: none;
-        /* 外上阴影 + 内部折射 */
         box-shadow:
-            0 -12px 48px rgba(0, 0, 0, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.28),
+            0 -12px 48px rgba(0, 0, 0, 0.45),
+            inset 0 1px 0 rgba(255, 255, 255, 0.30),
             inset 0 -1px 0 rgba(0, 0, 0, 0.35);
         color: #e8e8ec;
         overflow: hidden;
-        isolation: isolate;
         z-index: var(--z-dock, 10000);
         padding: 16px 20px;
         /* 默认关闭 */
@@ -285,17 +244,7 @@
         will-change: transform;
     }
 
-    .dock-bottom-sheet::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04) 38%),
-            radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.3), transparent 34%),
-            linear-gradient(135deg, rgba(79, 195, 247, 0.16), transparent 46%);
-        pointer-events: none;
-        z-index: 0;
-    }
+
 
     .dock-bottom-sheet[data-open] {
         transform: translateY(0);
@@ -304,8 +253,12 @@
     }
 
     [data-theme='dark'] .dock-bottom-sheet {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(18, 22, 38, 0.18)), rgba(8, 10, 24, 0.3);
-        border-color: rgba(255, 255, 255, 0.26);
+        background: rgba(12, 12, 30, 0.68);
+        border-color: rgba(255, 255, 255, 0.30);
+        box-shadow:
+            0 -12px 48px rgba(0, 0, 0, 0.55),
+            inset 0 1px 0 rgba(255, 255, 255, 0.38),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.45);
     }
 
     .dock-bottom-sheet::before {
@@ -340,22 +293,16 @@
         border-radius: 12px;
         cursor: pointer;
         font-size: 1rem;
-        transition:
-            background-color 0.15s ease,
-            border-color 0.15s ease,
-            box-shadow 0.2s ease;
+        transition: background-color 0.2s ease;
         margin: 4px 0;
         color: #fffef7;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        backdrop-filter: blur(22px) saturate(170%);
-        -webkit-backdrop-filter: blur(22px) saturate(170%);
+        background: transparent;
+        border: none;
+        box-shadow: none;
     }
 
     .dock-bottom-sheet-option:hover {
         background: rgba(255, 255, 255, 0.12);
-        border-color: rgba(255, 255, 255, 0.12);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
     }
 
     .dock-bottom-sheet-option .check-icon {
@@ -371,11 +318,7 @@
     }
 
     .dock-bottom-sheet-option.selected {
-        background: rgba(160, 188, 214, 0.22);
-        border-color: rgba(255, 255, 255, 0.14);
-        box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.18),
-            0 8px 20px rgba(0, 0, 0, 0.12);
+        background: rgba(255, 255, 255, 0.18);
     }
 
     /* Overlay (mobile only) */
