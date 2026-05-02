@@ -1,4 +1,4 @@
-export type Locale = 'zh-CN' | 'en';
+export type Locale = 'zh-CN' | 'en' | 'ja';
 export type TranslationKeys = keyof (typeof translations)['zh-CN'];
 
 export const translations: Record<Locale, Record<string, string>> = {
@@ -10,6 +10,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'dock.theme.dark': '深色',
         'dock.lang.zh-CN': '中文',
         'dock.lang.en': 'English',
+        'dock.lang.ja': '日本語',
         'dock.settings.coming-soon': '即将推出',
         'time.weekday.sun': '星期日',
         'time.weekday.mon': '星期一',
@@ -39,6 +40,7 @@ export const translations: Record<Locale, Record<string, string>> = {
         'dock.theme.dark': 'Dark',
         'dock.lang.zh-CN': '中文',
         'dock.lang.en': 'English',
+        'dock.lang.ja': '日本語',
         'dock.settings.coming-soon': 'Coming Soon',
         'time.weekday.sun': 'Sunday',
         'time.weekday.mon': 'Monday',
@@ -59,5 +61,35 @@ export const translations: Record<Locale, Record<string, string>> = {
         'time.month.oct': 'October',
         'time.month.nov': 'November',
         'time.month.dec': 'December'
+    },
+    ja: {
+        'dock.theme': 'テーマ',
+        'dock.language': '言語',
+        'dock.settings': '設定',
+        'dock.theme.light': 'ライト',
+        'dock.theme.dark': 'ダーク',
+        'dock.lang.zh-CN': '中文',
+        'dock.lang.en': 'English',
+        'dock.lang.ja': '日本語',
+        'dock.settings.coming-soon': '近日公開',
+        'time.weekday.sun': '日曜日',
+        'time.weekday.mon': '月曜日',
+        'time.weekday.tue': '火曜日',
+        'time.weekday.wed': '水曜日',
+        'time.weekday.thu': '木曜日',
+        'time.weekday.fri': '金曜日',
+        'time.weekday.sat': '土曜日',
+        'time.month.jan': '1月',
+        'time.month.feb': '2月',
+        'time.month.mar': '3月',
+        'time.month.apr': '4月',
+        'time.month.may': '5月',
+        'time.month.jun': '6月',
+        'time.month.jul': '7月',
+        'time.month.aug': '8月',
+        'time.month.sep': '9月',
+        'time.month.oct': '10月',
+        'time.month.nov': '11月',
+        'time.month.dec': '12月'
     }
 };

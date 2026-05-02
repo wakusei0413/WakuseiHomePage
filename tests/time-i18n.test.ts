@@ -15,6 +15,12 @@ describe('locale-aware time formatting', () => {
         assert.equal(parts.weekday, 'Monday');
     });
 
+    it('formats weekday in Japanese when locale is ja', () => {
+        const date = new Date(2026, 0, 5); // Monday
+        const parts = formatDateParts(date, 'ja');
+        assert.equal(parts.weekday, '月曜日');
+    });
+
     it('formats date display in Chinese by default', () => {
         const date = new Date(2026, 0, 5);
         const parts = formatDateParts(date);
@@ -25,6 +31,12 @@ describe('locale-aware time formatting', () => {
         const date = new Date(2026, 0, 5);
         const parts = formatDateParts(date, 'en');
         assert.ok(parts.dateDisplay.includes('January'));
+    });
+
+    it('formats date display in Japanese when locale is ja', () => {
+        const date = new Date(2026, 0, 5);
+        const parts = formatDateParts(date, 'ja');
+        assert.equal(parts.dateDisplay, '一月五日');
     });
 
     it('formats 24h time correctly', () => {

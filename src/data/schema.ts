@@ -7,9 +7,50 @@ const socialLinkSchema = z.object({
     color: z.string().min(1).optional()
 });
 
+const dockItemSchema = z.union([
+    z.object({
+        type: z.literal('action'),
+        action: z.string().min(1),
+        display: z.object({
+            icon: z.string().min(1),
+            iconActive: z.string().min(1).optional(),
+            text: z.string().min(1).optional(),
+            i18nKey: z.string().optional()
+        })
+    }),
+    z.object({
+        type: z.literal('panel'),
+        panel: z.string().min(1),
+        display: z.object({
+            icon: z.string().min(1),
+            iconActive: z.string().min(1).optional(),
+            text: z.string().min(1).optional(),
+            i18nKey: z.string().optional()
+        })
+    }),
+    z.object({
+        type: z.literal('link'),
+        href: z.string().min(1),
+        openInNewTab: z.boolean().optional(),
+        display: z.object({
+            icon: z.string().min(1),
+            iconActive: z.string().min(1).optional(),
+            text: z.string().min(1).optional(),
+            i18nKey: z.string().optional()
+        })
+    }),
+    z.object({
+        type: z.literal('divider')
+    })
+]);
+
+const dockSchema = z.object({
+    items: z.array(dockItemSchema)
+});
+
 const i18nSchema = z.object({
-    defaultLocale: z.enum(['zh-CN', 'en']),
-    locales: z.array(z.enum(['zh-CN', 'en'])).min(1)
+    defaultLocale: z.enum(['zh-CN', 'en', 'ja']),
+    locales: z.array(z.enum(['zh-CN', 'en', 'ja'])).min(1)
 });
 
 export const siteConfigSchema = z.object({
@@ -75,7 +116,8 @@ export const siteConfigSchema = z.object({
             delay: z.number().nonnegative()
         })
     }),
-    i18n: i18nSchema
+    i18n: i18nSchema,
+    dock: dockSchema
 });
 
 export type ParsedSiteConfig = z.infer<typeof siteConfigSchema>;

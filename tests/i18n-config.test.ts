@@ -9,5 +9,6 @@ describe('i18n config', () => {
         assert.ok(Array.isArray(siteConfig.i18n.locales));
         assert.ok(siteConfig.i18n.locales.includes('zh-CN'));
         assert.ok(siteConfig.i18n.locales.includes('en'));
+        assert.ok(siteConfig.i18n.locales.includes('ja'));
     });
 });

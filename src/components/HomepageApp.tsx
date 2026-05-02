@@ -7,7 +7,7 @@ import { createLogger } from '../lib/logger';
 import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations } from '../lib/runtime-effects';
 import { WallpaperScrollerController } from '../lib/wallpaper-scroller';
 import { ClockPanel } from './ClockPanel';
-import { ControlDock } from './ControlDock';
+import { NavigationDock } from './NavigationDock';
 import { MobileDockSidebar } from './MobileDockSidebar';
 import { LoadingOverlay } from './LoadingOverlay';
 import { SocialLinks } from './SocialLinks';
@@ -132,7 +132,7 @@ export function HomepageApp() {
                     <div class="info-panel">
                         <ClockPanel config={siteConfig.time} i18n={i18n} />
                     </div>
-                    <ControlDock config={siteConfig} i18n={i18n} />
+                    <NavigationDock config={siteConfig} i18n={i18n} />
                     <MobileDockSidebar
                         config={siteConfig}
                         i18n={i18n}

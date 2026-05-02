@@ -3,7 +3,7 @@ import type { SiteConfig } from '../types/site';
 // Edit this file for nearly all everyday homepage changes.
 // Sections are grouped by what usually gets customized together.
 export const editableSiteConfig: SiteConfig = {
-    version: '1.8.0',
+    version: '1.8.5',
 
     // Browser and SEO metadata.
     title: 'WAKUSEI的个人主页',
@@ -147,11 +147,57 @@ export const editableSiteConfig: SiteConfig = {
             delay: 50
         }
     },
-    // Control dock: theme toggle, language switcher, and settings shortcut.
+    // Control dock: define items, order, icons, links and behaviour.
+    // type: 'action' | 'panel' | 'link' | 'divider'
+    //   action: internal handler (e.g. 'toggleTheme' toggles light/dark)
+    //   panel: opens a popup sheet (e.g. 'language' shows language selector)
+    //   link: href navigation (openInNewTab optional)
+    //   divider: visual separator, no display needed
+    // display.icon: Font Awesome icon class
+    // display.iconActive: optional icon shown when the action is active
+    // display.text: optional hard-coded label text
+    // display.i18nKey: key into src/data/i18n.ts, preferred if present
+    // Reserved actions that always have a handler:
+    //   'toggleTheme' — built-in
+    // Reserved panels that always have a handler:
+    //   'language'    — built-in
+    // Any other action / panel key falls through to a no-op with a console.warn,
+    // providing a hook for custom extensions.
+    dock: {
+        items: [
+            {
+                type: 'action',
+                action: 'toggleTheme',
+                display: {
+                    icon: 'fa-solid fa-moon',
+                    iconActive: 'fa-solid fa-sun',
+                    i18nKey: 'dock.theme'
+                }
+            },
+            { type: 'divider' },
+            {
+                type: 'panel',
+                panel: 'language',
+                display: {
+                    icon: 'fa-solid fa-globe',
+                    i18nKey: 'dock.language'
+                }
+            },
+            { type: 'divider' },
+            {
+                type: 'link',
+                href: '/settings',
+                display: {
+                    icon: 'fa-solid fa-gear',
+                    i18nKey: 'dock.settings'
+                }
+            }
+        ]
+    },
     // Translations are in src/data/i18n.ts — edit there for dock label customisation.
     i18n: {
         defaultLocale: 'zh-CN',
-        locales: ['zh-CN', 'en']
+        locales: ['zh-CN', 'en', 'ja']
     }
 };
 
@@ -161,5 +207,6 @@ export const quickEditSections = {
     socialLinks: editableSiteConfig.socialLinks,
     slogans: editableSiteConfig.slogans,
     wallpaper: editableSiteConfig.wallpaper,
-    time: editableSiteConfig.time
+    time: editableSiteConfig.time,
+    dock: editableSiteConfig.dock
 };
