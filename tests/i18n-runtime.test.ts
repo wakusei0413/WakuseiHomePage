@@ -27,6 +27,11 @@ describe('i18n t() lookup logic', () => {
         assert.equal(t('dock.theme'), 'Theme');
     });
 
+    it('returns correct translation for ja', () => {
+        const t = createT('ja', 'zh-CN');
+        assert.equal(t('dock.theme'), 'テーマ');
+    });
+
     it('returns key itself when no translation found', () => {
         const t = createT('zh-CN', 'zh-CN');
         assert.equal(t('nonexistent.key'), 'nonexistent.key');
@@ -41,5 +46,11 @@ describe('i18n t() lookup logic', () => {
         const t = createT('en', 'zh-CN');
         assert.equal(t('time.weekday.mon'), 'Monday');
         assert.equal(t('time.month.jan'), 'January');
+    });
+
+    it('returns time-related translations for ja', () => {
+        const t = createT('ja', 'zh-CN');
+        assert.equal(t('time.weekday.mon'), '月曜日');
+        assert.equal(t('time.month.jan'), '1月');
     });
 });

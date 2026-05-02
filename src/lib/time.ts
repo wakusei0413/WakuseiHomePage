@@ -19,14 +19,19 @@ const MONTHS_EN = [
     'December'
 ];
 
+const WEEKDAYS_JA = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
+const MONTHS_JA = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+
 const WEEKDAYS_MAP: Record<string, string[]> = {
     'zh-CN': WEEKDAYS_ZH,
-    en: WEEKDAYS_EN
+    en: WEEKDAYS_EN,
+    ja: WEEKDAYS_JA
 };
 
 const MONTHS_MAP: Record<string, string[]> = {
     'zh-CN': MONTHS_ZH,
-    en: MONTHS_EN
+    en: MONTHS_EN,
+    ja: MONTHS_JA
 };
 
 const ONES = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
@@ -64,6 +69,13 @@ export function formatDateParts(date: Date, locale: Locale = 'zh-CN') {
     const months = getMonths(locale);
 
     if (locale === 'zh-CN') {
+        return {
+            weekday: weekdays[date.getDay()],
+            dateDisplay: `${months[date.getMonth()]}${toChineseDay(date.getDate())}日`
+        };
+    }
+
+    if (locale === 'ja') {
         return {
             weekday: weekdays[date.getDay()],
             dateDisplay: `${months[date.getMonth()]}${toChineseDay(date.getDate())}日`

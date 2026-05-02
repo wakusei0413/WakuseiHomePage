@@ -2,7 +2,44 @@ export type SocialColorScheme = 'cycle' | 'same';
 export type SloganMode = 'random' | 'sequence';
 export type ClockFormat = '12h' | '24h';
 export type CursorStyle = 'block' | 'line';
-export type Locale = 'zh-CN' | 'en';
+export type Locale = 'zh-CN' | 'en' | 'ja';
+export type DockLayoutMode = 'icon' | 'icon-text';
+
+export interface DockDisplayConfig {
+    icon: string;
+    iconActive?: string;
+    text?: string;
+    i18nKey?: string;
+}
+
+export interface DockActionItem {
+    type: 'action';
+    action: string;
+    display: DockDisplayConfig;
+}
+
+export interface DockPanelItem {
+    type: 'panel';
+    panel: string;
+    display: DockDisplayConfig;
+}
+
+export interface DockLinkItem {
+    type: 'link';
+    href: string;
+    openInNewTab?: boolean;
+    display: DockDisplayConfig;
+}
+
+export interface DockDividerItem {
+    type: 'divider';
+}
+
+export type DockItem = DockActionItem | DockPanelItem | DockLinkItem | DockDividerItem;
+
+export interface DockConfig {
+    items: DockItem[];
+}
 
 export interface ProfileConfig {
     name: string;
@@ -106,4 +143,5 @@ export interface SiteConfig {
     debug: DebugConfig;
     effects: EffectsConfig;
     i18n: I18nConfig;
+    dock: DockConfig;
 }

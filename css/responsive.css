@@ -89,7 +89,7 @@
         pointer-events: none;
     }
 
-    .right-panel .control-dock {
+    .right-panel .nav-dock {
         pointer-events: auto;
     }
 
@@ -176,7 +176,7 @@
         height: 96px;
     }
 
-    .control-dock {
+    .nav-dock {
         top: var(--space-md);
         right: var(--space-md);
     }
