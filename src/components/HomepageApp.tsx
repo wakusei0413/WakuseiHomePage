@@ -8,6 +8,7 @@ import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations }
 import { WallpaperScrollerController } from '../lib/wallpaper-scroller';
 import { ClockPanel } from './ClockPanel';
 import { ControlDock } from './ControlDock';
+import { MobileDockSidebar } from './MobileDockSidebar';
 import { LoadingOverlay } from './LoadingOverlay';
 import { SocialLinks } from './SocialLinks';
 import { TypewriterSlogan } from './TypewriterSlogan';
@@ -18,6 +19,7 @@ export function HomepageApp() {
     const [ready, setReady] = createSignal(false);
     const [loadingText, setLoadingText] = createSignal(siteConfig.loading.texts[0]);
     const [loadingPercent, setLoadingPercent] = createSignal(0);
+    const [mobileDockOpen, setMobileDockOpen] = createSignal(false);
 
     let containerRef: HTMLElement | undefined;
     let avatarRef: HTMLDivElement | undefined;
@@ -82,7 +84,16 @@ export function HomepageApp() {
             <main class="container" ref={containerRef}>
                 <section class="left-panel">
                     <header class="hero">
-                        <div class="avatar-box" id="avatarBox" ref={(element) => (avatarRef = element)}>
+                        <div
+                            class="avatar-box"
+                            id="avatarBox"
+                            ref={(element) => (avatarRef = element)}
+                            onClick={() => {
+                                if (window.matchMedia('(max-width: 900px)').matches) {
+                                    setMobileDockOpen(true);
+                                }
+                            }}
+                        >
                             <img
                                 src={siteConfig.profile.avatar}
                                 alt="Avatar"
@@ -122,6 +133,12 @@ export function HomepageApp() {
                         <ClockPanel config={siteConfig.time} i18n={i18n} />
                     </div>
                     <ControlDock config={siteConfig} i18n={i18n} />
+                    <MobileDockSidebar
+                        config={siteConfig}
+                        i18n={i18n}
+                        open={mobileDockOpen()}
+                        onClose={() => setMobileDockOpen(false)}
+                    />
                 </aside>
             </main>
 
