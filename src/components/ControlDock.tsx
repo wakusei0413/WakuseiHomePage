@@ -14,12 +14,14 @@ export function ControlDock(props: ControlDockProps) {
     const { locale, setLocale, t } = props.i18n;
     const [isDark, setIsDark] = createSignal(false);
     const [isMobile, setIsMobile] = createSignal(false);
+    const [popupStyle, setPopupStyle] = createSignal<{ left: string; bottom: string }>({ left: '0px', bottom: '0px' });
 
     let dockRef: HTMLDivElement | undefined;
     let popupRef: HTMLDivElement | undefined;
     let overlayRef: HTMLDivElement | undefined;
     let sheetRef: HTMLDivElement | undefined;
     let outsideClickCleanup: (() => void) | undefined;
+    let languageBtnRef: HTMLButtonElement | undefined;
 
     function isMobileViewport() {
         if (typeof window === 'undefined') return false;
@@ -141,6 +143,7 @@ export function ControlDock(props: ControlDockProps) {
             overlayRef?.removeAttribute('data-open');
             sheetRef?.removeAttribute('data-open');
             if (open) {
+                updatePopupPosition();
                 popupRef?.setAttribute('data-open', '');
                 setupOutsideClick();
             } else {
@@ -151,6 +154,15 @@ export function ControlDock(props: ControlDockProps) {
 
     function toggleLanguagePanel() {
         setOpen(!isOpen());
+    }
+
+    function updatePopupPosition() {
+        if (!languageBtnRef) return;
+        const rect = languageBtnRef.getBoundingClientRect();
+        setPopupStyle({
+            left: `${rect.left + rect.width / 2}px`,
+            bottom: `${window.innerHeight - rect.top + 14}px`
+        });
     }
 
     function selectLanguage(lang: Locale) {
@@ -165,8 +177,9 @@ export function ControlDock(props: ControlDockProps) {
                 const target = e.target as Node;
                 const clickedInsideDock = dockRef?.contains(target) ?? false;
                 const clickedInsideSheet = sheetRef?.contains(target) ?? false;
+                const clickedInsidePopup = popupRef?.contains(target) ?? false;
 
-                if (!clickedInsideDock && !clickedInsideSheet) {
+                if (!clickedInsideDock && !clickedInsideSheet && !clickedInsidePopup) {
                     setOpen(false);
                 }
             };
@@ -199,6 +212,7 @@ export function ControlDock(props: ControlDockProps) {
                 <div class="control-dock-divider"></div>
 
                 <button
+                    ref={languageBtnRef}
                     class="control-dock-item"
                     classList={{ active: isOpen() }}
                     onClick={toggleLanguagePanel}
@@ -220,8 +234,16 @@ export function ControlDock(props: ControlDockProps) {
                 >
                     <i class="fa-solid fa-gear" aria-hidden="true"></i>
                 </button>
+            </div>
 
-                <div ref={popupRef} class="dock-popup" role="dialog" aria-label="Language selection">
+            <Portal>
+                <div
+                    ref={popupRef}
+                    class="dock-popup"
+                    style={popupStyle()}
+                    role="dialog"
+                    aria-label="Language selection"
+                >
                     <div class="dock-popup-title">{t('dock.language')}</div>
                     {locales().map((lang) => (
                         <div
@@ -236,7 +258,7 @@ export function ControlDock(props: ControlDockProps) {
                         </div>
                     ))}
                 </div>
-            </div>
+            </Portal>
 
             <Portal>
                 <div ref={overlayRef} class="dock-overlay" onClick={() => setOpen(false)}></div>
