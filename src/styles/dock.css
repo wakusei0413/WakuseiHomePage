@@ -183,6 +183,13 @@
 
 /* ===== Responsive: Show bottom sheet on mobile ===== */
 @media (max-width: 900px) {
+    /* 隐藏桌面端 Dock 和移动端 bottom sheet */
+    .control-dock,
+    .dock-bottom-sheet,
+    .dock-overlay {
+        display: none !important;
+    }
+
     /* 移动端 dock：固定在右上角，和头像平齐，右对齐 */
     .control-dock {
         position: fixed;
@@ -344,6 +351,174 @@
         -webkit-backdrop-filter: blur(10px) saturate(140%);
         opacity: 1;
         pointer-events: auto;
+    }
+
+    /* ===== Mobile Sidebar ===== */
+    .mobile-dock-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 72vw;
+        max-width: 300px;
+        z-index: calc(var(--z-dock, 10000) + 1);
+        background: rgba(10, 10, 22, 0.72);
+        backdrop-filter: blur(48px) saturate(240%);
+        -webkit-backdrop-filter: blur(48px) saturate(240%);
+        border-right: 1px solid rgba(255, 255, 255, 0.28);
+        box-shadow:
+            4px 0 24px rgba(0, 0, 0, 0.3),
+            inset -1px 0 0 rgba(255, 255, 255, 0.15);
+        color: #e8e8ec;
+        display: flex;
+        flex-direction: column;
+        padding: 20px 0;
+        /* 关闭状态 */
+        transform: translateX(-100%);
+        opacity: 0;
+        pointer-events: none;
+        transition:
+            transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .mobile-dock-sidebar[data-open] {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Overlay */
+    .mobile-dock-sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0);
+        z-index: var(--z-dock, 10000);
+        opacity: 0;
+        pointer-events: none;
+        transition:
+            background-color 0.35s ease,
+            opacity 0.35s ease;
+    }
+
+    .mobile-dock-sidebar-overlay[data-open] {
+        background: rgba(0, 0, 0, 0.22);
+        backdrop-filter: blur(10px) saturate(140%);
+        -webkit-backdrop-filter: blur(10px) saturate(140%);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Header */
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 20px 16px;
+    }
+
+    .sidebar-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .sidebar-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #ffffff;
+    }
+
+    /* Divider */
+    .sidebar-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.15);
+        margin: 0 16px 12px;
+    }
+
+    /* Menu item */
+    .sidebar-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+        padding: 12px 20px;
+        background: transparent;
+        border: none;
+        color: #fffef7;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        text-align: left;
+    }
+
+    .sidebar-menu-item:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .sidebar-menu-item > i:first-child {
+        width: 24px;
+        text-align: center;
+        font-size: 1rem;
+        color: #ffffff;
+        flex-shrink: 0;
+    }
+
+    .expand-icon {
+        margin-left: auto;
+        font-size: 0.75rem;
+        transition: transform 0.25s ease;
+    }
+
+    .sidebar-menu-item.expanded .expand-icon {
+        transform: rotate(180deg);
+    }
+
+    /* Submenu (language list) */
+    .sidebar-submenu {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition:
+            max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 0.25s ease;
+    }
+
+    .sidebar-submenu.expanded {
+        max-height: 200px;
+        opacity: 1;
+    }
+
+    .sidebar-submenu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px 10px 56px; /* 缩进以与父级图标对齐 */
+        cursor: pointer;
+        font-size: 0.95rem;
+        color: #e8e8ec;
+        transition: background-color 0.2s ease;
+    }
+
+    .sidebar-submenu-item:hover {
+        background: rgba(255, 255, 255, 0.10);
+    }
+
+    .sidebar-submenu-item.selected {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    .check-icon {
+        opacity: 0;
+        width: 16px;
+        color: #4fc3f7;
+        flex-shrink: 0;
+        transition: opacity 0.15s ease;
+    }
+
+    .sidebar-submenu-item.selected .check-icon {
+        opacity: 1;
     }
 }
 
