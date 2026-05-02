@@ -44,6 +44,8 @@ const googleFontsUrl =
                 var theme = localStorage.getItem('theme');
                 if (theme === 'dark' || theme === 'light') {
                     document.documentElement.setAttribute('data-theme', theme);
+                } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
                 }
             })();
         </script>
