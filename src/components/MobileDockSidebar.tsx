@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onMount } from 'solid-js';
+import { createEffect, createSignal, onCleanup, onMount } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import type { I18nContext } from '../lib/i18n';
 import { applyTheme, getStoredTheme, getSystemTheme } from '../lib/i18n';
@@ -73,19 +73,16 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
     }
 
     /* ===== Open/Close Side Effects ===== */
-    onMount(() => {
-        // Watch for prop changes to handle open/close side effects
-        const checkOpen = () => {
-            if (props.open) {
-                setupOutsideClick();
-            } else {
-                if (outsideClickCleanup) {
-                    outsideClickCleanup();
-                    outsideClickCleanup = undefined;
-                }
+    createEffect(() => {
+        // Reactively watch props.open changes
+        if (props.open) {
+            setupOutsideClick();
+        } else {
+            if (outsideClickCleanup) {
+                outsideClickCleanup();
+                outsideClickCleanup = undefined;
             }
-        };
-        checkOpen();
+        }
     });
 
     onCleanup(() => {
@@ -101,7 +98,7 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
             <div
                 ref={sidebarRef}
                 class="mobile-dock-sidebar"
-                classList={{ 'data-open': props.open }}
+                data-open={props.open ? '' : undefined}
                 role="dialog"
                 aria-label="Menu"
             >
@@ -156,7 +153,7 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
 
             <div
                 class="mobile-dock-sidebar-overlay"
-                classList={{ 'data-open': props.open }}
+                data-open={props.open ? '' : undefined}
                 onClick={() => props.onClose()}
             ></div>
         </Portal>
