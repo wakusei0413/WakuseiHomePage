@@ -95,17 +95,6 @@ export function initMobileStickyAvatar(container: HTMLElement, avatarBox: HTMLEl
         }
     };
 
-    const handleClick = () => {
-        if (!isMobile || container.scrollTop <= 50) {
-            return;
-        }
-
-        container.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    };
-
     const handleResize = () => {
         isMobile = window.matchMedia('(max-width: 900px)').matches;
 
@@ -115,12 +104,10 @@ export function initMobileStickyAvatar(container: HTMLElement, avatarBox: HTMLEl
     };
 
     container.addEventListener('scroll', handleScroll);
-    avatarBox.addEventListener('click', handleClick);
     window.addEventListener('resize', handleResize);
 
     return () => {
         container.removeEventListener('scroll', handleScroll);
-        avatarBox.removeEventListener('click', handleClick);
         window.removeEventListener('resize', handleResize);
     };
 }
