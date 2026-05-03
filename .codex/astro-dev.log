@@ -1,0 +1,160 @@
+
+> wakusei-homepage@1.5.0 dev
+> astro dev --host 127.0.0.1 --port 4322
+
+[2m13:56:41[22m [34m[types][39m Generated [2m1ms[22m
+[2m13:56:41[22m [34m[content][39m Syncing content
+[2m13:56:41[22m [34m[content][39m Astro config changed
+[2m13:56:41[22m [34m[content][39m Clearing content store
+[2m13:56:41[22m [34m[content][39m Synced content
+[2m13:56:41[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+
+[42m[1m astro [22m[49m [32mv5.18.1[39m [2mready in[22m 406 [2mms[22m
+
+[2m┃[22m Local    [36mhttp://127.0.0.1:4322/[39m
+
+[2m13:56:41[22m [32mwatching for file changes...[39m
+[2m16:15:05[22m [34m[200][39m / [2m28ms[22m
+[2m16:17:36[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m16:17:36[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m16:17:44[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m16:17:44[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m16:17:54[22m [34m[watch][39m /css/layout.css
+[2m16:17:54[22m [34m[200][39m / [2m6ms[22m
+[2m16:19:00[22m [34m[200][39m / [2m6ms[22m
+[2m16:26:51[22m [34m[200][39m / [2m3ms[22m
+[2m16:26:52[22m [34m[200][39m / [2m4ms[22m
+[2m16:28:31[22m [34m[200][39m / [2m3ms[22m
+[2m16:33:00[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m16:33:00[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m16:33:51[22m [34m[200][39m / [2m4ms[22m
+[2m16:49:31[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m16:49:31[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m16:50:00[22m [34m[watch][39m /css/layout.css
+[2m16:50:12[22m [34m[watch][39m /css/responsive.css
+[2m16:51:53[22m [34m[200][39m / [2m5ms[22m
+[2m16:53:57[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m16:53:57[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m16:55:54[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m16:55:54[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m16:56:13[22m [34m[watch][39m /css/layout.css
+[2m16:56:36[22m [34m[watch][39m /css/layout.css
+[2m16:57:31[22m [34m[200][39m / [2m6ms[22m
+[2m16:57:32[22m [34m[200][39m / [2m3ms[22m
+[2m17:12:36[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:12:36[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:12:43[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:12:43[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:12:50[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:12:50[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:13:00[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:13:00[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:13:22[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:13:22[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:13:31[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:13:31[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:13:39[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:13:39[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:13:49[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:13:49[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:14:31[22m [34m[watch][39m /css/layout.css
+[2m17:15:59[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:15:59[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:17:15[22m [34m[200][39m / [2m8ms[22m
+[2m17:17:45[22m [34m[200][39m / [2m8ms[22m
+[2m17:19:24[22m [34m[200][39m / [2m8ms[22m
+[2m17:19:29[22m [34m[watch][39m .codex/chrome-profile-wallpaper-9331/Default/Extensions/nmmhkkegccagdldgiimedpiccmgmieda/1.0.0.6_0/html/craw_window.html
+[2m17:21:34[22m [34m[200][39m / [2m4ms[22m
+[2m17:21:38[22m [34m[watch][39m .codex/chrome-profile-wallpaper-9332/Default/Extensions/nmmhkkegccagdldgiimedpiccmgmieda/1.0.0.6_0/html/craw_window.html
+[2m17:25:10[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:25:10[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:25:28[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:25:28[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:25:38[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:25:38[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:26:04[22m [34m[watch][39m /css/layout.css
+[2m17:26:04[22m [34m[200][39m / [2m7ms[22m
+[2m17:28:41[22m [34m[200][39m / [2m3ms[22m
+[2m17:28:48[22m [34m[watch][39m .codex/chrome-profile-wallpaper-9333/Default/Extensions/nmmhkkegccagdldgiimedpiccmgmieda/1.0.0.6_0/html/craw_window.html
+[2m17:38:52[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:38:52[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m17:38:52[22m [34m[vite][39m [33mhmr invalidate [39m[2m/src/components/HomepageApp.tsx[22m
+[2m17:38:52[22m [34m[watch][39m src/components/HomepageApp.tsx
+[2m17:38:52[22m [34m[200][39m / [2m6ms[22m
+[2m17:39:09[22m [34m[watch][39m /css/layout.css
+[2m17:39:09[22m [34m[200][39m / [2m5ms[22m
+[2m17:39:22[22m [34m[watch][39m /css/responsive.css
+[2m17:39:22[22m [34m[200][39m / [2m7ms[22m
+[2m17:39:42[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m17:39:42[22m [34m[200][39m / [2m2ms[22m
+[2m17:43:49[22m [34m[watch][39m /css/responsive.css
+[2m17:43:49[22m [34m[200][39m / [2m4ms[22m
+[2m17:45:18[22m Configuration file updated. Restarting...
+[2m17:45:18[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m17:45:19[22m [34m[content][39m Syncing content
+[2m17:45:19[22m [34m[content][39m Astro config changed
+[2m17:45:19[22m [34m[content][39m Clearing content store
+[2m17:45:19[22m [34m[content][39m Synced content
+[2m17:45:19[22m [34m[types][39m Generated [2m823ms[22m
+[2m17:45:19[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m17:45:20[22m [34m[200][39m / [2m22ms[22m
+[2m17:45:35[22m Configuration file updated. Restarting...
+[2m17:45:35[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m17:45:35[22m [34m[content][39m Syncing content
+[2m17:45:35[22m [34m[content][39m Synced content
+[2m17:45:35[22m [34m[types][39m Generated [2m646ms[22m
+[2m17:45:36[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m17:45:36[22m [34m[200][39m / [2m20ms[22m
+[2m17:47:17[22m [34m[200][39m / [2m2ms[22m
+[2m17:48:01[22m [34m[200][39m / [2m3ms[22m
+[2m17:48:05[22m [34m[watch][39m .codex/chrome-profile-wallpaper-macy-9334/Default/Extensions/nmmhkkegccagdldgiimedpiccmgmieda/1.0.0.6_0/html/craw_window.html
+[2m17:51:31[22m [34m[200][39m / [2m4ms[22m
+[2m17:54:28[22m [34m[200][39m / [2m3ms[22m
+[2m17:54:31[22m [34m[watch][39m .codex/chrome-profile-wallpaper-macy-forced/Default/Extensions/nmmhkkegccagdldgiimedpiccmgmieda/1.0.0.6_0/html/craw_window.html
+[2m18:18:10[22m [34m[200][39m / [2m5ms[22m
+[2m18:39:53[22m [34m[watch][39m .codex/chrome-profile-wallpaper-9332/Default/Extensions/nmmhkkegccagdldgiimedpiccmgmieda/1.0.0.6_0/html/craw_window.html
+[2m18:39:54[22m [34m[watch][39m .codex/chrome-profile-wallpaper-9333/Default/Extensions/nmmhkkegccagdldgiimedpiccmgmieda/1.0.0.6_0/html/craw_window.html
+[2m18:39:55[22m [34m[watch][39m .codex/chrome-profile-wallpaper-macy-9334/Default/Extensions/nmmhkkegccagdldgiimedpiccmgmieda/1.0.0.6_0/html/craw_window.html
+[2m18:39:56[22m [34m[watch][39m .codex/chrome-profile-wallpaper-macy-forced/Default/Extensions/nmmhkkegccagdldgiimedpiccmgmieda/1.0.0.6_0/html/craw_window.html
+[2m18:39:58[22m [34m[watch][39m .codex/chrome-profile-wallpaper-9331/Default/Extensions/nmmhkkegccagdldgiimedpiccmgmieda/1.0.0.6_0/html/craw_window.html
+[2m18:40:57[22m [34m[watch][39m /css/layout.css
+[2m18:40:57[22m [34m[watch][39m /css/responsive.css
+[2m18:40:57[22m [34m[watch][39m /src/components/HomepageApp.tsx
+[2m18:40:57[22m [34m[watch][39m src/lib/wallpaper-scroller.ts
+[2m18:40:57[22m Configuration file updated. Restarting...
+[2m18:40:57[22m [34m[200][39m / [2m18ms[22m
+[2m18:41:06[22m [34m[content][39m Syncing content
+[2m18:41:06[22m [34m[content][39m Astro config changed
+[2m18:41:06[22m [34m[content][39m Clearing content store
+[2m18:41:07[22m [34m[content][39m Synced content
+[2m18:41:07[22m [34m[types][39m Generated [2m8.96s[22m
+[2m18:41:07[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m18:41:28[22m Configuration file updated. Restarting...
+[2m18:41:28[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m18:41:28[22m [34m[content][39m Syncing content
+[2m18:41:28[22m [34m[content][39m Synced content
+[2m18:41:28[22m [34m[types][39m Generated [2m293ms[22m
+[2m18:41:28[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m18:41:47[22m Configuration file updated. Restarting...
+[2m18:41:48[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m18:41:48[22m [34m[content][39m Syncing content
+[2m18:41:48[22m [34m[content][39m Astro config changed
+[2m18:41:48[22m [34m[content][39m Clearing content store
+[2m18:41:48[22m [34m[content][39m Synced content
+[2m18:41:48[22m [34m[types][39m Generated [2m401ms[22m
+[2m18:41:48[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m18:48:39[22m Configuration file updated. Restarting...
+[2m18:48:40[22m [34m[vite][39m Re-optimizing dependencies because lockfile has changed
+[2m18:48:40[22m [34m[content][39m Syncing content
+[2m18:48:40[22m [34m[content][39m Astro config changed
+[2m18:48:40[22m [34m[content][39m Clearing content store
+[2m18:48:40[22m [34m[content][39m Synced content
+[2m18:48:40[22m [34m[types][39m Generated [2m414ms[22m
+[2m18:48:40[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m21:54:09[22m Configuration file updated. Restarting...
+[2m21:54:10[22m [34m[content][39m Syncing content
+[2m21:54:10[22m [34m[content][39m Astro config changed
+[2m21:54:10[22m [34m[content][39m Clearing content store
+[2m21:54:10[22m [34m[content][39m Synced content
+[2m21:54:10[22m [34m[types][39m Generated [2m425ms[22m
+[2m21:54:10[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed

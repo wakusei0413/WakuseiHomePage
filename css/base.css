@@ -4,7 +4,7 @@
 
 /* ===== CSS 变量 ===== */
 :root {
-    --bg: #fffef7;
+    --bg: var(--theme-color, #fffef7);
     --bg-card: #ffffff;
     --fg: #0a0a0a;
     --muted: #666666;
