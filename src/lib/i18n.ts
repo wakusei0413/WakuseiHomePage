@@ -58,6 +58,13 @@ export function getSystemTheme(): 'light' | 'dark' {
 export function applyTheme(theme: 'light' | 'dark') {
     if (typeof document !== 'undefined') {
         document.documentElement.setAttribute('data-theme', theme);
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+            const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+            if (bg) {
+                metaThemeColor.setAttribute('content', bg);
+            }
+        }
     }
     if (typeof localStorage !== 'undefined') {
         localStorage.setItem(STORAGE_KEY_THEME, theme);

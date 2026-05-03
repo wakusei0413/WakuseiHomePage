@@ -1,0 +1,125 @@
+[31m[1m17:38:52[22m [ERROR] [vite][39m [31mInternal server error: Failed to resolve import "macy" from "src/lib/wallpaper-scroller.ts". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/wakusei/Desktop/WakuseiHomePage/src/lib/wallpaper-scroller.ts[39m:441:45
+[33m  347|      try {
+  348|        const mosaicGrid = this.ensureMosaicSizingElements();
+  349|        const macyModule = await import("macy");
+     |                                        ^
+  350|        const Macy = macyModule.default ?? macyModule.Macy ?? macyModule;
+  351|        if (!Macy || !mosaicGrid) {[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 0)
+      at async TransformPluginContext.transform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+[31m[1m17:38:53[22m [ERROR] [vite][39m [31mInternal server error: Failed to resolve import "macy" from "src/lib/wallpaper-scroller.ts". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/wakusei/Desktop/WakuseiHomePage/src/lib/wallpaper-scroller.ts[39m:441:45
+[33m  347|      try {
+  348|        const mosaicGrid = this.ensureMosaicSizingElements();
+  349|        const macyModule = await import("macy");
+     |                                        ^
+  350|        const Macy = macyModule.default ?? macyModule.Macy ?? macyModule;
+  351|        if (!Macy || !mosaicGrid) {[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 0)
+      at async TransformPluginContext.transform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+[31m[1m17:39:10[22m [ERROR] [vite][39m [31mInternal server error: Failed to resolve import "macy" from "src/lib/wallpaper-scroller.ts". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/wakusei/Desktop/WakuseiHomePage/src/lib/wallpaper-scroller.ts[39m:441:45
+[33m  347|      try {
+  348|        const mosaicGrid = this.ensureMosaicSizingElements();
+  349|        const macyModule = await import("macy");
+     |                                        ^
+  350|        const Macy = macyModule.default ?? macyModule.Macy ?? macyModule;
+  351|        if (!Macy || !mosaicGrid) {[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 0)
+      at async TransformPluginContext.transform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+[31m[1m17:39:23[22m [ERROR] [vite][39m [31mInternal server error: Failed to resolve import "macy" from "src/lib/wallpaper-scroller.ts". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/wakusei/Desktop/WakuseiHomePage/src/lib/wallpaper-scroller.ts[39m:441:45
+[33m  347|      try {
+  348|        const mosaicGrid = this.ensureMosaicSizingElements();
+  349|        const macyModule = await import("macy");
+     |                                        ^
+  350|        const Macy = macyModule.default ?? macyModule.Macy ?? macyModule;
+  351|        if (!Macy || !mosaicGrid) {[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 0)
+      at async TransformPluginContext.transform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+[31m[1m17:39:42[22m [ERROR] [vite][39m [31mInternal server error: Failed to resolve import "macy" from "src/lib/wallpaper-scroller.ts". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/wakusei/Desktop/WakuseiHomePage/src/lib/wallpaper-scroller.ts[39m:441:45
+[33m  347|      try {
+  348|        const mosaicGrid = this.ensureMosaicSizingElements();
+  349|        const macyModule = await import("macy");
+     |                                        ^
+  350|        const Macy = macyModule.default ?? macyModule.Macy ?? macyModule;
+  351|        if (!Macy || !mosaicGrid) {[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 0)
+      at async TransformPluginContext.transform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+[31m[1m17:43:50[22m [ERROR] [vite][39m [31mInternal server error: Failed to resolve import "macy" from "src/lib/wallpaper-scroller.ts". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/wakusei/Desktop/WakuseiHomePage/src/lib/wallpaper-scroller.ts[39m:441:45
+[33m  347|      try {
+  348|        const mosaicGrid = this.ensureMosaicSizingElements();
+  349|        const macyModule = await import("macy");
+     |                                        ^
+  350|        const Macy = macyModule.default ?? macyModule.Macy ?? macyModule;
+  351|        if (!Macy || !mosaicGrid) {[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42553:41)
+      at TransformPluginContext.error (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42550:16)
+      at normalizeUrl (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40529:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40648:37
+      at async Promise.all (index 0)
+      at async TransformPluginContext.transform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:40575:7)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:42348:18)
+      at async loadAndTransform (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:35740:27)
+      at async viteTransformMiddleware (file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:37264:24)
+[31m[1m18:40:57[22m [ERROR][39m The server is being restarted or closed. Request is outdated
+  [1mStack trace:[22m
+[2m    at C:\Users\wakusei\Desktop\WakuseiHomePage\node_modules\vite\dist\node\chunks\dep-Dq2t6Dq0.js:42080:15
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[31m[1m18:41:29[22m [ERROR] [vite][39m Error: The following dependencies are imported but could not be resolved:
+
+  [36mpackery[39m [37m[2m(imported by C:/Users/wakusei/Desktop/WakuseiHomePage/src/lib/wallpaper-scroller.ts)[22m[39m
+
+Are they installed?
+    at file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:14849:15
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/wakusei/Desktop/WakuseiHomePage/node_modules/vite/dist/node/chunks/dep-Dq2t6Dq0.js:47039:28

@@ -80,6 +80,38 @@ Cloudflare Pages 仍然按静态站点方式部署：
 
 ---
 
+### `version` — 版本号
+
+```typescript
+version: '1.8.5'
+```
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `version` | `string` | 项目版本号，当前仅用于版本标识，不在页面中显示 |
+
+---
+
+### 页面元数据 — `title`、`description`、`lang`、`themeColor`
+
+```typescript
+title: '遊星Wakusei的个人小屋',
+description: 'Wakusei - 个人主页',
+lang: 'zh-CN',
+themeColor: '#fffef7'
+```
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `title` | `string` | 页面标题，显示在浏览器标签和 OG 标签 |
+| `description` | `string` | 页面描述，用于 SEO 和 OG 标签 |
+| `lang` | `string` | HTML `lang` 属性，影响浏览器和搜索引擎的语言识别 |
+| `themeColor` | `string` | 亮色模式下的页面背景色，同时作为移动端浏览器地址栏颜色（CSS 色值如 `#fffef7`）。暗色模式会自动切换为 `#0a0a1a` |
+
+`themeColor` 通过 CSS 变量 `--theme-color` 注入页面。亮色模式下 `--bg` 取此值，暗色模式下 `--bg` 由主题 CSS 覆盖，不受 `themeColor` 影响。
+
+---
+
 ### `profile` — 头像、名字、状态
 
 ```typescript
@@ -177,6 +209,20 @@ time: {
 | `updateInterval` | `number` | 刷新周期（毫秒），默认 1000 |
 
 星期和月份的翻译自动根据当前语言切换。翻译文件在 `src/data/i18n.ts`。
+
+---
+
+### `footer` — 页脚文案
+
+```typescript
+footer: {
+    text: '咕咕嘎嘎！-遨星 Wakusei'
+}
+```
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `text` | `string` | 页脚显示的文案，自动拼接当前年份 |
 
 ---
 
@@ -281,19 +327,33 @@ effects: {
 
 ---
 
-### `i18n` — 国际化
+### `debug` — 调试开关
 
 ```typescript
-i18n: {
-    defaultLocale: 'zh-CN',     // 默认语言
-    locales: ['zh-CN', 'en']    // 支持的语言列表
+debug: {
+    consoleLog: false   // 是否在控制台输出调试日志
 }
 ```
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `defaultLocale` | `'zh-CN' \| 'en'` | 首次访问时使用的语言 |
-| `locales` | `('zh-CN' \| 'en')[]` | 支持切换的语言列表 |
+| `consoleLog` | `boolean` | `true` 时在浏览器控制台输出运行时日志（如壁纸加载状态） |
+
+---
+
+### `i18n` — 国际化
+
+```typescript
+i18n: {
+    defaultLocale: 'zh-CN',           // 默认语言
+    locales: ['zh-CN', 'en', 'ja']    // 支持的语言列表
+}
+```
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `defaultLocale` | `'zh-CN' \| 'en' \| 'ja'` | 首次访问时使用的语言 |
+| `locales` | `('zh-CN' \| 'en' \| 'ja')[]` | 支持切换的语言列表 |
 
 所有翻译内容在 `src/data/i18n.ts` 中维护。新增语言时需要同时更新此处的 `locales` 和 `i18n.ts`。
 
@@ -383,6 +443,7 @@ dock: {
 ### 修改建议
 
 - 改文案、链接、颜色、壁纸接口时，优先只改 `src/data/customize.ts`
+- 改页面背景色时，修改 `customize.ts` 中的 `themeColor`，暗色模式背景由 `css/base.css` 中 `[data-theme='dark']` 独立控制
 - 改 dock 标签翻译、星期月份翻译时，编辑 `src/data/i18n.ts`
 - 改字段结构时，同时更新 `src/data/schema.ts` 和 `src/types/site.ts`
 - 改页面表现或交互时，优先看 `src/components/` 和 `src/lib/`

@@ -6,14 +6,14 @@ export const editableSiteConfig: SiteConfig = {
     version: '1.8.5',
 
     // Browser and SEO metadata.
-    title: 'WAKUSEI的个人主页',
-    description: 'wakusei - 个人主页',
+    title: '遊星Wakusei的个人小屋',
+    description: 'Wakusei - 个人主页',
     lang: 'zh-CN',
     themeColor: '#fffef7',
 
     // Hero/profile block.
     profile: {
-        name: '遨星 Wakusei',
+        name: '遊星 Wakusei',
         status: '正在武装保卫开源社区！',
         avatar: '/res/img/logo.png'
     },

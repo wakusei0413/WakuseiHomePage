@@ -26,6 +26,7 @@ const googleFontsUrl =
 
         <meta name="description" content={description} />
         <meta name="theme-color" content={siteConfig.themeColor} />
+        <style is:inline set:html={`:root{--theme-color:${siteConfig.themeColor}}`}></style>
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
@@ -46,6 +47,11 @@ const googleFontsUrl =
                     document.documentElement.setAttribute('data-theme', theme);
                 } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     document.documentElement.setAttribute('data-theme', 'dark');
+                }
+                var appliedTheme = document.documentElement.getAttribute('data-theme');
+                if (appliedTheme === 'dark') {
+                    var meta = document.querySelector('meta[name="theme-color"]');
+                    if (meta) meta.setAttribute('content', '#0a0a1a');
                 }
             })();
         </script>
