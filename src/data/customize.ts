@@ -68,7 +68,7 @@ export const editableSiteConfig: SiteConfig = {
     },
 
     footer: {
-        text: '咕咕嘎嘎！-遨星 Wakusei'
+        text: '咕咕嘎嘎！-遊星 Wakusei'
     },
 
     // Typewriter text block.
@@ -77,7 +77,7 @@ export const editableSiteConfig: SiteConfig = {
             '安静，我在用锤子TNT vibe coding！',
             '武装保卫开源社区！',
             '说得好！我完全同意。',
-            '正在切换至Cloudflare中...',
+            '已经切换至Cloudflare！',
             '用冰冷的理性温暖世界。'
         ],
         mode: 'sequence',
