@@ -1,9 +1,10 @@
 ﻿import { createSignal, onCleanup, onMount, Show } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import type { I18nContext } from '../lib/i18n';
-import { applyTheme, getStoredTheme, getSystemTheme } from '../lib/i18n';
+import { applyTheme, getCurrentTheme, getStoredTheme, subscribeThemeChange } from '../lib/i18n';
 import type { SiteConfig } from '../types/site';
 import type { Locale } from '../data/i18n';
+import { Icon } from './Icon';
 
 interface NavigationDockProps {
     config: SiteConfig;
@@ -39,10 +40,14 @@ export function NavigationDock(props: NavigationDockProps) {
     }
 
     onMount(() => {
-        const storedTheme = getStoredTheme();
-        const theme = storedTheme ?? getSystemTheme();
+        const theme = getCurrentTheme();
         setIsDark(theme === 'dark');
         applyTheme(theme);
+
+        const unsubscribeThemeChange = subscribeThemeChange((newTheme) => {
+            setIsDark(newTheme === 'dark');
+        });
+        onCleanup(unsubscribeThemeChange);
 
         const updateMobile = () => {
             const mobile = isMobileViewport();
@@ -198,19 +203,41 @@ export function NavigationDock(props: NavigationDockProps) {
         const items = dockRef.querySelectorAll('.nav-dock-item') as NodeListOf<HTMLElement>;
         if (items.length === 0) return;
 
-        const handleMouseMove = (e: MouseEvent) => {
-            const rect = dockRef!.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
+        let frameId: number | null = null;
+        let latestMouseX = 0;
+
+        const updateScales = () => {
+            if (!dockRef) {
+                frameId = null;
+                return;
+            }
+
+            const rect = dockRef.getBoundingClientRect();
             items.forEach((item) => {
                 const itemRect = item.getBoundingClientRect();
                 const itemCenter = itemRect.left - rect.left + itemRect.width / 2;
-                const distance = Math.abs(mouseX - itemCenter);
+                const distance = Math.abs(latestMouseX - itemCenter);
                 const scale = 1 + 0.12 * Math.exp(-(distance * distance) / (2 * 38 * 38));
                 item.style.transform = `scale(${scale})`;
             });
+            frameId = null;
+        };
+
+        const handleMouseMove = (e: MouseEvent) => {
+            const rect = dockRef!.getBoundingClientRect();
+            latestMouseX = e.clientX - rect.left;
+
+            if (frameId === null) {
+                frameId = window.requestAnimationFrame(updateScales);
+            }
         };
 
         const handleMouseLeave = () => {
+            if (frameId !== null) {
+                window.cancelAnimationFrame(frameId);
+                frameId = null;
+            }
+
             items.forEach((item) => {
                 item.style.transform = '';
             });
@@ -219,6 +246,9 @@ export function NavigationDock(props: NavigationDockProps) {
         dockRef.addEventListener('mousemove', handleMouseMove);
         dockRef.addEventListener('mouseleave', handleMouseLeave);
         onCleanup(() => {
+            if (frameId !== null) {
+                window.cancelAnimationFrame(frameId);
+            }
             dockRef?.removeEventListener('mousemove', handleMouseMove);
             dockRef?.removeEventListener('mouseleave', handleMouseLeave);
         });
@@ -248,8 +278,8 @@ export function NavigationDock(props: NavigationDockProps) {
         if (type === 'action' && key === 'toggleTheme') {
             return isDark();
         }
-        if (type === 'panel' && key === 'language') {
-            return isPanelOpen('language');
+        if (type === 'panel') {
+            return isPanelOpen(key);
         }
         return false;
     }
@@ -263,25 +293,28 @@ export function NavigationDock(props: NavigationDockProps) {
                     }
 
                     const display = item.display;
-                    const label = resolveLabel(display);
-                    let active = false;
-                    if (item.type === 'action') {
-                        active = isItemActive(item.type, item.action);
-                    } else if (item.type === 'panel') {
-                        active = isItemActive(item.type, item.panel);
-                    }
-                    const iconClass = active && display.iconActive ? display.iconActive : display.icon;
+                    const label = () => resolveLabel(display);
+                    const active = () => {
+                        if (item.type === 'action') {
+                            return isItemActive(item.type, item.action);
+                        }
+                        if (item.type === 'panel') {
+                            return isItemActive(item.type, item.panel);
+                        }
+                        return false;
+                    };
+                    const iconClass = () => (active() && display.iconActive ? display.iconActive : display.icon);
 
                     if (item.type === 'action') {
                         return (
                             <button
                                 class="nav-dock-item"
-                                classList={{ active }}
+                                classList={{ active: active() }}
                                 onClick={() => handleAction(item.action)}
-                                title={label}
-                                aria-label={label}
+                                title={label()}
+                                aria-label={label()}
                             >
-                                <i class={iconClass} aria-hidden="true" />
+                                <Icon name={iconClass()} />
                                 <Show when={display.text}>
                                     <span class="dock-item-label">{display.text}</span>
                                 </Show>
@@ -294,12 +327,12 @@ export function NavigationDock(props: NavigationDockProps) {
                             <button
                                 ref={item.panel === 'language' ? (el) => (languageBtnRef = el) : undefined}
                                 class="nav-dock-item"
-                                classList={{ active }}
+                                classList={{ active: active() }}
                                 onClick={() => handlePanel(item.panel)}
-                                title={label}
-                                aria-label={label}
+                                title={label()}
+                                aria-label={label()}
                             >
-                                <i class={iconClass} aria-hidden="true" />
+                                <Icon name={iconClass()} />
                                 <Show when={display.text}>
                                     <span class="dock-item-label">{display.text}</span>
                                 </Show>
@@ -321,10 +354,10 @@ export function NavigationDock(props: NavigationDockProps) {
                                     window.location.href = item.href;
                                 }
                             }}
-                            title={label}
-                            aria-label={label}
+                            title={label()}
+                            aria-label={label()}
                         >
-                            <i class={iconClass} aria-hidden="true" />
+                            <Icon name={iconClass()} />
                             <Show when={display.text}>
                                 <span class="dock-item-label">{display.text}</span>
                             </Show>

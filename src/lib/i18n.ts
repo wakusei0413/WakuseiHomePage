@@ -5,6 +5,9 @@ import type { I18nConfig } from '../types/site';
 
 const STORAGE_KEY_LANG = 'lang';
 const STORAGE_KEY_THEME = 'theme';
+const THEME_CHANGE_EVENT = 'wakusei:theme-change';
+
+export type Theme = 'light' | 'dark';
 
 export function createI18n(config: I18nConfig) {
     const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY_LANG) : null;
@@ -37,7 +40,7 @@ export function createI18n(config: I18nConfig) {
 
 export type I18nContext = ReturnType<typeof createI18n>;
 
-export function getStoredTheme(): 'light' | 'dark' | null {
+export function getStoredTheme(): Theme | null {
     if (typeof localStorage === 'undefined') {
         return null;
     }
@@ -48,14 +51,50 @@ export function getStoredTheme(): 'light' | 'dark' | null {
     return null;
 }
 
-export function getSystemTheme(): 'light' | 'dark' {
+export function getSystemTheme(): Theme {
     if (typeof window !== 'undefined' && window.matchMedia) {
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
     return 'light';
 }
 
-export function applyTheme(theme: 'light' | 'dark') {
+export function getCurrentTheme(): Theme {
+    if (typeof document !== 'undefined') {
+        const current = document.documentElement.getAttribute('data-theme');
+        if (current === 'light' || current === 'dark') {
+            return current;
+        }
+    }
+
+    return getStoredTheme() ?? getSystemTheme();
+}
+
+export function subscribeThemeChange(callback: (theme: Theme) => void) {
+    if (typeof window === 'undefined') {
+        return () => undefined;
+    }
+
+    const handleThemeChange = (event: Event) => {
+        const detail = (event as CustomEvent<{ theme?: Theme }>).detail;
+        callback(detail?.theme ?? getCurrentTheme());
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+        if (event.key === STORAGE_KEY_THEME && (event.newValue === 'light' || event.newValue === 'dark')) {
+            callback(event.newValue);
+        }
+    };
+
+    window.addEventListener(THEME_CHANGE_EVENT, handleThemeChange);
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+        window.removeEventListener(THEME_CHANGE_EVENT, handleThemeChange);
+        window.removeEventListener('storage', handleStorage);
+    };
+}
+
+export function applyTheme(theme: Theme) {
     if (typeof document !== 'undefined') {
         document.documentElement.setAttribute('data-theme', theme);
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
@@ -68,5 +107,8 @@ export function applyTheme(theme: 'light' | 'dark') {
     }
     if (typeof localStorage !== 'undefined') {
         localStorage.setItem(STORAGE_KEY_THEME, theme);
+    }
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: { theme } }));
     }
 }

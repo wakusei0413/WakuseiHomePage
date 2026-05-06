@@ -14,7 +14,18 @@ interface Props {
 
 const { title = siteConfig.title, description = siteConfig.description } = Astro.props;
 const googleFontsUrl =
-    'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap';
+    'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Space+Grotesk:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap';
+const wallpaperOrigins = Array.from(
+    new Set(
+        siteConfig.wallpaper.apis.flatMap((api) => {
+            try {
+                return [new URL(api).origin];
+            } catch {
+                return [];
+            }
+        })
+    )
+);
 ---
 
 <!doctype html>
@@ -31,11 +42,14 @@ const googleFontsUrl =
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/res/img/logo.png" type="image/png" />
+        <link rel="preload" href={siteConfig.profile.avatar} as="image" fetchpriority="high" />
 
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        {wallpaperOrigins.map((origin) => <link rel="dns-prefetch" href={origin} />)}
+        {wallpaperOrigins.map((origin) => <link rel="preconnect" href={origin} media="(min-width: 901px)" />)}
         <link href={googleFontsUrl} rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" />
         <noscript>
             <link href={googleFontsUrl} rel="stylesheet" />

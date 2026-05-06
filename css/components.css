@@ -181,9 +181,10 @@
     margin: 0 0 2rem 0;
     margin: 0 0 var(--space-lg, 2rem) 0;
     border: 6px solid #0a0a0a;
-    border: var(--border-heavy, 6px) solid var(--fg, #0a0a0a);
+    border: var(--avatar-frame-width, 6px) solid var(--avatar-frame-color, var(--fg, #0a0a0a));
     box-shadow: 10px 10px 0 #0a0a0a;
-    box-shadow: var(--shadow-offset, 10px) var(--shadow-offset, 10px) 0 var(--fg, #0a0a0a);
+    box-shadow: var(--avatar-frame-shadow-offset, 10px) var(--avatar-frame-shadow-offset, 10px) 0
+        var(--avatar-frame-color, var(--fg, #0a0a0a));
     position: relative;
     display: flex;
     align-items: center;
@@ -199,7 +200,14 @@
 .avatar-box:hover,
 .avatar-box:active {
     transform: translate(-5px, -5px);
-    box-shadow: 15px 15px 0 var(--fg);
+    box-shadow: calc(var(--avatar-frame-shadow-offset, 10px) + 5px) calc(var(--avatar-frame-shadow-offset, 10px) + 5px)
+        0 var(--avatar-frame-color, var(--fg));
+}
+
+[data-theme='dark'] .avatar-box {
+    border-color: #fffef7;
+    background-color: #fffef7;
+    box-shadow: var(--avatar-frame-shadow-offset, 8px) var(--avatar-frame-shadow-offset, 8px) 0 #fffef7;
 }
 
 .avatar-image {

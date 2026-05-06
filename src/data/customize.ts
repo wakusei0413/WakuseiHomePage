@@ -3,7 +3,7 @@ import type { SiteConfig } from '../types/site';
 // Edit this file for nearly all everyday homepage changes.
 // Sections are grouped by what usually gets customized together.
 export const editableSiteConfig: SiteConfig = {
-    version: '1.8.5',
+    version: '1.9.0',
 
     // Browser and SEO metadata.
     title: '遊星Wakusei的个人小屋',

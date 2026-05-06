@@ -6,11 +6,31 @@ import type { CursorStyle, SlogansConfig } from '../types/site';
 export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: CursorStyle }) {
     const [text, setText] = createSignal('');
     const [cursorDimmed, setCursorDimmed] = createSignal(false);
-    let timeoutId: number | undefined;
+    let frameId: number | undefined;
     let isActive = true;
 
     onMount(() => {
         const selector = createSloganSelector(props.config.mode, props.config.list);
+
+        const schedule = (delay: number, task: () => void) => {
+            const targetTime = performance.now() + delay;
+
+            const tick = (now: number) => {
+                if (!isActive) {
+                    return;
+                }
+
+                if (now >= targetTime) {
+                    frameId = undefined;
+                    task();
+                    return;
+                }
+
+                frameId = window.requestAnimationFrame(tick);
+            };
+
+            frameId = window.requestAnimationFrame(tick);
+        };
 
         const runCycle = () => {
             const next = selector.next().text;
@@ -24,7 +44,7 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
                 if (charIndex < next.length) {
                     charIndex += 1;
                     setText(next.slice(0, charIndex));
-                    timeoutId = window.setTimeout(typeNext, props.config.typeSpeed);
+                    schedule(props.config.typeSpeed, typeNext);
                     return;
                 }
 
@@ -33,7 +53,7 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
                     return;
                 }
 
-                timeoutId = window.setTimeout(deleteNext, props.config.pauseDuration);
+                schedule(props.config.pauseDuration, deleteNext);
             };
 
             const deleteNext = () => {
@@ -44,11 +64,11 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
                 if (charIndex > 0) {
                     charIndex -= 1;
                     setText(next.slice(0, charIndex));
-                    timeoutId = window.setTimeout(deleteNext, 20);
+                    schedule(20, deleteNext);
                     return;
                 }
 
-                timeoutId = window.setTimeout(runCycle, 300);
+                schedule(300, runCycle);
             };
 
             typeNext();
@@ -59,8 +79,8 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
 
     onCleanup(() => {
         isActive = false;
-        if (timeoutId !== undefined) {
-            window.clearTimeout(timeoutId);
+        if (frameId !== undefined) {
+            window.cancelAnimationFrame(frameId);
         }
     });
 

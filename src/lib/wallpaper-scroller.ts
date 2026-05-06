@@ -27,6 +27,7 @@ export class WallpaperScrollerController {
     private textInterval: ReturnType<typeof setInterval> | null = null;
     private autoScrollId: number | null = null;
     private hasStartedAutoScroll = false;
+    private isDestroyed = false;
     private interactionHandler: ((event: Event) => void) | null = null;
     private visibilityHandler: (() => void) | null = null;
     private readonly callbacks: WallpaperCallbacks;
@@ -46,6 +47,8 @@ export class WallpaperScrollerController {
     }
 
     init() {
+        this.isDestroyed = false;
+
         if (!this.container || this.wallpaperConfig.infiniteScroll.enabled === false) {
             this.callbacks.onReady?.();
             return;
@@ -70,12 +73,18 @@ export class WallpaperScrollerController {
         this.bindVisibilityHandling();
 
         void this.loadInitialImages().then(() => {
+            if (this.isDestroyed) {
+                return;
+            }
+
             this.callbacks.onReady?.();
             this.startAutoScroll();
         });
     }
 
     destroy() {
+        this.isDestroyed = true;
+
         if (this.textInterval) {
             clearInterval(this.textInterval);
             this.textInterval = null;
@@ -305,6 +314,9 @@ export class WallpaperScrollerController {
 
         try {
             const image = await this.loadWithRetry(placeholder.dataset.index ?? '0');
+            if (this.isDestroyed) {
+                return;
+            }
             prepareWallpaperImageForDisplay(image);
             placeholder.appendChild(image);
             placeholder.dataset.loaded = 'true';
@@ -332,20 +344,41 @@ export class WallpaperScrollerController {
             }, this.loadingConfig?.textSwitchInterval ?? 2000);
         }
 
-        await Promise.all(
-            placeholders.map(async (placeholder) => {
-                try {
-                    const image = await this.loadWithRetry(placeholder.dataset.index ?? '0');
-                    prepareWallpaperImageForDisplay(image);
-                    placeholder.appendChild(image);
-                    placeholder.dataset.loaded = 'true';
-                    placeholder.classList.add('loaded');
-                } finally {
-                    loadedCount += 1;
-                    this.callbacks.onProgressChange?.(Math.round((loadedCount / placeholders.length) * 100));
+        const loadTasks = placeholders.map(async (placeholder) => {
+            placeholder.dataset.loading = 'true';
+
+            try {
+                const image = await this.loadWithRetry(placeholder.dataset.index ?? '0');
+                if (this.isDestroyed) {
+                    return;
                 }
-            })
-        );
+
+                prepareWallpaperImageForDisplay(image);
+                if (typeof image.decode === 'function') {
+                    await image.decode().catch(() => undefined);
+                }
+
+                if (this.isDestroyed) {
+                    return;
+                }
+
+                placeholder.appendChild(image);
+                placeholder.dataset.loaded = 'true';
+                placeholder.classList.add('loaded');
+            } catch {
+                // Wallpaper is decorative; keep the shell usable even if an API is slow or unavailable.
+            } finally {
+                delete placeholder.dataset.loading;
+                loadedCount += 1;
+                this.callbacks.onProgressChange?.(Math.round((loadedCount / placeholders.length) * 100));
+            }
+        });
+
+        await Promise.allSettled(loadTasks);
+
+        // Let the initial wallpaper opacity transition finish behind the opaque loading overlay
+        // before revealing the page, preventing a visible flash/fade on first paint.
+        await this.waitForRetry(320);
 
         placeholders.forEach((placeholder) => this.observePlaceholder(placeholder));
 

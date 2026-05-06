@@ -1,7 +1,6 @@
 import { createEffect, createSignal, onCleanup, onMount } from 'solid-js';
 
 import { siteConfig } from '../data/site';
-import { scheduleFontAwesomeLoad } from '../lib/font-awesome';
 import { createI18n } from '../lib/i18n';
 import { createLogger } from '../lib/logger';
 import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations } from '../lib/runtime-effects';
@@ -24,47 +23,95 @@ export function HomepageApp() {
     let containerRef: HTMLElement | undefined;
     let avatarRef: HTMLDivElement | undefined;
     let wallpaperRef: HTMLDivElement | undefined;
+    let wallpaperController: WallpaperScrollerController | null = null;
+
+    // Reactive mobile detection
+    const [isMobile, setIsMobile] = createSignal(
+        typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches
+    );
+
+    // Cleanup registry shared across lifecycle changes
+    const pageCleanups: Array<() => void> = [];
+
+    function startWallpaperLoading() {
+        if (!wallpaperRef) {
+            logger.warn('Wallpaper ref not available');
+            setReady(true);
+            return;
+        }
+
+        wallpaperController = new WallpaperScrollerController(siteConfig.wallpaper, siteConfig.loading, {
+            onLoadingTextChange: (text) => {
+                setLoadingText(text);
+            },
+            onProgressChange: (percent) => {
+                setLoadingPercent(percent);
+            },
+            onReady: () => {
+                logger.log('Wallpaper ready — hiding loading overlay');
+                setReady(true);
+            }
+        });
+
+        wallpaperController.attach(wallpaperRef);
+        wallpaperController.init();
+    }
+
+    function teardownWallpaper() {
+        if (wallpaperController) {
+            wallpaperController.destroy();
+            wallpaperController = null;
+        }
+    }
+
+    // React to layout mode changes: wallpaper loading only on desktop
+    createEffect(() => {
+        const mobile = isMobile();
+
+        // Tear down any existing wallpaper controller
+        teardownWallpaper();
+
+        if (mobile) {
+            // Mobile layout: skip wallpaper, go ready immediately
+            logger.log('Mobile layout detected — skipping wallpaper loading');
+            setLoadingPercent(100);
+            setReady(true);
+        } else {
+            // Desktop layout: show loading overlay, start wallpaper
+            logger.log('Desktop layout detected — starting wallpaper loading');
+            setReady(false);
+            setLoadingPercent(0);
+            setLoadingText(siteConfig.loading.texts[0]);
+            startWallpaperLoading();
+        }
+    });
 
     onMount(() => {
-        const cleanups: Array<() => void> = [];
-
         if (siteConfig.contentProtection.preventCopyAndDrag) {
-            cleanups.push(enableContentProtection(true));
+            pageCleanups.push(enableContentProtection(true));
         }
 
         if (siteConfig.effects.scrollReveal.enabled) {
-            cleanups.push(
+            pageCleanups.push(
                 initScrollAnimations(siteConfig.effects.scrollReveal.delay, siteConfig.effects.scrollReveal.offset)
             );
         }
 
         if (containerRef && avatarRef) {
-            cleanups.push(initMobileStickyAvatar(containerRef, avatarRef));
+            pageCleanups.push(initMobileStickyAvatar(containerRef, avatarRef));
         }
 
-        scheduleFontAwesomeLoad(siteConfig.socialLinks.links, {
-            requestIdleCallback: window.requestIdleCallback?.bind(window)
-        });
-
-        if (wallpaperRef) {
-            const wallpaperController = new WallpaperScrollerController(siteConfig.wallpaper, siteConfig.loading, {
-                onLoadingTextChange: setLoadingText,
-                onProgressChange: setLoadingPercent,
-                onReady: () => {
-                    logger.log('Wallpaper ready');
-                    setReady(true);
-                }
-            });
-
-            wallpaperController.attach(wallpaperRef);
-            wallpaperController.init();
-            cleanups.push(() => wallpaperController.destroy());
-        } else {
-            setReady(true);
-        }
+        // Watch media query for layout changes
+        const mql = window.matchMedia('(max-width: 900px)');
+        const handleMediaChange = (event: MediaQueryListEvent) => {
+            setIsMobile(event.matches);
+        };
+        mql.addEventListener('change', handleMediaChange);
+        pageCleanups.push(() => mql.removeEventListener('change', handleMediaChange));
 
         onCleanup(() => {
-            cleanups.forEach((cleanup) => cleanup());
+            teardownWallpaper();
+            pageCleanups.forEach((cleanup) => cleanup());
         });
     });
 
@@ -98,6 +145,9 @@ export function HomepageApp() {
                                 src={siteConfig.profile.avatar}
                                 alt="Avatar"
                                 class="avatar-image"
+                                width="150"
+                                height="150"
+                                loading="eager"
                                 decoding="async"
                                 fetchpriority="high"
                             />
@@ -141,41 +191,6 @@ export function HomepageApp() {
                     />
                 </aside>
             </main>
-
-            <button class="wallpaper-toggle" aria-label="查看壁纸" title="查看壁纸">
-                <svg
-                    viewBox="0 0 24 24"
-                    width="24"
-                    height="24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                >
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-                <span class="sr-only">查看壁纸</span>
-            </button>
-
-            <button class="close-panel" aria-label="关闭">
-                <svg
-                    viewBox="0 0 24 24"
-                    width="24"
-                    height="24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                >
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-                <span class="sr-only">关闭</span>
-            </button>
         </>
     );
 }

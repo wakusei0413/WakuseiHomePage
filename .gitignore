@@ -17,3 +17,6 @@ Thumbs.db
 .worktrees/
 
 .superpowers/
+
+# Backups
+backups/

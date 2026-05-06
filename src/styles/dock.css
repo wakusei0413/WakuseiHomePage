@@ -3,6 +3,10 @@
    ======================================== */
 
 /* ===== Navigation Dock ===== */
+:root {
+    --dock-divider-thickness: 1px;
+}
+
 .nav-dock {
     position: absolute;
     right: 50%;
@@ -69,8 +73,14 @@
     transform: scale(0.94) !important;
 }
 
+.nav-dock-item .svg-icon {
+    width: 1em;
+    height: 1em;
+    pointer-events: none;
+}
+
 .nav-dock-divider {
-    width: 1px;
+    width: var(--dock-divider-thickness);
     height: 28px;
     background: rgba(255, 255, 255, 0.2);
     margin: 0;
@@ -417,13 +427,28 @@
         padding: 0 20px 16px;
     }
 
-    .sidebar-avatar {
+    .sidebar-avatar-frame {
         width: 48px;
         height: 48px;
-        border: 4px solid var(--fg, #0a0a0a);
-        box-shadow: 4px 4px 0 var(--fg, #0a0a0a);
-        background-color: var(--bg, #fffef7);
+        flex: 0 0 48px;
+        border: var(--sidebar-avatar-frame-width, 4px) solid var(--avatar-frame-color, var(--fg, #0a0a0a));
+        box-shadow: var(--sidebar-avatar-frame-shadow-offset, 4px) var(--sidebar-avatar-frame-shadow-offset, 4px) 0
+            var(--avatar-frame-color, var(--fg, #0a0a0a));
+        background-color: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .sidebar-avatar {
+        width: 100%;
+        height: 100%;
+        border: none;
+        box-shadow: none;
+        background: transparent;
         object-fit: cover;
+        display: block;
     }
 
     .sidebar-name {
@@ -434,9 +459,11 @@
 
     /* Divider */
     .sidebar-divider {
-        height: 1px;
+        flex: 0 0 var(--dock-divider-thickness);
+        height: var(--dock-divider-thickness);
+        min-height: var(--dock-divider-thickness);
         background: rgba(255, 255, 255, 0.15);
-        margin: 0 16px 12px;
+        margin: 8px 16px;
     }
 
     /* Menu item */
@@ -455,12 +482,15 @@
         text-align: left;
     }
 
-    .sidebar-menu-item:hover {
+    .sidebar-menu-item:hover,
+    .sidebar-menu-item.active {
         background: rgba(255, 255, 255, 0.12);
     }
 
+    .sidebar-menu-icon,
     .sidebar-menu-item > i:first-child {
         width: 24px;
+        height: 1rem;
         text-align: center;
         font-size: 1rem;
         color: #ffffff;
@@ -468,6 +498,8 @@
     }
 
     .expand-icon {
+        width: 0.75rem;
+        height: 0.75rem;
         margin-left: auto;
         font-size: 0.75rem;
         transition: transform 0.25s ease;

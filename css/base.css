@@ -10,6 +10,11 @@
     --muted: #666666;
 
     --border-color: #0a0a0a;
+    --avatar-frame-color: #0a0a0a;
+    --avatar-frame-width: 6px;
+    --avatar-frame-shadow-offset: 10px;
+    --sidebar-avatar-frame-width: 4px;
+    --sidebar-avatar-frame-shadow-offset: 4px;
 
     --accent-yellow: #ffe600;
     --accent-red: #ff3e3e;
@@ -59,6 +64,11 @@
     --fg: #e8e8ec;
     --muted: #8888a0;
     --border-color: rgba(255, 255, 255, 0.12);
+    --avatar-frame-color: #fffef7;
+    --avatar-frame-width: 6px;
+    --avatar-frame-shadow-offset: 8px;
+    --sidebar-avatar-frame-width: 4px;
+    --sidebar-avatar-frame-shadow-offset: 4px;
     --accent-yellow: #ffd700;
     --accent-red: #ff6b6b;
     --accent-blue: #4fc3f7;

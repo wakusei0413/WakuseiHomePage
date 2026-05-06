@@ -1,6 +1,6 @@
 # Wakusei HomePage
 
-![Version](https://img.shields.io/badge/version-1.8.5-9a0a0a?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.9.0-9a0a0a?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-ffe600?style=for-the-badge)
 ![Astro](https://img.shields.io/badge/Astro-5-ff5d01?style=for-the-badge&logo=astro&logoColor=white)
 ![SolidJS](https://img.shields.io/badge/SolidJS-1.9-2c4f7c?style=for-the-badge&logo=solid&logoColor=white)
@@ -10,19 +10,28 @@
 
 ![主页截图](docs/assets/screenshots/homepage-01.png)
 
-## 1.8.5 更新
+## 未发布更新：性能优化与修复
 
-`1.8.5` 将导航栏 (NavigationDock) 完全配置化。
+- 性能优化：移除运行时加载完整 Font Awesome CSS / Webfont，改为 `src/components/Icon.tsx` 内联 SVG 图标，减少首屏额外资源请求。
+- 性能优化：减少 Google Fonts 请求的字重数量，并为头像图片添加 preload，提升首屏资源优先级。
+- 性能优化：为壁纸 API 域名添加 `dns-prefetch` / 桌面端 `preconnect`，降低首次连接延迟。
+- 性能优化：桌面 Dock 鼠标悬停放大逻辑改为 `requestAnimationFrame` 节流，减少高频鼠标事件计算。
+- 性能优化：打字机文案动画改为 `requestAnimationFrame` 调度，降低定时器抖动和后台消耗。
+- 加载修复：修复 loading 提前隐藏导致首屏壁纸闪一下的问题；现在会等待初始壁纸批次加载完成或失败，并在显示前执行图片 decode 与短暂显影缓冲。
+- 图标修复：修复手机侧边栏切换主题后图标不跟随变化的问题；`Icon` 组件现在会响应 `name` 变化。
+- Dock 修复：手机侧边栏改为直接读取 `dock.items` 渲染，后续新增 Dock 项、`iconActive`、链接项、分隔线都能自动同步到手机侧边栏。
+- 主题同步：新增主题变化事件订阅，桌面 Dock 与手机侧边栏的主题状态保持同步。
+- 视觉修复：统一 Dock / 手机侧边栏分隔线粗细，并在手机侧边栏最后一个选项后自动补充分隔线，保持视觉平衡。
+- 视觉修复：黑夜模式下主页头像框改为独立变量控制，避免被全局暗色主题细边框/零阴影影响。
+- 视觉修复：调整手机左侧边栏头像结构，使用独立 `.sidebar-avatar-frame` 承载边框和投影，避免透明头像变成大面积白色方块，并与主页黑夜模式头像框风格保持一致。
+- 资源修复：为主页头像和移动侧边栏头像补充宽高与加载策略，减少布局抖动。
+- 回滚支持：新增 `backups/pre-optimization-2026-05-06/README.md`，记录本轮优化与回滚命令。
 
-主要变化：
+## 1.9.0 更新
 
-- **NavigationDock 配置化**：导航栏图标、顺序、行为全部从 `src/data/customize.ts` 读取，不再硬编码
-- 新增 `dock` 配置区域：支持 `action`（主题切换）、`panel`（语言选择）、`link`（任意链接）和 `divider`（分隔线）四种元素
-- 每种元素可自定义图标（`icon` / `iconActive`）、文案（`text` / `i18nKey`）、链接（`href`）等
-- 内置保留功能：`toggleTheme`（主题切换）、`language`（语言面板），未知 `action` / `panel` 提供 `console.warn` 预留扩展接口
-- `settings` 页面已移除并替换为 404 页面，所有不存在路由自动 fallback 到 404
-- 根目录 `README.md` 即为唯一说明文档，`src/data/README.md` 已合并删除
-- **多语言支持**：新增日语 (`ja`) 语言选项，日语日期采用汉字大写数字格式（如「五月二日」「土曜日」）
+- 优化了壁纸加载流程：手机布局首次进入时跳过 wallpaper 组件，直接进入主页，减少等待时间
+- 桌面布局仍会正常加载壁纸，并由加载页实时显示图片预加载进度
+- 支持手机 / 电脑布局切换时重新进入加载界面，自动按当前布局重建壁纸加载流程
 
 ## 技术栈
 

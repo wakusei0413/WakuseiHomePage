@@ -67,12 +67,12 @@
         height: 48px !important;
         min-width: 48px;
         margin-bottom: var(--space-sm);
-        box-shadow: 6px 6px 0 var(--fg);
+        box-shadow: 6px 6px 0 var(--avatar-frame-color, var(--fg));
     }
 
     .avatar-box.scrolled:hover {
         transform: translate(-2px, -2px);
-        box-shadow: 8px 8px 0 var(--fg);
+        box-shadow: 8px 8px 0 var(--avatar-frame-color, var(--fg));
     }
 
     .right-panel {

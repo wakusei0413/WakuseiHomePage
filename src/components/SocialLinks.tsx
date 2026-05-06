@@ -1,4 +1,5 @@
 import type { SocialLinksConfig } from '../types/site';
+import { Icon } from './Icon';
 
 const cycleColors = ['#ffe600', '#ff3e3e', '#3e59ff'];
 
@@ -32,7 +33,7 @@ export function SocialLinks(props: { config: SocialLinksConfig }) {
                             class="social-link social-link--custom"
                             style={{ '--custom-color': color }}
                         >
-                            {link.icon ? <i class={link.icon} aria-hidden="true"></i> : null}
+                            {link.icon ? <Icon name={link.icon} class="social-icon" size="1.25rem" /> : null}
                             <span class="link-label">{link.name}</span>
                         </a>
                     </div>
