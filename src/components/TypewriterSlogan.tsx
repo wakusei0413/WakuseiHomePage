@@ -6,6 +6,7 @@ import type { CursorStyle, SlogansConfig } from '../types/site';
 export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: CursorStyle }) {
     const [text, setText] = createSignal('');
     const [cursorDimmed, setCursorDimmed] = createSignal(false);
+    const [isIdle, setIsIdle] = createSignal(false);
     let frameId: number | undefined;
     let isActive = true;
 
@@ -50,9 +51,11 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
 
                 if (!props.config.loop) {
                     setCursorDimmed(true);
+                    setIsIdle(true);
                     return;
                 }
 
+                setIsIdle(true);
                 schedule(props.config.pauseDuration, deleteNext);
             };
 
@@ -60,6 +63,8 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
                 if (!isActive) {
                     return;
                 }
+
+                setIsIdle(false);
 
                 if (charIndex > 0) {
                     charIndex -= 1;
@@ -71,6 +76,7 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
                 schedule(300, runCycle);
             };
 
+            setIsIdle(false);
             typeNext();
         };
 
@@ -89,6 +95,7 @@ export function TypewriterSlogan(props: { config: SlogansConfig; cursorStyle: Cu
             <span class="typewriter-text">{text()}</span>
             <span
                 class="typewriter-cursor"
+                classList={{ 'cursor-idle': isIdle() }}
                 style={{
                     opacity: cursorDimmed() ? '0.5' : '1'
                 }}
