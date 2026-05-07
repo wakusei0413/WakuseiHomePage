@@ -9,7 +9,7 @@ export function enableContentProtection(enabled: boolean) {
         const target = event.target as HTMLElement | null;
         const tagName = target?.tagName;
 
-        if (tagName && ['INPUT', 'TEXTAREA', 'SELECT'].includes(tagName)) {
+        if (tagName && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(tagName)) {
             return;
         }
 
@@ -50,7 +50,9 @@ export function initScrollAnimations(delay: number, offset: number) {
                     const target = entry.target as HTMLElement;
                     target.classList.add('scroll-reveal--visible');
 
+                    let fallbackId: ReturnType<typeof setTimeout>;
                     const cleanup = () => {
+                        clearTimeout(fallbackId);
                         target.removeEventListener('transitionend', onTransitionEnd);
                         target.classList.remove('scroll-reveal');
                         target.style.transitionDelay = '';
@@ -62,7 +64,7 @@ export function initScrollAnimations(delay: number, offset: number) {
                         }
                     };
                     target.addEventListener('transitionend', onTransitionEnd);
-                    setTimeout(cleanup, 800);
+                    fallbackId = setTimeout(cleanup, 800);
 
                     observer.unobserve(entry.target);
                 }

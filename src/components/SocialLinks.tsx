@@ -23,7 +23,6 @@ export function SocialLinks(props: { config: SocialLinksConfig }) {
                         onPointerLeave={(event) => setHoveredState(event.currentTarget, false)}
                         onPointerDown={(event) => setHoveredState(event.currentTarget, true)}
                         onPointerUp={(event) => setHoveredState(event.currentTarget, false)}
-                        onBlur={(event) => setHoveredState(event.currentTarget as HTMLDivElement, false)}
                     >
                         <a
                             href={link.url}
@@ -32,6 +31,10 @@ export function SocialLinks(props: { config: SocialLinksConfig }) {
                             rel={isMailTo ? undefined : 'noopener noreferrer'}
                             class="social-link social-link--custom"
                             style={{ '--custom-color': color }}
+                            onBlur={(event) => {
+                                const slot = event.currentTarget.closest('.social-link-slot');
+                                if (slot) setHoveredState(slot as HTMLDivElement, false);
+                            }}
                         >
                             {link.icon ? <Icon name={link.icon} class="social-icon" size="1.25rem" /> : null}
                             <span class="link-label">{link.name}</span>

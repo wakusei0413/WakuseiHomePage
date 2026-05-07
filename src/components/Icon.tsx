@@ -86,7 +86,6 @@ export function Icon(props: { name: string; class?: string; title?: string; size
                     height={props.size ?? '1em'}
                     role={props.title ? 'img' : undefined}
                     aria-hidden={props.title ? undefined : 'true'}
-                    focusable="false"
                     style={iconStyle}
                 >
                     {props.title ? <title>{props.title}</title> : null}

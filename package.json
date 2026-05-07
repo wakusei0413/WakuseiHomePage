@@ -3,6 +3,10 @@
     "version": "1.9.0",
     "private": true,
     "description": "Wakusei 个人主页 - Astro + SolidJS static site",
+    "engines": {
+        "node": ">=22.12.0",
+        "npm": ">=9.6.5"
+    },
     "scripts": {
         "dev": "astro dev",
         "lint": "eslint \"src/**/*.{ts,tsx}\" \"tests/**/*.test.ts\" astro.config.mjs",
@@ -16,15 +20,15 @@
         "test": "node --import tsx --test tests/*.test.ts"
     },
     "devDependencies": {
-        "@astrojs/check": "^0.9.8",
-        "@astrojs/solid-js": "^5.1.0",
+        "@astrojs/check": "^0.9.9",
+        "@astrojs/solid-js": "^6.0.1",
         "@types/node": "^22.14.1",
         "@typescript-eslint/eslint-plugin": "^7.18.0",
         "@typescript-eslint/parser": "^7.18.0",
-        "astro": "^5.7.12",
+        "astro": "^6.2.2",
         "eslint": "^8.56.0",
         "prettier": "^3.2.0",
-        "prettier-plugin-astro": "^0.14.0",
+        "prettier-plugin-astro": "^0.14.1",
         "solid-js": "^1.9.5",
         "tsx": "^4.19.3",
         "typescript": "^5.8.3",

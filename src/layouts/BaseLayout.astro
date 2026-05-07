@@ -13,6 +13,8 @@ interface Props {
 }
 
 const { title = siteConfig.title, description = siteConfig.description } = Astro.props;
+// Must match [data-theme='dark'] { --bg } in base.css
+const DARK_THEME_BG = '#0a0a1a';
 const googleFontsUrl =
     'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Space+Grotesk:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap';
 const wallpaperOrigins = Array.from(
@@ -50,11 +52,11 @@ const wallpaperOrigins = Array.from(
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         {wallpaperOrigins.map((origin) => <link rel="dns-prefetch" href={origin} />)}
         {wallpaperOrigins.map((origin) => <link rel="preconnect" href={origin} media="(min-width: 901px)" />)}
-        <link href={googleFontsUrl} rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+        <link href={googleFontsUrl} rel="preload" as="style" onload={"this.onload=null;this.rel='stylesheet'"} />
         <noscript>
             <link href={googleFontsUrl} rel="stylesheet" />
         </noscript>
-        <script is:inline>
+        <script is:inline define:vars={{ darkBg: DARK_THEME_BG }}>
             (function () {
                 var theme = localStorage.getItem('theme');
                 if (theme === 'dark' || theme === 'light') {
@@ -65,7 +67,7 @@ const wallpaperOrigins = Array.from(
                 var appliedTheme = document.documentElement.getAttribute('data-theme');
                 if (appliedTheme === 'dark') {
                     var meta = document.querySelector('meta[name="theme-color"]');
-                    if (meta) meta.setAttribute('content', '#0a0a1a');
+                    if (meta) meta.setAttribute('content', darkBg);
                 }
             })();
         </script>

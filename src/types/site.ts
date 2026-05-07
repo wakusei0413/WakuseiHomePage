@@ -3,8 +3,6 @@ export type SloganMode = 'random' | 'sequence';
 export type ClockFormat = '12h' | '24h';
 export type CursorStyle = 'block' | 'line';
 export type Locale = 'zh-CN' | 'en' | 'ja';
-export type DockLayoutMode = 'icon' | 'icon-text';
-
 export interface DockDisplayConfig {
     icon: string;
     iconActive?: string;

@@ -22,8 +22,8 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
     let outsideClickCleanup: (() => void) | undefined;
 
     onMount(() => {
-        const theme = getCurrentTheme();
-        setIsDark(theme === 'dark');
+        // Theme is initialized once by NavigationDock; we only track changes.
+        setIsDark(getCurrentTheme() === 'dark');
 
         const unsubscribeThemeChange = subscribeThemeChange((newTheme) => {
             setIsDark(newTheme === 'dark');
