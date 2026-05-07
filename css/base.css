@@ -164,3 +164,33 @@ body {
     user-drag: none;
     -webkit-touch-callout: none;
 }
+
+/* When loading overlay is visible, push noise behind it */
+.loading-overlay:not(.hidden) ~ .noise-overlay {
+    z-index: 9997;
+    opacity: 0.01;
+}
+
+/* Cursor idle calm */
+.typewriter-cursor.cursor-idle {
+    animation-duration: 2s;
+}
+
+/* Clock entrance */
+.clock,
+.weekday,
+.date-display {
+    opacity: 0;
+    transform: translateY(4px);
+    transition:
+        opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.clock--entered,
+.clock--entered.clock,
+.clock--entered.weekday,
+.clock--entered.date-display {
+    opacity: 1;
+    transform: translateY(0);
+}
