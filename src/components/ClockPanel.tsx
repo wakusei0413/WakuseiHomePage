@@ -24,9 +24,19 @@ export function ClockPanel(props: { config: TimeConfig; i18n: I18nContext }) {
 
     return (
         <div class="time-widget">
-            {props.config.showWeekday ? <div class="weekday" classList={{ 'clock--entered': hasEntered() }}>{dateParts().weekday}</div> : null}
-            {props.config.showDate ? <div class="date-display" classList={{ 'clock--entered': hasEntered() }}>{dateParts().dateDisplay}</div> : null}
-            <div class="clock" classList={{ 'clock--entered': hasEntered() }}>{formatTimeString(now(), props.config.format)}</div>
+            {props.config.showWeekday ? (
+                <div class="weekday" classList={{ 'clock--entered': hasEntered() }}>
+                    {dateParts().weekday}
+                </div>
+            ) : null}
+            {props.config.showDate ? (
+                <div class="date-display" classList={{ 'clock--entered': hasEntered() }}>
+                    {dateParts().dateDisplay}
+                </div>
+            ) : null}
+            <div class="clock" classList={{ 'clock--entered': hasEntered() }}>
+                {formatTimeString(now(), props.config.format)}
+            </div>
         </div>
     );
 }

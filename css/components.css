@@ -218,8 +218,8 @@
 .avatar-box:active {
     transform: translate(-5px, -5px);
     box-shadow:
-        calc(var(--avatar-frame-shadow-offset, 10px) + 5px) calc(var(--avatar-frame-shadow-offset, 10px) + 5px)
-            0 var(--avatar-frame-color, var(--fg)),
+        calc(var(--avatar-frame-shadow-offset, 10px) + 5px) calc(var(--avatar-frame-shadow-offset, 10px) + 5px) 0
+            var(--avatar-frame-color, var(--fg)),
         0 0 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -449,7 +449,8 @@
 }
 
 @keyframes social-breathe {
-    0%, 100% {
+    0%,
+    100% {
         box-shadow: 6px 6px 0 var(--custom-color, #ffe600);
     }
     50% {
