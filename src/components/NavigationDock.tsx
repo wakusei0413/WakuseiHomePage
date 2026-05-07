@@ -384,7 +384,7 @@ export function NavigationDock(props: NavigationDockProps) {
                             role="option"
                             aria-selected={locale() === lang}
                         >
-                            <span class="check-icon">{'\u2713'}</span>
+                            <Icon name="check" class="check-icon" />
                             <span>{t(`dock.lang.${lang}`)}</span>
                         </div>
                     ))}
@@ -404,7 +404,7 @@ export function NavigationDock(props: NavigationDockProps) {
                             role="option"
                             aria-selected={locale() === lang}
                         >
-                            <span class="check-icon">{'\u2713'}</span>
+                            <Icon name="check" class="check-icon" />
                             <span>{t(`dock.lang.${lang}`)}</span>
                         </div>
                     ))}
