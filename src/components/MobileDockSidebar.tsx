@@ -179,7 +179,7 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
                         role="option"
                         aria-selected={locale() === lang}
                     >
-                        <span class="check-icon">✓</span>
+                        <Icon name="check" class="check-icon" />
                         <span>{t(`dock.lang.${lang}`)}</span>
                     </div>
                 ))}
@@ -254,6 +254,7 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
             <div
                 ref={sidebarRef}
                 class="mobile-dock-sidebar"
+                classList={{ 'theme-light': !isDark(), 'theme-dark': isDark() }}
                 data-open={props.open ? '' : undefined}
                 role="dialog"
                 aria-label="Menu"
