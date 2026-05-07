@@ -9,8 +9,8 @@
     height: 100vh;
     overflow: hidden;
     transition:
-        grid-template-columns var(--transition-normal),
-        filter 0.5s ease-out;
+        filter 0.5s ease-out,
+        opacity 0.5s ease-out;
     opacity: 1;
     visibility: visible;
     filter: blur(30px);
@@ -167,11 +167,15 @@
     left: 0;
     pointer-events: none;
     z-index: 10;
-    box-shadow:
-        inset -12px 0 30px rgba(0, 0, 0, 0.15),
-        inset 12px 0 30px rgba(0, 0, 0, 0.15),
-        inset 0 12px 30px rgba(0, 0, 0, 0.15),
-        inset 0 -12px 30px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.25) 0%,
+        rgba(0, 0, 0, 0.05) 8%,
+        transparent 15%,
+        transparent 85%,
+        rgba(0, 0, 0, 0.05) 92%,
+        rgba(0, 0, 0, 0.25) 100%
+    );
 }
 
 /* ===== 壁纸容器 ===== */
