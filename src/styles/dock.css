@@ -42,9 +42,9 @@
         inset 0 -1px 0 rgba(0, 0, 0, 0.4);
 }
 
-/* Light mode Dock — opaque cream so icons remain readable */
+/* Light mode Dock — translucent so wallpaper shows through */
 html:not([data-theme='dark']) .nav-dock {
-    background: rgba(255, 254, 247, 0.92);
+    background: rgba(255, 254, 247, 0.55);
     border-color: rgba(10, 10, 10, 0.08);
     box-shadow:
         0 8px 40px rgba(0, 0, 0, 0.12),
@@ -357,6 +357,10 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
         background: rgba(0, 0, 0, 0.1);
     }
 
+    html:not([data-theme='dark']) .dock-bottom-sheet::before {
+        background: rgba(0, 0, 0, 0.2);
+    }
+
     .dock-bottom-sheet::before {
         content: '';
         display: block;
@@ -513,6 +517,20 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
 
     html:not([data-theme='dark']) .sidebar-divider {
         background: rgba(0, 0, 0, 0.1);
+    }
+
+    /* Light mode sidebar icons must be dark */
+    html:not([data-theme='dark']) .sidebar-menu-icon,
+    html:not([data-theme='dark']) .sidebar-menu-item > i:first-child {
+        color: #0a0a0a;
+    }
+
+    html:not([data-theme='dark']) .expand-icon {
+        color: #0a0a0a;
+    }
+
+    html:not([data-theme='dark']) .check-icon {
+        color: #3e59ff;
     }
 
     /* Overlay */
