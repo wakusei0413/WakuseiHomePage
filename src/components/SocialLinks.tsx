@@ -1,15 +1,22 @@
 import type { SocialLinksConfig } from '../types/site';
+import { createSignal, onMount } from 'solid-js';
 import { Icon } from './Icon';
 
 const cycleColors = ['#ffe600', '#ff3e3e', '#3e59ff'];
 
 export function SocialLinks(props: { config: SocialLinksConfig }) {
+    const [breathe, setBreathe] = createSignal(true);
+
+    onMount(() => {
+        window.setTimeout(() => setBreathe(false), 3200);
+    });
+
     const setHoveredState = (element: HTMLDivElement, hovered: boolean) => {
         element.classList.toggle('is-hovered', hovered);
     };
 
     return (
-        <nav class="social-links" id="socialLinks">
+        <nav class="social-links" id="socialLinks" classList={{ 'breathe-once': breathe() }}>
             {props.config.links.map((link, index) => {
                 const color =
                     link.color ?? (props.config.colorScheme === 'same' ? cycleColors[0] : cycleColors[index % 3]);
