@@ -570,10 +570,13 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
         width: 48px;
         height: 48px;
         flex: 0 0 48px;
-        border: var(--sidebar-avatar-frame-width, 4px) solid var(--avatar-frame-color, var(--fg, #0a0a0a));
-        box-shadow: var(--sidebar-avatar-frame-shadow-offset, 4px) var(--sidebar-avatar-frame-shadow-offset, 4px) 0
-            var(--avatar-frame-color, var(--fg, #0a0a0a));
-        background-color: transparent;
+        border: 2px solid #555555;
+        border-radius: 4px;
+        background-color: #1a1a1a;
+        box-shadow:
+            0 0 12px rgba(255, 200, 80, 0.25),
+            0 0 4px rgba(255, 200, 80, 0.15),
+            inset 0 0 6px rgba(255, 200, 80, 0.08);
         display: flex;
         align-items: center;
         justify-content: center;

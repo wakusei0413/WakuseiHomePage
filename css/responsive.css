@@ -67,12 +67,18 @@
         height: 48px !important;
         min-width: 48px;
         margin-bottom: var(--space-sm);
-        box-shadow: 6px 6px 0 var(--avatar-frame-color, var(--fg));
+        box-shadow:
+            0 0 12px rgba(255, 200, 80, 0.25),
+            0 0 4px rgba(255, 200, 80, 0.15),
+            inset 0 0 6px rgba(255, 200, 80, 0.08);
     }
 
     .avatar-box.scrolled:hover {
-        transform: translate(-2px, -2px);
-        box-shadow: 8px 8px 0 var(--avatar-frame-color, var(--fg));
+        transform: scale(1.04);
+        box-shadow:
+            0 0 18px rgba(255, 200, 80, 0.4),
+            0 0 6px rgba(255, 200, 80, 0.25),
+            inset 0 0 8px rgba(255, 200, 80, 0.12);
     }
 
     .right-panel {

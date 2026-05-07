@@ -197,36 +197,48 @@
     height: clamp(100px, 12vw, 150px);
     margin: 0 0 2rem 0;
     margin: 0 0 var(--space-lg, 2rem) 0;
-    border: 6px solid #0a0a0a;
-    border: var(--avatar-frame-width, 6px) solid var(--avatar-frame-color, var(--fg, #0a0a0a));
-    box-shadow: 10px 10px 0 #0a0a0a;
-    box-shadow: var(--avatar-frame-shadow-offset, 10px) var(--avatar-frame-shadow-offset, 10px) 0
-        var(--avatar-frame-color, var(--fg, #0a0a0a));
+    border: 2px solid #555555;
+    border-radius: 4px;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #fffef7;
-    background-color: var(--bg, #fffef7);
+    background-color: #1a1a1a;
+    box-shadow:
+        0 0 24px rgba(255, 200, 80, 0.25),
+        0 0 8px rgba(255, 200, 80, 0.15),
+        inset 0 0 12px rgba(255, 200, 80, 0.08);
     transition:
-        transform 0.08s cubic-bezier(0.2, 0, 0, 1),
-        box-shadow 0.08s cubic-bezier(0.2, 0, 0, 1);
+        transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.3s ease;
     cursor: pointer;
+    overflow: hidden;
 }
 
 .avatar-box:hover,
 .avatar-box:active {
-    transform: translate(-5px, -5px);
+    transform: scale(1.04);
     box-shadow:
-        calc(var(--avatar-frame-shadow-offset, 10px) + 5px) calc(var(--avatar-frame-shadow-offset, 10px) + 5px) 0
-            var(--avatar-frame-color, var(--fg)),
-        0 0 20px rgba(0, 0, 0, 0.15);
+        0 0 36px rgba(255, 200, 80, 0.4),
+        0 0 12px rgba(255, 200, 80, 0.25),
+        inset 0 0 16px rgba(255, 200, 80, 0.12);
 }
 
 [data-theme='dark'] .avatar-box {
-    border-color: #fffef7;
-    background-color: #fffef7;
-    box-shadow: var(--avatar-frame-shadow-offset, 8px) var(--avatar-frame-shadow-offset, 8px) 0 #fffef7;
+    border-color: #555555;
+    background-color: #1a1a1a;
+    box-shadow:
+        0 0 24px rgba(255, 215, 0, 0.2),
+        0 0 8px rgba(255, 215, 0, 0.12),
+        inset 0 0 12px rgba(255, 215, 0, 0.06);
+}
+
+[data-theme='dark'] .avatar-box:hover,
+[data-theme='dark'] .avatar-box:active {
+    box-shadow:
+        0 0 36px rgba(255, 215, 0, 0.35),
+        0 0 12px rgba(255, 215, 0, 0.2),
+        inset 0 0 16px rgba(255, 215, 0, 0.1);
 }
 
 .avatar-image {
@@ -813,15 +825,21 @@
 }
 
 [data-theme='dark'] .avatar-box {
-    border-color: var(--glass-border);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
-    background-color: var(--bg);
+    border-color: #555555;
+    background-color: #1a1a1a;
+    box-shadow:
+        0 0 24px rgba(255, 215, 0, 0.2),
+        0 0 8px rgba(255, 215, 0, 0.12),
+        inset 0 0 12px rgba(255, 215, 0, 0.06);
 }
 
 [data-theme='dark'] .avatar-box:hover,
 [data-theme='dark'] .avatar-box:active {
-    transform: translate(-3px, -3px);
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.25);
+    transform: scale(1.04);
+    box-shadow:
+        0 0 36px rgba(255, 215, 0, 0.35),
+        0 0 12px rgba(255, 215, 0, 0.2),
+        inset 0 0 16px rgba(255, 215, 0, 0.1);
 }
 
 [data-theme='dark'] .avatar-box::before {
