@@ -165,7 +165,7 @@ html:not([data-theme='dark']) .nav-dock-divider {
 
 /* Light mode popup */
 html:not([data-theme='dark']) .dock-popup {
-    background: rgba(255, 254, 247, 0.95);
+    background: rgba(255, 254, 247, 0.65);
     border-color: rgba(0, 0, 0, 0.1);
     box-shadow:
         0 12px 48px rgba(0, 0, 0, 0.12),
@@ -332,7 +332,7 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
 
     /* Light mode bottom sheet */
     html:not([data-theme='dark']) .dock-bottom-sheet {
-        background: rgba(255, 254, 247, 0.95);
+        background: rgba(255, 254, 247, 0.65);
         border-color: rgba(0, 0, 0, 0.1);
         box-shadow:
             0 -12px 48px rgba(0, 0, 0, 0.12),
@@ -482,7 +482,7 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
     }
 
     html:not([data-theme='dark']) .mobile-dock-sidebar {
-        background: rgba(255, 254, 247, 0.95);
+        background: rgba(255, 254, 247, 0.65);
         border-right-color: rgba(0, 0, 0, 0.1);
         box-shadow:
             4px 0 24px rgba(0, 0, 0, 0.08),
