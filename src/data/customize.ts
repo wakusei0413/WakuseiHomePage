@@ -3,7 +3,7 @@ import type { SiteConfig } from '../types/site';
 // Edit this file for nearly all everyday homepage changes.
 // Sections are grouped by what usually gets customized together.
 export const editableSiteConfig: SiteConfig = {
-    version: '1.9.0',
+    version: '2.0.0',
 
     // Browser and SEO metadata.
     title: '遊星Wakusei的个人小屋',
@@ -23,43 +23,43 @@ export const editableSiteConfig: SiteConfig = {
         colorScheme: 'cycle',
         links: [
             {
-                name: 'GITHUB',
+                name: 'GitHub',
                 url: 'https://github.com/wakusei0413',
                 icon: 'fab fa-github',
-                color: '#ffe600'
+                color: '#fff700'
             },
             {
                 name: 'Linux.Do',
                 url: 'https://linux.do/u/wakusei/summary',
                 icon: 'fa-solid fa-bars-staggered',
-                color: '#f2411d'
+                color: '#ff2a00'
             },
             {
-                name: 'EMAIL',
+                name: 'Email',
                 url: 'mailto:wakusei0413@outlook.com',
                 icon: 'fas fa-envelope',
-                color: '#3e59ff'
+                color: '#0022ff'
             },
             {
-                name: 'BILIBILI',
+                name: 'Bilibili',
                 url: 'https://space.bilibili.com/438168974',
                 icon: 'fab fa-bilibili',
-                color: '#ffa69e'
+                color: '#ff7676'
             },
             {
-                name: 'BLOG',
+                name: 'Blog',
                 url: 'https://blog.wakusei.top/',
                 icon: 'fa-solid fa-blog',
-                color: '#f58f1a'
+                color: '#ff8800'
             },
             {
-                name: 'STATUS',
+                name: 'Status',
                 url: 'https://status.wakusei.top/',
                 icon: 'fa-solid fa-arrow-up-right-dots',
-                color: '#caa62e'
+                color: '#ddff00'
             },
             {
-                name: 'TESTING',
+                name: 'Testing',
                 url: 'https://testing.wakusei.top/',
                 icon: 'fa-solid fa-flask',
                 color: '#16deca'
@@ -136,7 +136,7 @@ export const editableSiteConfig: SiteConfig = {
     },
 
     debug: {
-        consoleLog: false
+        consoleLog: true
     },
 
     // Small page effects.

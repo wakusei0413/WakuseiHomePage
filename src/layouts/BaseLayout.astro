@@ -1,8 +1,8 @@
 ---
-import '../../css/base.css';
-import '../../css/layout.css';
-import '../../css/components.css';
-import '../../css/responsive.css';
+import '../styles/base.css';
+import '../styles/layout.css';
+import '../styles/components.css';
+import '../styles/responsive.css';
 import '../styles/dock.css';
 
 import { siteConfig } from '../data/site';
@@ -14,9 +14,9 @@ interface Props {
 
 const { title = siteConfig.title, description = siteConfig.description } = Astro.props;
 // Must match [data-theme='dark'] { --bg } in base.css
-const DARK_THEME_BG = '#0a0a1a';
+const DARK_THEME_BG = '#080808';
 const googleFontsUrl =
-    'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Space+Grotesk:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap';
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap';
 const wallpaperOrigins = Array.from(
     new Set(
         siteConfig.wallpaper.apis.flatMap((api) => {
@@ -28,6 +28,10 @@ const wallpaperOrigins = Array.from(
         })
     )
 );
+const siteUrl = Astro.site ?? new URL('https://www.wakusei.top');
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const ogImageUrl = new URL(siteConfig.profile.avatar, siteUrl).toString();
+const ogLocale = siteConfig.lang.replace('-', '_');
 ---
 
 <!doctype html>
@@ -38,11 +42,22 @@ const wallpaperOrigins = Array.from(
         <title>{title}</title>
 
         <meta name="description" content={description} />
+        <meta name="robots" content="index, follow" />
         <meta name="theme-color" content={siteConfig.themeColor} />
         <style is:inline set:html={`:root{--theme-color:${siteConfig.themeColor}}`}></style>
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:site_name" content={siteConfig.title} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:image:alt" content={`${siteConfig.profile.name} avatar`} />
+        <meta property="og:locale" content={ogLocale} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImageUrl} />
         <link rel="icon" href="/res/img/logo.png" type="image/png" />
         <link rel="preload" href={siteConfig.profile.avatar} as="image" fetchpriority="high" />
 

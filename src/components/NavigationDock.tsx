@@ -1,21 +1,15 @@
 ﻿import { createSignal, onCleanup, onMount, Show } from 'solid-js';
 import { Portal } from 'solid-js/web';
+import type { Locale } from '../data/i18n';
+import { getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel } from '../lib/dock';
 import type { I18nContext } from '../lib/i18n';
 import { applyTheme, getCurrentTheme, getStoredTheme, subscribeThemeChange } from '../lib/i18n';
 import type { SiteConfig } from '../types/site';
-import type { Locale } from '../data/i18n';
 import { Icon } from './Icon';
 
 interface NavigationDockProps {
     config: SiteConfig;
     i18n: I18nContext;
-}
-
-interface DockDisplay {
-    icon: string;
-    iconActive?: string;
-    text?: string;
-    i18nKey?: string;
 }
 
 export function NavigationDock(props: NavigationDockProps) {
@@ -55,6 +49,7 @@ export function NavigationDock(props: NavigationDockProps) {
             popupRef?.removeAttribute('data-open');
             overlayRef?.removeAttribute('data-open');
             sheetRef?.removeAttribute('data-open');
+            setActivePanel(null);
         };
         updateMobile();
         window.addEventListener('resize', updateMobile);
@@ -122,10 +117,6 @@ export function NavigationDock(props: NavigationDockProps) {
         setOpen(!isOpen());
     }
 
-    function isPanelOpen(panel: string) {
-        return isOpen() && activePanel() === panel;
-    }
-
     function isOpen() {
         if (isMobileViewport()) {
             return sheetRef?.hasAttribute('data-open') ?? false;
@@ -175,8 +166,8 @@ export function NavigationDock(props: NavigationDockProps) {
         });
     }
 
-    function selectLanguage(lang: string) {
-        setLocale(lang as Locale);
+    function selectLanguage(lang: Locale) {
+        setLocale(lang);
         setOpen(false);
     }
 
@@ -262,28 +253,6 @@ export function NavigationDock(props: NavigationDockProps) {
 
     const locales = () => props.config.i18n.locales;
 
-    /* ===== Resolve display label ===== */
-    function resolveLabel(display: DockDisplay) {
-        if (display.i18nKey) {
-            return t(display.i18nKey);
-        }
-        if (display.text) {
-            return display.text;
-        }
-        return '';
-    }
-
-    /* ===== Determine active state for icon swapping ===== */
-    function isItemActive(type: string, key: string): boolean {
-        if (type === 'action' && key === 'toggleTheme') {
-            return isDark();
-        }
-        if (type === 'panel') {
-            return isPanelOpen(key);
-        }
-        return false;
-    }
-
     return (
         <>
             <div ref={dockRef} class="nav-dock" role="toolbar" aria-label="Navigation dock">
@@ -293,17 +262,9 @@ export function NavigationDock(props: NavigationDockProps) {
                     }
 
                     const display = item.display;
-                    const label = () => resolveLabel(display);
-                    const active = () => {
-                        if (item.type === 'action') {
-                            return isItemActive(item.type, item.action);
-                        }
-                        if (item.type === 'panel') {
-                            return isItemActive(item.type, item.panel);
-                        }
-                        return false;
-                    };
-                    const iconClass = () => (active() && display.iconActive ? display.iconActive : display.icon);
+                    const label = () => resolveDockLabel(display, t);
+                    const active = () => getDockItemActiveState(item, { isDark: isDark(), activePanel: activePanel() });
+                    const iconClass = () => resolveDockIcon(display, active());
 
                     if (item.type === 'action') {
                         return (
@@ -341,7 +302,7 @@ export function NavigationDock(props: NavigationDockProps) {
                     }
 
                     // link
-                    const disabled = item.href === '#';
+                    const disabled = isDockLinkDisabled(item.href);
                     return (
                         <button
                             class="nav-dock-item"
@@ -349,7 +310,7 @@ export function NavigationDock(props: NavigationDockProps) {
                             onClick={() => {
                                 if (disabled) return;
                                 if (item.openInNewTab) {
-                                    window.open(item.href, '_blank');
+                                    window.open(item.href, '_blank', 'noopener,noreferrer');
                                 } else {
                                     window.location.href = item.href;
                                 }

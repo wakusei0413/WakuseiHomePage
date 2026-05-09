@@ -12,4 +12,14 @@ describe('SocialLinks component interactions', () => {
         assert.match(socialLinksComponent, /onPointerDown=/);
         assert.match(socialLinksComponent, /classList=\{\{ 'is-hovered':/);
     });
+
+    it('clears lifted state when navigating away and restoring from browser history', () => {
+        assert.match(socialLinksComponent, /clearAllHoveredStates/);
+        assert.match(
+            socialLinksComponent,
+            /onClick=\{\(event\) => clearHoveredStateOnNavigate\(event\.currentTarget\)\}/
+        );
+        assert.match(socialLinksComponent, /window\.addEventListener\('pagehide', clearAllHoveredStates\)/);
+        assert.match(socialLinksComponent, /window\.addEventListener\('pageshow', clearAllHoveredStates\)/);
+    });
 });

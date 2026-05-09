@@ -2,7 +2,7 @@
 
 ## 项目结构
 
-- Astro 5 静态站点 + SolidJS + TypeScript。入口：`src/pages/index.astro` → `src/layouts/BaseLayout.astro` → `src/components/HomepageApp.tsx`
+- Astro 6 静态站点 + SolidJS + TypeScript。入口：`src/pages/index.astro` → `src/layouts/BaseLayout.astro` → `src/components/HomepageApp.tsx`
 - 组件用 SolidJS 响应式 (`createSignal/onMount/onCleanup`)，全部 `client:load` 客户端水合
 - `src/data/customize.ts` 导出 `editableSiteConfig`，日常改内容只改这里
 - `src/data/site.ts` 导入并 Zod 校验后导出 `siteConfig`，组件统一消费
@@ -17,7 +17,7 @@
 - `npm run dev` 开发 / `npm run build` 构建到 `dist/` / `npm run serve` 预览
 - `npm run lint`  / `npm run lint:fix` / `npm run format:check` / `npm run format`
 - `npm run check` (astro check) / `npm test` (Node 内置 test + tsx)
-- 验证链路：`lint → format:check → test → build`，CI 参考 `.github/workflows/ci.yml`
+- 验证链路：`lint → format:check → test → check → build`，CI 参考 `.github/workflows/ci.yml`
 
 ## 构建 & 部署
 

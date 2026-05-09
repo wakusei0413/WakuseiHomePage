@@ -50,7 +50,6 @@ export function initScrollAnimations(delay: number, offset: number) {
                     const target = entry.target as HTMLElement;
                     target.classList.add('scroll-reveal--visible');
 
-                    let fallbackId: ReturnType<typeof setTimeout>;
                     const cleanup = () => {
                         clearTimeout(fallbackId);
                         target.removeEventListener('transitionend', onTransitionEnd);
@@ -63,8 +62,8 @@ export function initScrollAnimations(delay: number, offset: number) {
                             cleanup();
                         }
                     };
+                    const fallbackId = setTimeout(cleanup, 800);
                     target.addEventListener('transitionend', onTransitionEnd);
-                    fallbackId = setTimeout(cleanup, 800);
 
                     observer.unobserve(entry.target);
                 }

@@ -6,5 +6,5 @@
         "jsx": "preserve",
         "jsxImportSource": "solid-js"
     },
-    "include": ["src/**/*", "tests/**/*.ts", "astro.config.mjs"]
+    "include": [".astro/types.d.ts", "src/**/*", "tests/**/*.ts", "astro.config.mjs"]
 }

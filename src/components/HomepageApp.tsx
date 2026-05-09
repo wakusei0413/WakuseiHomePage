@@ -12,6 +12,16 @@ import { LoadingOverlay } from './LoadingOverlay';
 import { SocialLinks } from './SocialLinks';
 import { TypewriterSlogan } from './TypewriterSlogan';
 
+function splitLatinText(text: string) {
+    return text
+        .split(/([A-Za-z][A-Za-z0-9'’.-]*)/g)
+        .filter(Boolean)
+        .map((part) => ({
+            text: part,
+            isLatin: /^[A-Za-z]/.test(part)
+        }));
+}
+
 export function HomepageApp() {
     const logger = createLogger(siteConfig.debug.consoleLog);
     const i18n = createI18n(siteConfig.i18n);
@@ -153,7 +163,11 @@ export function HomepageApp() {
                             />
                         </div>
 
-                        <h1 class="name">{siteConfig.profile.name}</h1>
+                        <h1 class="name">
+                            {splitLatinText(siteConfig.profile.name).map((part) =>
+                                part.isLatin ? <span class="name-latin">{part.text}</span> : part.text
+                            )}
+                        </h1>
 
                         <div class="status-bar">
                             <span class="status-dot"></span>

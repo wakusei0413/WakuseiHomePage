@@ -1,7 +1,7 @@
 import type { SloganMode } from '../types/site';
 
 export function createSloganSelector(mode: SloganMode, slogans: string[]) {
-    let currentIndex = 0;
+    let currentIndex = -1;
 
     return {
         next() {

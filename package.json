@@ -1,6 +1,6 @@
 {
     "name": "wakusei-homepage",
-    "version": "1.9.0",
+    "version": "2.0.0",
     "private": true,
     "description": "Wakusei 个人主页 - Astro + SolidJS static site",
     "engines": {
@@ -11,8 +11,8 @@
         "dev": "astro dev",
         "lint": "eslint \"src/**/*.{ts,tsx}\" \"tests/**/*.test.ts\" astro.config.mjs",
         "lint:fix": "eslint \"src/**/*.{ts,tsx}\" \"tests/**/*.test.ts\" astro.config.mjs --fix",
-        "format": "prettier --write \"src/**/*.{ts,tsx,astro}\" \"tests/**/*.test.ts\" css/**/*.css astro.config.mjs tsconfig.json package.json",
-        "format:check": "prettier --check \"src/**/*.{ts,tsx,astro}\" \"tests/**/*.test.ts\" css/**/*.css astro.config.mjs tsconfig.json package.json",
+        "format": "prettier --write \"src/**/*.{ts,tsx,astro}\" \"tests/**/*.test.ts\" \"src/styles/**/*.css\" css/**/*.css astro.config.mjs tsconfig.json package.json",
+        "format:check": "prettier --check \"src/**/*.{ts,tsx,astro}\" \"tests/**/*.test.ts\" \"src/styles/**/*.css\" css/**/*.css astro.config.mjs tsconfig.json package.json",
         "build": "astro build",
         "check": "astro check",
         "serve": "npx serve dist",
@@ -21,7 +21,6 @@
     },
     "devDependencies": {
         "@astrojs/check": "^0.9.9",
-        "@astrojs/solid-js": "^6.0.1",
         "@types/node": "^22.14.1",
         "@typescript-eslint/eslint-plugin": "^7.18.0",
         "@typescript-eslint/parser": "^7.18.0",
@@ -29,12 +28,14 @@
         "eslint": "^8.56.0",
         "prettier": "^3.2.0",
         "prettier-plugin-astro": "^0.14.1",
-        "solid-js": "^1.9.5",
         "tsx": "^4.19.3",
         "typescript": "^5.8.3",
         "zod": "^3.24.4"
     },
     "dependencies": {
-        "@fortawesome/fontawesome-free": "^7.2.0"
+        "@astrojs/sitemap": "^3.7.2",
+        "@astrojs/solid-js": "^6.0.1",
+        "@fortawesome/fontawesome-free": "^7.2.0",
+        "solid-js": "^1.9.5"
     }
 }

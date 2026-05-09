@@ -1,22 +1,56 @@
+import { createSignal, onCleanup, onMount } from 'solid-js';
 import type { SocialLinksConfig } from '../types/site';
-import { createSignal, onMount } from 'solid-js';
 import { Icon } from './Icon';
 
 const cycleColors = ['#ffe600', '#ff3e3e', '#3e59ff'];
 
 export function SocialLinks(props: { config: SocialLinksConfig }) {
     const [breathe, setBreathe] = createSignal(true);
-
-    onMount(() => {
-        window.setTimeout(() => setBreathe(false), 3200);
-    });
+    let navRef: HTMLElement | undefined;
 
     const setHoveredState = (element: HTMLDivElement, hovered: boolean) => {
         element.classList.toggle('is-hovered', hovered);
     };
 
+    const clearAllHoveredStates = () => {
+        navRef?.querySelectorAll('.social-link-slot.is-hovered').forEach((element) => {
+            element.classList.remove('is-hovered');
+        });
+
+        const activeElement = document.activeElement;
+        if (activeElement instanceof HTMLElement && navRef?.contains(activeElement)) {
+            activeElement.blur();
+        }
+    };
+
+    const clearHoveredStateOnNavigate = (linkElement: HTMLAnchorElement) => {
+        const slot = linkElement.closest('.social-link-slot');
+        if (slot) {
+            setHoveredState(slot as HTMLDivElement, false);
+        }
+        linkElement.blur();
+    };
+
+    onMount(() => {
+        const breatheTimer = window.setTimeout(() => setBreathe(false), 3200);
+
+        window.addEventListener('pagehide', clearAllHoveredStates);
+        window.addEventListener('pageshow', clearAllHoveredStates);
+
+        onCleanup(() => {
+            window.clearTimeout(breatheTimer);
+            window.removeEventListener('pagehide', clearAllHoveredStates);
+            window.removeEventListener('pageshow', clearAllHoveredStates);
+        });
+    });
+
     return (
-        <nav class="social-links" id="socialLinks" classList={{ 'breathe-once': breathe() }}>
+        <nav
+            ref={(element) => (navRef = element)}
+            class="social-links"
+            id="socialLinks"
+            classList={{ 'breathe-once': breathe() }}
+        >
             {props.config.links.map((link, index) => {
                 const color =
                     link.color ?? (props.config.colorScheme === 'same' ? cycleColors[0] : cycleColors[index % 3]);
@@ -30,6 +64,7 @@ export function SocialLinks(props: { config: SocialLinksConfig }) {
                         onPointerLeave={(event) => setHoveredState(event.currentTarget, false)}
                         onPointerDown={(event) => setHoveredState(event.currentTarget, true)}
                         onPointerUp={(event) => setHoveredState(event.currentTarget, false)}
+                        onPointerCancel={(event) => setHoveredState(event.currentTarget, false)}
                     >
                         <a
                             href={link.url}
@@ -38,6 +73,7 @@ export function SocialLinks(props: { config: SocialLinksConfig }) {
                             rel={isMailTo ? undefined : 'noopener noreferrer'}
                             class="social-link social-link--custom"
                             style={{ '--custom-color': color }}
+                            onClick={(event) => clearHoveredStateOnNavigate(event.currentTarget)}
                             onBlur={(event) => {
                                 const slot = event.currentTarget.closest('.social-link-slot');
                                 if (slot) setHoveredState(slot as HTMLDivElement, false);

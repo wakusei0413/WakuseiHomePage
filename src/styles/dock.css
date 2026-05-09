@@ -8,6 +8,7 @@
 }
 
 .nav-dock {
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
     position: absolute;
     right: 50%;
     bottom: 20px;
@@ -18,38 +19,25 @@
     align-items: center;
     gap: 0;
     padding: 0 16px;
-    background: rgba(0, 0, 0, 0.42);
+    background: var(--dock-bg);
     backdrop-filter: blur(40px) saturate(220%);
     -webkit-backdrop-filter: blur(40px) saturate(220%);
     border-radius: 32px;
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    border: 1px solid var(--dock-border);
     box-shadow:
-        0 8px 40px rgba(0, 0, 0, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.25),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+        0 8px 40px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     transition:
         transform 0.3s ease,
         opacity 0.3s ease,
-        background-color 0.4s ease;
+        background-color 0.4s ease,
+        border-color 0.4s ease;
 }
 
-[data-theme='dark'] .nav-dock {
-    background: rgba(10, 10, 26, 0.75);
-    border-color: rgba(255, 255, 255, 0.22);
-    box-shadow:
-        0 8px 40px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.35),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.4);
-}
-
-/* Light mode Dock — translucent so wallpaper shows through */
+/* Cleanup dark/light overrides for nav-dock */
+[data-theme='dark'] .nav-dock,
 html:not([data-theme='dark']) .nav-dock {
-    background: rgba(255, 254, 247, 0.55);
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow:
-        0 8px 40px rgba(0, 0, 0, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+    /* Values are now handled via variables in base.css */
 }
 
 html:not([data-theme='dark']) .nav-dock-item {
@@ -76,8 +64,9 @@ html:not([data-theme='dark']) .nav-dock-divider {
     justify-content: center;
     cursor: pointer;
     transition:
-        background-color 0.2s ease,
-        transform 0.15s ease-out;
+        background-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+        transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+        color 0.4s ease;
     touch-action: manipulation;
     margin: 10px 4px;
     font-size: 16px;
@@ -92,7 +81,8 @@ html:not([data-theme='dark']) .nav-dock-divider {
 }
 
 .nav-dock-item:active {
-    transform: scale(0.94) !important;
+    transform: scale(0.92) !important;
+    transition-duration: 0.15s; /* 点击按下时快一点，增加回馈感 */
 }
 
 .nav-dock-item .svg-icon {
@@ -117,29 +107,29 @@ html:not([data-theme='dark']) .nav-dock-divider {
 
 /* ===== Popup (PC only) ===== */
 .dock-popup {
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
     position: fixed;
     z-index: var(--z-dock, 10000);
     min-width: 160px;
     padding: 12px 16px;
-    /* 娣辫壊纾ㄧ爞鐜荤拑 鈥?鐩存帴浣滅敤浜庨〉闈㈣儗鏅?*/
-    background: rgba(10, 10, 22, 0.62);
-    backdrop-filter: blur(48px) saturate(240%);
-    -webkit-backdrop-filter: blur(48px) saturate(240%);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.28);
+    /* Deep neutral glass */
+    background: rgba(22, 22, 22, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow:
-        0 12px 48px rgba(0, 0, 0, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.35);
-    color: #e8e8ec;
+        0 12px 48px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    color: #ffffff;
     overflow: hidden;
     /* 榛樿鍏抽棴鐘舵€侊細涓嶅彲瑙?+ 涓嶅彲浜や簰 */
     opacity: 0;
     transform: translateX(-50%) translateY(6px) scale(0.96);
     pointer-events: none;
     transition:
-        opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-        transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dock-popup[data-open] {
@@ -155,12 +145,11 @@ html:not([data-theme='dark']) .nav-dock-divider {
 }
 
 [data-theme='dark'] .dock-popup {
-    background: rgba(12, 12, 30, 0.68);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(22, 22, 22, 0.95);
+    border-color: rgba(255, 255, 255, 0.15);
     box-shadow:
-        0 12px 48px rgba(0, 0, 0, 0.55),
-        inset 0 1px 0 rgba(255, 255, 255, 0.38),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* Light mode popup */
@@ -197,7 +186,7 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
     letter-spacing: 0.1em;
     margin-bottom: 10px;
     margin-top: 2px;
-    color: #4fc3f7;
+    color: var(--accent-blue);
 }
 
 .dock-popup-option {
@@ -210,7 +199,7 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
     font-size: 0.9rem;
     transition: background-color 0.2s ease;
     margin: 2px 0;
-    color: #fffef7;
+    color: var(--fg);
     background: transparent;
     border: none;
     box-shadow: none;
@@ -223,7 +212,7 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
 .dock-popup-option .check-icon {
     opacity: 0;
     width: 16px;
-    color: #4fc3f7;
+    color: var(--accent-blue);
     flex-shrink: 0;
     transition: opacity 0.15s ease;
 }
@@ -285,23 +274,20 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
 
     .dock-bottom-sheet {
         display: block;
+        font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
         max-height: 40vh;
-        border-radius: 24px 24px 0 0;
-        /* 娣辫壊纾ㄧ爞鐜荤拑 鈥?淇濊瘉浜壊鑳屾櫙涓嬩粛鏄炬殫 */
-        background: rgba(10, 10, 22, 0.62);
-        backdrop-filter: blur(48px) saturate(240%);
-        -webkit-backdrop-filter: blur(48px) saturate(240%);
-        border: 1px solid rgba(255, 255, 255, 0.28);
+        border-radius: 20px 20px 0 0;
+        background: rgba(18, 18, 18, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         border-bottom: none;
-        box-shadow:
-            0 -12px 48px rgba(0, 0, 0, 0.45),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.35);
-        color: #e8e8ec;
+        box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.5);
+        color: #ffffff;
         overflow: hidden;
         z-index: var(--z-dock, 10000);
         padding: 16px 20px;
@@ -313,6 +299,18 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
             transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
             opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         will-change: transform;
+    }
+
+    .dock-bottom-sheet[data-open] {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    [data-theme='dark'] .dock-bottom-sheet {
+        background: rgba(18, 18, 18, 0.98);
+        border-color: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6);
     }
 
     .dock-bottom-sheet[data-open] {
@@ -379,7 +377,7 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
         text-transform: uppercase;
         letter-spacing: 0.1em;
         margin-bottom: 14px;
-        color: #4fc3f7;
+        color: var(--accent-blue);
         text-align: center;
     }
 
@@ -395,7 +393,7 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
         font-size: 1rem;
         transition: background-color 0.2s ease;
         margin: 4px 0;
-        color: #fffef7;
+        color: var(--fg);
         background: transparent;
         border: none;
         box-shadow: none;
@@ -408,7 +406,7 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
     .dock-bottom-sheet-option .check-icon {
         opacity: 0;
         width: 20px;
-        color: #4fc3f7;
+        color: var(--accent-blue);
         flex-shrink: 0;
         transition: opacity 0.15s ease;
     }
@@ -448,6 +446,7 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
 
     /* ===== Mobile Sidebar ===== */
     .mobile-dock-sidebar {
+        font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
         position: fixed;
         top: 0;
         left: 0;
@@ -455,14 +454,12 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
         width: 72vw;
         max-width: 300px;
         z-index: calc(var(--z-dock, 10000) + 1);
-        background: rgba(10, 10, 22, 0.72);
-        backdrop-filter: blur(48px) saturate(240%);
-        -webkit-backdrop-filter: blur(48px) saturate(240%);
-        border-right: 1px solid rgba(255, 255, 255, 0.28);
-        box-shadow:
-            4px 0 24px rgba(0, 0, 0, 0.3),
-            inset -1px 0 0 rgba(255, 255, 255, 0.15);
-        color: #e8e8ec;
+        background: rgba(18, 18, 18, 0.9);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border-right: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 12px 0 48px rgba(0, 0, 0, 0.5);
+        color: #ffffff;
         display: flex;
         flex-direction: column;
         padding: 20px 0;
@@ -688,7 +685,7 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
     .check-icon {
         opacity: 0;
         width: 16px;
-        color: #4fc3f7;
+        color: var(--accent-blue);
         flex-shrink: 0;
         transition: opacity 0.15s ease;
     }

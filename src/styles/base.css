@@ -1,0 +1,241 @@
+/* ========================================
+   粗放主义 - 基础层：变量、重置、全局样式
+   ======================================== */
+
+/* ===== CSS 变量 ===== */
+:root {
+    --bg: var(--theme-color, #fffef7);
+    --bg-card: #ffffff;
+    --fg: #0a0a0a;
+    --muted: #666666;
+
+    --border-color: #0a0a0a;
+    --avatar-frame-color: #0a0a0a;
+    --avatar-frame-width: 6px;
+    --avatar-frame-shadow-offset: 10px;
+    --sidebar-avatar-frame-width: 4px;
+    --sidebar-avatar-frame-shadow-offset: 4px;
+
+    --accent-yellow: #ffe600;
+    --accent-red: #ff3e3e;
+    --accent-blue: #3e59ff;
+
+    /* 统一几何结构 - 全局保持一致 */
+    --border-width: 2px;
+    --border-heavy: 2px;
+    --shadow-offset: 0;
+    --shadow-offset-sm: 0;
+
+    /* 抽象组件变量 - 默认白天 */
+    --avatar-glow: #ffc107;
+    --avatar-border: rgba(0, 0, 0, 0.2);
+    --panel-glass: rgba(255, 254, 247, 0.4);
+    --panel-border: rgba(0, 0, 0, 0.2);
+    --panel-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --dock-bg: rgba(255, 254, 247, 0.55);
+    --dock-border: rgba(255, 255, 255, 0.5);
+
+    --border-width: 4px;
+    --border-heavy: 6px;
+    --shadow-offset: 10px;
+    --shadow-offset-sm: 6px;
+
+    --interactive-card-bg: rgba(255, 254, 247, 0.9);
+    --interactive-card-border-mix: 34%;
+    --interactive-card-line-glow-mix: 22%;
+    --interactive-card-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    --interactive-card-hover-shadow: 0 18px 34px rgba(0, 0, 0, 0.16);
+    --interactive-card-hover-lift: -6px;
+    --interactive-card-color-fill-mix: 92%;
+    --interactive-card-light-opacity: 0.62;
+
+    --font-serif: 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    --font-ui: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-mono: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+    --font-display: var(--font-serif);
+    --font-sans: var(--font-ui);
+
+    --space-xs: 0.5rem;
+    --space-sm: 1rem;
+    --space-md: 1.5rem;
+    --space-lg: 2rem;
+    --space-xl: 3rem;
+    --space-2xl: 4rem;
+
+    /* 层级管理 */
+    --z-wallpaper: 0;
+    --z-content: 50;
+    --z-buttons: 1000;
+    --z-dock: 10000;
+    --z-loading: 9998;
+    --z-noise: 10001;
+
+    /* 过渡动画参数 */
+    --transition-fast: 0.2s ease-out;
+    --transition-normal: 0.3s ease-out;
+    --transition-slow: 0.5s ease-out;
+
+    /* 过渡属性分组 */
+    --transition-layout:
+        width var(--transition-normal), height var(--transition-normal), padding var(--transition-normal),
+        margin var(--transition-normal), max-width var(--transition-normal), min-height var(--transition-normal);
+
+    /* 超细腻曲线：10%起步，90%时间都在做极微小的平滑收尾 */
+    --curve-delicate: cubic-bezier(0.1, 0.9, 0.2, 1);
+    --transition-delicate: 0.8s var(--curve-delicate);
+    --transition-all: all var(--transition-delicate);
+}
+
+/* ===== 暗色主题 ===== */
+[data-theme='dark'] {
+    --bg: #080808;
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --fg: #ffffff;
+    --muted: #8a8b91;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --avatar-frame-color: #ffffff;
+    --avatar-frame-width: 4px;
+    --avatar-frame-shadow-offset: 6px;
+    --sidebar-avatar-frame-width: 3px;
+    --sidebar-avatar-frame-shadow-offset: 3px;
+    --accent-yellow: #f8c12a;
+    --accent-red: #ff4d4d;
+    --accent-blue: #5e6ad2;
+
+    /* 抽象组件变量 - 暗色切换 */
+    --avatar-glow: #ff9900;
+    --avatar-border: rgba(255, 255, 255, 0.08);
+    --panel-glass: rgba(18, 18, 18, 0.9);
+    --panel-border: rgba(255, 255, 255, 0.12);
+    --panel-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    --dock-bg: rgba(18, 18, 18, 0.8);
+    --dock-border: rgba(255, 255, 255, 0.12);
+
+    --shadow-offset: 0;
+    --shadow-offset-sm: 0;
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    --interactive-card-bg: var(--glass-bg);
+    --interactive-card-border-mix: 20%;
+    --interactive-card-line-glow-mix: 15%;
+    --interactive-card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --interactive-card-hover-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
+    --interactive-card-hover-lift: -4px;
+    --interactive-card-color-fill-mix: 94%;
+    --interactive-card-light-opacity: 0.8;
+}
+
+/* ===== 基础重置 ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    height: 100vh;
+    overflow: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+    display: none;
+}
+
+body {
+    font-family: 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    font-family: var(--font-serif, 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #0a0a0a;
+    color: var(--fg, #0a0a0a);
+    background-color: #fffef7;
+    background-color: var(--bg, #fffef7);
+    height: 100vh;
+    overflow: hidden;
+    transition:
+        background-color var(--transition-normal),
+        color var(--transition-normal);
+}
+
+*::-webkit-scrollbar {
+    display: none;
+}
+
+* {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* 确保过渡不影响文本渲染 */
+.name,
+.weekday,
+.clock,
+.bio {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 屏幕阅读器隐藏 */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* 内容保护：禁止选中、复制和拖拽 */
+.no-copy,
+.no-copy * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -moz-user-drag: none;
+    -ms-user-drag: none;
+    user-drag: none;
+    -webkit-touch-callout: none;
+}
+
+/* When loading overlay is visible, push noise behind it */
+.loading-overlay:not(.hidden) ~ .noise-overlay {
+    z-index: 9997;
+    opacity: 0.01;
+}
+
+/* Cursor idle calm */
+.typewriter-cursor.cursor-idle {
+    animation-duration: 2s;
+}
+
+/* Clock entrance */
+.clock,
+.weekday,
+.date-display {
+    opacity: 0;
+    transform: translateY(4px);
+    transition:
+        opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.clock--entered,
+.clock--entered.clock,
+.clock--entered.weekday,
+.clock--entered.date-display {
+    opacity: 1;
+    transform: translateY(0);
+}

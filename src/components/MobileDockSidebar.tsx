@@ -1,9 +1,10 @@
 import { createEffect, createSignal, onCleanup, onMount } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import type { Locale } from '../data/i18n';
+import { getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel } from '../lib/dock';
 import type { I18nContext } from '../lib/i18n';
 import { applyTheme, getCurrentTheme, getStoredTheme, subscribeThemeChange } from '../lib/i18n';
-import type { DockDisplayConfig, DockItem, SiteConfig } from '../types/site';
+import type { DockItem, SiteConfig } from '../types/site';
 import { Icon } from './Icon';
 
 interface MobileDockSidebarProps {
@@ -90,32 +91,8 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
     }
 
     /* ===== Dock item display helpers ===== */
-    function resolveLabel(display: DockDisplayConfig) {
-        if (display.i18nKey) {
-            return t(display.i18nKey);
-        }
-        if (display.text) {
-            return display.text;
-        }
-        return '';
-    }
-
-    function isItemActive(item: DockItem) {
-        if (item.type === 'action' && item.action === 'toggleTheme') {
-            return isDark();
-        }
-        if (item.type === 'panel') {
-            return activePanel() === item.panel;
-        }
-        return false;
-    }
-
-    function resolveIcon(display: DockDisplayConfig, active: boolean) {
-        return active && display.iconActive ? display.iconActive : display.icon;
-    }
-
     function navigateToItem(href: string, openInNewTab?: boolean) {
-        if (href === '#') {
+        if (isDockLinkDisabled(href)) {
             return;
         }
 
@@ -198,9 +175,9 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
             return <div class="sidebar-divider"></div>;
         }
 
-        const label = () => resolveLabel(item.display);
-        const active = () => isItemActive(item);
-        const iconName = () => resolveIcon(item.display, active());
+        const label = () => resolveDockLabel(item.display, t);
+        const active = () => getDockItemActiveState(item, { isDark: isDark(), activePanel: activePanel() });
+        const iconName = () => resolveDockIcon(item.display, active());
 
         if (item.type === 'panel') {
             return (
@@ -238,10 +215,10 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
         return (
             <button
                 class="sidebar-menu-item"
-                classList={{ disabled: item.href === '#' }}
+                classList={{ disabled: isDockLinkDisabled(item.href) }}
                 onClick={() => navigateToItem(item.href, item.openInNewTab)}
                 aria-label={label()}
-                disabled={item.href === '#'}
+                disabled={isDockLinkDisabled(item.href)}
             >
                 <Icon name={iconName()} class="sidebar-menu-icon" />
                 <span>{label()}</span>
