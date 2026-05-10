@@ -35,11 +35,15 @@ export function TopBar(props: TopBarProps) {
     };
 
     const leftOpacity = () => {
-        if (props.isMobile()) return 1;
         const sp = props.scrollProgress();
         if (sp <= 0.15) return 0;
         if (sp >= 0.4) return 1;
         return (sp - 0.15) / 0.25;
+    };
+
+    const isCompact = () => {
+        if (props.isMobile()) return false;
+        return leftOpacity() < 1;
     };
 
     onMount(() => {
@@ -224,6 +228,7 @@ export function TopBar(props: TopBarProps) {
             <div
                 ref={barRef}
                 class="top-bar"
+                classList={{ 'top-bar-compact': isCompact() }}
                 role="toolbar"
                 aria-label="Top navigation"
                 style={{ opacity: topBarOpacity() }}
