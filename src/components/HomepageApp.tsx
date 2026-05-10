@@ -160,6 +160,7 @@ export function HomepageApp() {
             <TopBar
                 config={siteConfig}
                 i18n={i18n}
+                isMobile={isMobile}
                 scrollProgress={scrollProgress}
                 onMobileMenuOpen={() => setMobileDockOpen(true)}
             />

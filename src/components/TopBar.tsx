@@ -11,6 +11,7 @@ import { Icon } from './Icon';
 interface TopBarProps {
     config: SiteConfig;
     i18n: I18nContext;
+    isMobile: Accessor<boolean>;
     scrollProgress: Accessor<number>;
     onMobileMenuOpen: () => void;
 }
@@ -25,13 +26,8 @@ export function TopBar(props: TopBarProps) {
     let languageBtnRef: HTMLButtonElement | undefined;
     let outsideClickCleanup: (() => void) | undefined;
 
-    const isMobile = () => {
-        if (typeof window === 'undefined') return false;
-        return window.matchMedia('(max-width: 900px)').matches;
-    };
-
     const leftOpacity = () => {
-        if (isMobile()) return 1;
+        if (props.isMobile()) return 1;
         const sp = props.scrollProgress();
         if (sp <= 0.15) return 0;
         if (sp >= 0.4) return 1;
@@ -59,7 +55,7 @@ export function TopBar(props: TopBarProps) {
         mediaQuery.addEventListener('change', handleMediaChange);
         onCleanup(() => mediaQuery.removeEventListener('change', handleMediaChange));
 
-        if (!isMobile()) {
+        if (!props.isMobile()) {
             setupIconMagnifyHover();
         }
     });
@@ -222,12 +218,12 @@ export function TopBar(props: TopBarProps) {
                     class="top-bar-left"
                     style={{ opacity: leftOpacity() }}
                     onClick={() => {
-                        if (isMobile()) {
+                        if (props.isMobile()) {
                             props.onMobileMenuOpen();
                         }
                     }}
-                    role={isMobile() ? 'button' : undefined}
-                    aria-label={isMobile() ? 'Open menu' : undefined}
+                    role={props.isMobile() ? 'button' : undefined}
+                    aria-label={props.isMobile() ? 'Open menu' : undefined}
                 >
                     <img class="top-bar-avatar" src={props.config.profile.avatar} alt="" width="32" height="32" />
                     <span class="top-bar-name">{props.config.profile.name}</span>
