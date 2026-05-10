@@ -34,16 +34,30 @@ export function TopBar(props: TopBarProps) {
         return (sp - 0.15) / 0.25;
     };
 
+    const expansionProgress = () => {
+        if (props.isMobile()) return 1;
+        const sp = props.scrollProgress();
+        if (sp <= 0.1) return 0;
+        if (sp >= 0.4) return 1;
+        return (sp - 0.1) / 0.3;
+    };
+
+    const barStyle = () => {
+        if (props.isMobile()) return { opacity: topBarOpacity() };
+
+        const p = expansionProgress();
+        return {
+            opacity: 1,
+            left: `calc(var(--left-panel-width, 500px) * ${1 - p} + 16px)`
+        };
+    };
+
     const leftOpacity = () => {
+        if (props.isMobile()) return 1;
         const sp = props.scrollProgress();
         if (sp <= 0.15) return 0;
         if (sp >= 0.4) return 1;
         return (sp - 0.15) / 0.25;
-    };
-
-    const isCompact = () => {
-        if (props.isMobile()) return false;
-        return leftOpacity() < 1;
     };
 
     onMount(() => {
@@ -225,14 +239,7 @@ export function TopBar(props: TopBarProps) {
 
     return (
         <>
-            <div
-                ref={barRef}
-                class="top-bar"
-                classList={{ 'top-bar-compact': isCompact() }}
-                role="toolbar"
-                aria-label="Top navigation"
-                style={{ opacity: topBarOpacity() }}
-            >
+            <div ref={barRef} class="top-bar" role="toolbar" aria-label="Top navigation" style={barStyle()}>
                 <div
                     class="top-bar-left"
                     style={{ opacity: leftOpacity() }}

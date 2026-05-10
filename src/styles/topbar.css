@@ -2,6 +2,16 @@
    TopBar 统一导航栏样式
    ======================================== */
 
+:root {
+    --left-panel-width: 500px;
+}
+
+@media (max-width: 1200px) {
+    :root {
+        --left-panel-width: 35%;
+    }
+}
+
 .top-bar {
     position: fixed;
     top: 16px;
@@ -20,14 +30,7 @@
     padding: 0 16px;
     box-sizing: border-box;
     transition: opacity 0.3s var(--curve-delicate);
-}
-
-.top-bar.top-bar-compact {
-    left: auto;
-    right: 20px;
-    min-width: 0;
-    width: auto;
-    border-radius: 24px;
+    will-change: left, opacity;
 }
 
 .top-bar-left {
