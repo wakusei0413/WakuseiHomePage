@@ -37,18 +37,31 @@ export function TopBar(props: TopBarProps) {
     const expansionProgress = () => {
         if (props.isMobile()) return 1;
         const sp = props.scrollProgress();
-        if (sp <= 0.1) return 0;
-        if (sp >= 0.4) return 1;
-        return (sp - 0.1) / 0.3;
+        // 降低起步阈值，让动作更早被感知
+        if (sp <= 0.02) return 0;
+        if (sp >= 0.45) return 1;
+        const raw = (sp - 0.02) / 0.43;
+        // 使用 EaseOutQuart 曲线: 1 - (1 - x)^4，比线性更丝滑
+        return 1 - Math.pow(1 - raw, 4);
     };
 
     const barStyle = () => {
         if (props.isMobile()) return { opacity: topBarOpacity() };
 
         const p = expansionProgress();
+        // 核心：利用镜像位移保持右侧图标不动，背景拉伸
         return {
             opacity: 1,
-            left: `calc(var(--left-panel-width, 500px) * ${1 - p} + 16px)`
+            transform: `translateX(calc(var(--left-panel-width, 500px) * ${1 - p}))`
+        };
+    };
+
+    const rightStyle = () => {
+        if (props.isMobile()) return {};
+        const p = expansionProgress();
+        // 反向抵消父级的位移
+        return {
+            transform: `translateX(calc(var(--left-panel-width, 500px) * ${p - 1}))`
         };
     };
 
@@ -58,6 +71,15 @@ export function TopBar(props: TopBarProps) {
         if (sp <= 0.15) return 0;
         if (sp >= 0.4) return 1;
         return (sp - 0.15) / 0.25;
+    };
+
+    const leftStyle = () => {
+        const p = leftOpacity();
+        // 协同位移：淡入时伴随 8px 的向上位移，更加细腻
+        return {
+            opacity: p,
+            transform: `translateY(${(1 - p) * 8}px)`
+        };
     };
 
     onMount(() => {
@@ -242,7 +264,7 @@ export function TopBar(props: TopBarProps) {
             <div ref={barRef} class="top-bar" role="toolbar" aria-label="Top navigation" style={barStyle()}>
                 <div
                     class="top-bar-left"
-                    style={{ opacity: leftOpacity() }}
+                    style={leftStyle()}
                     onClick={() => {
                         if (props.isMobile()) {
                             props.onMobileMenuOpen();
@@ -255,7 +277,7 @@ export function TopBar(props: TopBarProps) {
                     <span class="top-bar-name">{props.config.profile.name}</span>
                 </div>
 
-                <div class="top-bar-right">
+                <div class="top-bar-right" style={rightStyle()}>
                     {props.config.dock.items.map((item) => {
                         if (item.type === 'divider') {
                             return null;

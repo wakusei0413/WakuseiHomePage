@@ -30,7 +30,25 @@
     padding: 0 16px;
     box-sizing: border-box;
     transition: opacity 0.3s var(--curve-delicate);
-    will-change: left, opacity;
+    will-change: transform, opacity;
+    /* 强制 GPU 加速并防止微小抖动 */
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+}
+
+.top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    will-change: transform, opacity;
+}
+
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    will-change: transform;
 }
 
 .top-bar-left {
