@@ -19,6 +19,7 @@
     justify-content: space-between;
     padding: 0 16px;
     box-sizing: border-box;
+    transition: opacity 0.3s var(--curve-delicate);
 }
 
 .top-bar-left {

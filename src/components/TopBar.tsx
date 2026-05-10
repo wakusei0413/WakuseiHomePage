@@ -26,6 +26,14 @@ export function TopBar(props: TopBarProps) {
     let languageBtnRef: HTMLButtonElement | undefined;
     let outsideClickCleanup: (() => void) | undefined;
 
+    const topBarOpacity = () => {
+        if (!props.isMobile()) return 1;
+        const sp = props.scrollProgress();
+        if (sp <= 0.15) return 0;
+        if (sp >= 0.4) return 1;
+        return (sp - 0.15) / 0.25;
+    };
+
     const leftOpacity = () => {
         if (props.isMobile()) return 1;
         const sp = props.scrollProgress();
@@ -213,7 +221,13 @@ export function TopBar(props: TopBarProps) {
 
     return (
         <>
-            <div ref={barRef} class="top-bar" role="toolbar" aria-label="Top navigation">
+            <div
+                ref={barRef}
+                class="top-bar"
+                role="toolbar"
+                aria-label="Top navigation"
+                style={{ opacity: topBarOpacity() }}
+            >
                 <div
                     class="top-bar-left"
                     style={{ opacity: leftOpacity() }}
