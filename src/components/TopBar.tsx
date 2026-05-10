@@ -21,271 +21,134 @@ export function TopBar(props: TopBarProps) {
     const [isDark, setIsDark] = createSignal(false);
     const [activePanel, setActivePanel] = createSignal<string | null>(null);
 
-    let barRef: HTMLDivElement | undefined;
     let popupRef: HTMLDivElement | undefined;
     let languageBtnRef: HTMLButtonElement | undefined;
     let outsideClickCleanup: (() => void) | undefined;
 
-    const topBarOpacity = () => {
-        if (!props.isMobile()) return 1;
-        const sp = props.scrollProgress();
-        if (sp <= 0.15) return 0;
-        if (sp >= 0.4) return 1;
-        return (sp - 0.15) / 0.25;
+    const locales = () => props.config.i18n.locales;
+
+    onMount(() => {
+        setIsDark(getCurrentTheme() === 'dark');
+        const unsubscribe = subscribeThemeChange((theme) => {
+            setIsDark(theme === 'dark');
+        });
+
+        onCleanup(() => {
+            unsubscribe();
+            outsideClickCleanup?.();
+        });
+    });
+
+    const handleAction = (action: string) => {
+        if (action === 'toggle-theme') {
+            const next = isDark() ? 'light' : 'dark';
+            applyTheme(next);
+        }
+    };
+
+    const handlePanel = (panel: string) => {
+        if (panel === 'language') {
+            const current = activePanel();
+            if (current === 'language') {
+                closePopup();
+            } else {
+                openLanguagePopup();
+            }
+        }
+    };
+
+    const openLanguagePopup = () => {
+        setActivePanel('language');
+        setTimeout(() => {
+            if (!popupRef || !languageBtnRef) return;
+            const btnRect = languageBtnRef.getBoundingClientRect();
+            popupRef.style.top = `${btnRect.bottom + 8}px`;
+            popupRef.style.right = `${window.innerWidth - btnRect.right}px`;
+            popupRef.classList.add('visible');
+
+            const handleClickOutside = (e: MouseEvent) => {
+                if (!popupRef?.contains(e.target as Node) && !languageBtnRef?.contains(e.target as Node)) {
+                    closePopup();
+                }
+            };
+            document.addEventListener('click', handleClickOutside);
+            outsideClickCleanup = () => document.removeEventListener('click', handleClickOutside);
+        }, 0);
+    };
+
+    const closePopup = () => {
+        popupRef?.classList.remove('visible');
+        setActivePanel(null);
+        outsideClickCleanup?.();
+        outsideClickCleanup = undefined;
+    };
+
+    const selectLanguage = (lang: Locale) => {
+        setLocale(lang);
+        closePopup();
     };
 
     const expansionProgress = () => {
         if (props.isMobile()) return 1;
-        const sp = props.scrollProgress();
-        // 调整阈值：0.05 开始动，0.5 完全展开，过程更平滑
-        if (sp <= 0.05) return 0;
-        if (sp >= 0.5) return 1;
-        const raw = (sp - 0.05) / 0.45;
-        // EaseOutQuart
-        return 1 - Math.pow(1 - raw, 4);
+        // 从 0 到 0.25 的滚动距离内完成形变
+        return Math.min(1, props.scrollProgress() / 0.25);
     };
+
+    const isSticky = () => expansionProgress() > 0.95;
 
     const barStyle = () => {
-        if (props.isMobile()) return { opacity: topBarOpacity() };
-
-        const p = expansionProgress();
-        const isInitial = p < 0.01;
-        
-        return {
-            opacity: 1,
-            // 初始状态增加 8px 的额外右移，让它更“缩”在右侧
-            transform: `translateX(calc(var(--left-panel-width, 500px) * ${1 - p}))`,
-            // 初始状态圆角更圆，展开后恢复 14px
-            'border-radius': isInitial ? '28px' : '14px'
-        };
-    };
-
-    const rightStyle = () => {
-        if (props.isMobile()) return {};
-        const p = expansionProgress();
-        // 反向抵消父级的位移
-        return {
-            transform: `translateX(calc(var(--left-panel-width, 500px) * ${p - 1}))`
-        };
-    };
-
-    const leftOpacity = () => {
-        if (props.isMobile()) return 1;
-        const sp = props.scrollProgress();
-        if (sp <= 0.15) return 0;
-        if (sp >= 0.4) return 1;
-        return (sp - 0.15) / 0.25;
-    };
-
-    const leftStyle = () => {
-        const p = leftOpacity();
-        // 协同位移：淡入时伴随 8px 的向上位移，更加细腻
-        return {
-            opacity: p,
-            transform: `translateY(${(1 - p) * 8}px)`
-        };
-    };
-
-    onMount(() => {
-        const theme = getCurrentTheme();
-        setIsDark(theme === 'dark');
-        applyTheme(theme);
-
-        const unsubscribeThemeChange = subscribeThemeChange((newTheme) => {
-            setIsDark(newTheme === 'dark');
-        });
-        onCleanup(unsubscribeThemeChange);
-
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleMediaChange = (e: MediaQueryListEvent) => {
-            if (!getStoredTheme()) {
-                const newTheme = e.matches ? 'dark' : 'light';
-                setIsDark(newTheme === 'dark');
-                applyTheme(newTheme);
-            }
-        };
-        mediaQuery.addEventListener('change', handleMediaChange);
-        onCleanup(() => mediaQuery.removeEventListener('change', handleMediaChange));
-
-        if (!props.isMobile()) {
-            setupIconMagnifyHover();
-        }
-    });
-
-    function handleAction(action: string) {
-        switch (action) {
-            case 'toggleTheme':
-                toggleTheme();
-                break;
-            default:
-                console.warn(`[TopBar] Unsupported action: "${action}".`);
-        }
-    }
-
-    function handlePanel(panel: string) {
-        switch (panel) {
-            case 'language':
-                toggleLanguagePanel();
-                break;
-            default:
-                console.warn(`[TopBar] Unsupported panel: "${panel}".`);
-        }
-    }
-
-    function toggleTheme() {
-        const newTheme = isDark() ? 'light' : 'dark';
-        setIsDark(newTheme === 'dark');
-
-        const doc = document as Document & { startViewTransition?: (callback: () => void) => unknown };
-        if (typeof doc.startViewTransition === 'function') {
-            doc.startViewTransition(() => {
-                applyTheme(newTheme);
-            });
-        } else {
-            applyTheme(newTheme);
-        }
-    }
-
-    function isPopupOpen() {
-        return popupRef?.hasAttribute('data-open') ?? false;
-    }
-
-    function toggleLanguagePanel() {
-        setOpen(!isPopupOpen());
-    }
-
-    function setOpen(open: boolean) {
-        if (outsideClickCleanup) {
-            outsideClickCleanup();
-            outsideClickCleanup = undefined;
-        }
-
-        if (open) {
-            updatePopupPosition();
-            popupRef?.setAttribute('data-open', '');
-            setActivePanel('language');
-            setupOutsideClick();
-        } else {
-            popupRef?.removeAttribute('data-open');
-            setActivePanel(null);
-        }
-    }
-
-    function updatePopupPosition() {
-        if (!languageBtnRef || !popupRef) return;
-        const rect = languageBtnRef.getBoundingClientRect();
-        popupRef.style.left = `${rect.left + rect.width / 2}px`;
-        popupRef.style.top = `${rect.bottom + 8}px`;
-    }
-
-    function selectLanguage(lang: Locale) {
-        setLocale(lang);
-        setOpen(false);
-    }
-
-    function setupOutsideClick() {
-        window.setTimeout(() => {
-            const handler = (e: MouseEvent) => {
-                const target = e.target as Node;
-                const clickedInsideBar = barRef?.contains(target) ?? false;
-                const clickedInsidePopup = popupRef?.contains(target) ?? false;
-
-                if (!clickedInsideBar && !clickedInsidePopup) {
-                    setOpen(false);
-                }
+        if (props.isMobile()) {
+            const opacity = props.scrollProgress() > 0.2 ? Math.min(1, (props.scrollProgress() - 0.2) * 5) : 0;
+            return {
+                width: 'auto',
+                opacity: opacity,
+                visibility: opacity > 0 ? 'visible' : 'hidden',
+                transform: `translateY(${props.scrollProgress() > 0.2 ? 0 : -20}px)`
             };
-            document.addEventListener('click', handler);
-            outsideClickCleanup = () => document.removeEventListener('click', handler);
-        }, 0);
-    }
-
-    function setupIconMagnifyHover() {
-        if (!barRef) return;
-        const items = barRef.querySelectorAll('.top-bar-dock-item') as NodeListOf<HTMLElement>;
-        if (items.length === 0) return;
-
-        let frameId: number | null = null;
-        let latestMouseX = 0;
-
-        const updateScales = () => {
-            if (!barRef) {
-                frameId = null;
-                return;
-            }
-
-            const rect = barRef.getBoundingClientRect();
-            items.forEach((item) => {
-                const itemRect = item.getBoundingClientRect();
-                const itemCenter = itemRect.left - rect.left + itemRect.width / 2;
-                const distance = Math.abs(latestMouseX - itemCenter);
-                const scale = 1 + 0.12 * Math.exp(-(distance * distance) / (2 * 30 * 30));
-                item.style.transform = `scale(${scale})`;
-            });
-            frameId = null;
-        };
-
-        const handleMouseMove = (e: MouseEvent) => {
-            const rect = barRef!.getBoundingClientRect();
-            latestMouseX = e.clientX - rect.left;
-
-            if (frameId === null) {
-                frameId = window.requestAnimationFrame(updateScales);
-            }
-        };
-
-        const handleMouseLeave = () => {
-            if (frameId !== null) {
-                window.cancelAnimationFrame(frameId);
-                frameId = null;
-            }
-
-            items.forEach((item) => {
-                item.style.transform = '';
-            });
-        };
-
-        barRef.addEventListener('mousemove', handleMouseMove);
-        barRef.addEventListener('mouseleave', handleMouseLeave);
-        onCleanup(() => {
-            if (frameId !== null) {
-                window.cancelAnimationFrame(frameId);
-            }
-            barRef?.removeEventListener('mousemove', handleMouseMove);
-            barRef?.removeEventListener('mouseleave', handleMouseLeave);
-        });
-    }
-
-    onCleanup(() => {
-        if (outsideClickCleanup) {
-            outsideClickCleanup();
         }
-    });
 
-    const locales = () => props.config.i18n.locales;
+        const p = expansionProgress();
+        const easeP = 1 - Math.pow(1 - p, 4); // EaseOutQuart
+
+        // 初始宽度 220px，完全展开后 100%
+        const width = `calc(220px + (100% - 220px) * ${easeP})`;
+
+        return {
+            width,
+            top: `${(1 - easeP) * 20}px`,
+            right: `${(1 - easeP) * 20}px`,
+            transform: 'none'
+        };
+    };
+
+    // 头像名字在悬浮胶囊状态下隐藏，展开过程中淡入
+    const leftContentStyle = () => {
+        const p = expansionProgress();
+        const opacity = p > 0.5 ? (p - 0.5) * 2 : 0;
+        return {
+            opacity,
+            display: opacity > 0 ? 'flex' : 'none',
+            'align-items': 'center',
+            gap: 'var(--space-sm)'
+        };
+    };
 
     return (
         <>
-            <div ref={barRef} class="top-bar" role="toolbar" aria-label="Top navigation" style={barStyle()}>
-                <div
-                    class="top-bar-left"
-                    style={leftStyle()}
-                    onClick={() => {
-                        if (props.isMobile()) {
-                            props.onMobileMenuOpen();
-                        }
-                    }}
-                    role={props.isMobile() ? 'button' : undefined}
-                    aria-label={props.isMobile() ? 'Open menu' : undefined}
-                >
+            <header
+                class="top-bar"
+                classList={{ 'is-expanded': isSticky() }}
+                style={barStyle()}
+                onClick={() => props.isMobile() && props.onMobileMenuOpen()}
+            >
+                <div class="top-bar-left" style={leftContentStyle()}>
                     <img class="top-bar-avatar" src={props.config.profile.avatar} alt="" width="32" height="32" />
                     <span class="top-bar-name">{props.config.profile.name}</span>
                 </div>
 
-                <div class="top-bar-right" style={rightStyle()}>
+                <div class="top-bar-right">
                     {props.config.dock.items.map((item) => {
-                        if (item.type === 'divider') {
-                            return null;
-                        }
+                        if (item.type === 'divider') return null;
 
                         const display = item.display;
                         const label = () => resolveDockLabel(display, t);
@@ -298,9 +161,11 @@ export function TopBar(props: TopBarProps) {
                                 <button
                                     class="top-bar-dock-item"
                                     classList={{ active: active() }}
-                                    onClick={() => handleAction(item.action)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAction(item.action);
+                                    }}
                                     title={label()}
-                                    aria-label={label()}
                                 >
                                     <Icon name={iconClass()} />
                                 </button>
@@ -313,9 +178,11 @@ export function TopBar(props: TopBarProps) {
                                     ref={item.panel === 'language' ? (el) => (languageBtnRef = el) : undefined}
                                     class="top-bar-dock-item"
                                     classList={{ active: active() }}
-                                    onClick={() => handlePanel(item.panel)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handlePanel(item.panel);
+                                    }}
                                     title={label()}
-                                    aria-label={label()}
                                 >
                                     <Icon name={iconClass()} />
                                 </button>
@@ -326,8 +193,9 @@ export function TopBar(props: TopBarProps) {
                         return (
                             <button
                                 class="top-bar-dock-item"
-                                classList={{ active: false, disabled }}
-                                onClick={() => {
+                                classList={{ disabled }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     if (disabled) return;
                                     if (item.openInNewTab) {
                                         window.open(item.href, '_blank', 'noopener,noreferrer');
@@ -336,25 +204,22 @@ export function TopBar(props: TopBarProps) {
                                     }
                                 }}
                                 title={label()}
-                                aria-label={label()}
                             >
                                 <Icon name={iconClass()} />
                             </button>
                         );
                     })}
                 </div>
-            </div>
+            </header>
 
             <Portal>
-                <div ref={popupRef} class="top-bar-language-popup" role="dialog" aria-label="Language selection">
+                <div ref={popupRef} class="top-bar-language-popup" role="dialog">
                     <div class="top-bar-popup-title">{t('dock.language')}</div>
                     {locales().map((lang) => (
                         <div
                             class="top-bar-popup-option"
                             classList={{ selected: locale() === lang }}
                             onClick={() => selectLanguage(lang)}
-                            role="option"
-                            aria-selected={locale() === lang}
                         >
                             <Icon name="check" class="check-icon" />
                             <span>{t(`dock.lang.${lang}`)}</span>
