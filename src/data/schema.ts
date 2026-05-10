@@ -15,7 +15,8 @@ const dockItemSchema = z.union([
             icon: z.string().min(1),
             iconActive: z.string().min(1).optional(),
             text: z.string().min(1).optional(),
-            i18nKey: z.string().optional()
+            i18nKey: z.string().optional(),
+            renderMode: z.enum(['icon', 'text', 'both']).optional()
         })
     }),
     z.object({
@@ -25,7 +26,8 @@ const dockItemSchema = z.union([
             icon: z.string().min(1),
             iconActive: z.string().min(1).optional(),
             text: z.string().min(1).optional(),
-            i18nKey: z.string().optional()
+            i18nKey: z.string().optional(),
+            renderMode: z.enum(['icon', 'text', 'both']).optional()
         })
     }),
     z.object({
@@ -36,7 +38,8 @@ const dockItemSchema = z.union([
             icon: z.string().min(1),
             iconActive: z.string().min(1).optional(),
             text: z.string().min(1).optional(),
-            i18nKey: z.string().optional()
+            i18nKey: z.string().optional(),
+            renderMode: z.enum(['icon', 'text', 'both']).optional()
         })
     }),
     z.object({
@@ -46,6 +49,11 @@ const dockItemSchema = z.union([
 
 const dockSchema = z.object({
     items: z.array(dockItemSchema)
+});
+
+const footerLinkSchema = z.object({
+    name: z.string().min(1),
+    href: z.string().min(1)
 });
 
 const i18nSchema = z.object({
@@ -69,7 +77,8 @@ export const siteConfigSchema = z.object({
         links: z.array(socialLinkSchema).min(1)
     }),
     footer: z.object({
-        text: z.string().min(1)
+        text: z.string().min(1),
+        links: z.array(footerLinkSchema)
     }),
     slogans: z.object({
         list: z.array(z.string().min(1)).min(1),

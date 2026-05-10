@@ -68,7 +68,13 @@ export const editableSiteConfig: SiteConfig = {
     },
 
     footer: {
-        text: '咕咕嘎嘎！-遊星 Wakusei'
+        text: '© 2026 遊星 Wakusei',
+        links: [
+            { name: 'Blog', href: 'https://blog.wakusei.top/' },
+            { name: 'Status', href: 'https://status.wakusei.top/' },
+            { name: 'Testing', href: 'https://testing.wakusei.top/' },
+            { name: 'GitHub', href: 'https://github.com/wakusei0413' }
+        ]
     },
 
     // Typewriter text block.
@@ -166,6 +172,17 @@ export const editableSiteConfig: SiteConfig = {
     dock: {
         items: [
             {
+                type: 'link',
+                href: '/blog',
+                openInNewTab: true,
+                display: {
+                    icon: 'blog',
+                    i18nKey: 'dock.blog',
+                    renderMode: 'text'
+                }
+            },
+            { type: 'divider' },
+            {
                 type: 'action',
                 action: 'toggleTheme',
                 display: {
@@ -174,7 +191,6 @@ export const editableSiteConfig: SiteConfig = {
                     i18nKey: 'dock.theme'
                 }
             },
-            { type: 'divider' },
             {
                 type: 'panel',
                 panel: 'language',
@@ -183,7 +199,6 @@ export const editableSiteConfig: SiteConfig = {
                     i18nKey: 'dock.language'
                 }
             },
-            { type: 'divider' },
             {
                 type: 'link',
                 href: '/settings',

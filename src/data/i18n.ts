@@ -5,6 +5,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     'zh-CN': {
         'dock.theme': '主题',
         'dock.language': '语言',
+        'dock.blog': '文章',
         'dock.settings': '设置',
         'dock.theme.light': '浅色',
         'dock.theme.dark': '深色',
@@ -31,11 +32,14 @@ export const translations: Record<Locale, Record<string, string>> = {
         'time.month.sep': '九月',
         'time.month.oct': '十月',
         'time.month.nov': '十一月',
-        'time.month.dec': '十二月'
+        'time.month.dec': '十二月',
+        'footer.links': '链接',
+        'footer.socials': '社交'
     },
     en: {
         'dock.theme': 'Theme',
         'dock.language': 'Language',
+        'dock.blog': 'Blog',
         'dock.settings': 'Settings',
         'dock.theme.light': 'Light',
         'dock.theme.dark': 'Dark',
@@ -62,11 +66,14 @@ export const translations: Record<Locale, Record<string, string>> = {
         'time.month.sep': 'September',
         'time.month.oct': 'October',
         'time.month.nov': 'November',
-        'time.month.dec': 'December'
+        'time.month.dec': 'December',
+        'footer.links': 'Links',
+        'footer.socials': 'Socials'
     },
     ja: {
         'dock.theme': 'テーマ',
         'dock.language': '言語',
+        'dock.blog': '記事',
         'dock.settings': '設定',
         'dock.theme.light': 'ライト',
         'dock.theme.dark': 'ダーク',
@@ -93,6 +100,8 @@ export const translations: Record<Locale, Record<string, string>> = {
         'time.month.sep': '9月',
         'time.month.oct': '10月',
         'time.month.nov': '11月',
-        'time.month.dec': '12月'
+        'time.month.dec': '12月',
+        'footer.links': 'リンク',
+        'footer.socials': 'ソーシャル'
     }
 };

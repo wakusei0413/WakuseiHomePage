@@ -149,3 +149,10 @@
 .wallpaper-image.loaded img {
     opacity: 1;
 }
+
+/* ===== Blog Content / Second Screen ===== */
+.blog-content {
+    min-height: 100vh;
+    position: relative;
+    z-index: var(--z-content, 50);
+}

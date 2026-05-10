@@ -3,11 +3,14 @@ export type SloganMode = 'random' | 'sequence';
 export type ClockFormat = '12h' | '24h';
 export type CursorStyle = 'block' | 'line';
 export type Locale = 'zh-CN' | 'en' | 'ja';
+export type DockRenderMode = 'icon' | 'text' | 'both';
+
 export interface DockDisplayConfig {
     icon: string;
     iconActive?: string;
     text?: string;
     i18nKey?: string;
+    renderMode?: DockRenderMode;
 }
 
 export interface DockActionItem {
@@ -57,8 +60,14 @@ export interface SocialLinksConfig {
     links: SocialLink[];
 }
 
+export interface FooterLink {
+    name: string;
+    href: string;
+}
+
 export interface FooterConfig {
     text: string;
+    links: FooterLink[];
 }
 
 export interface SlogansConfig {

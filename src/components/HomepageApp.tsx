@@ -9,6 +9,7 @@ import { ClockPanel } from './ClockPanel';
 import { MobileDockSidebar } from './MobileDockSidebar';
 import { LoadingOverlay } from './LoadingOverlay';
 import { SocialLinks } from './SocialLinks';
+import { Footer } from './Footer';
 import { TopBar } from './TopBar';
 import { TypewriterSlogan } from './TypewriterSlogan';
 
@@ -251,11 +252,11 @@ export function HomepageApp() {
                 </div>
 
                 <div class="blog-content">
-                    <div class="placeholder-content">
-                        <h2>{i18n.t('nav.blog')}</h2>
-                        <p style={{ opacity: 0.5 }}>Coming Soon...</p>
-                        <div style={{ height: '150vh', 'background-color': 'var(--bg)' }} />
-                    </div>
+                    <Footer
+                        links={siteConfig.footer.links}
+                        socialLinks={siteConfig.socialLinks.links}
+                        copyrightText={siteConfig.footer.text}
+                    />
                 </div>
             </div>
         </>
