@@ -39,25 +39,30 @@ describe('TopBar unified navigation component', () => {
 
     it('supports link items with new tab option', () => {
         assert.match(topbarComponent, /item\.openInNewTab/);
-        assert.match(topbarComponent, /window\.open\(item\.href, '_blank', 'noopener,noreferrer'\)/);
+        assert.match(topbarComponent, /target="_blank"/);
+        assert.match(topbarComponent, /rel="noopener noreferrer"/);
     });
 
     it('respects disabled state for dock links', () => {
         assert.match(topbarComponent, /isDockLinkDisabled\(item\.href\)/);
-        assert.match(topbarComponent, /if \(disabled\) return;/);
+        assert.match(topbarComponent, /if \(disabled\) e\.preventDefault\(\)/);
     });
 
-    it('computes left opacity from scroll progress on desktop', () => {
+    it('computes left opacity from scroll progress on homepage', () => {
         assert.match(topbarComponent, /const leftOpacity = \(\) => \{/);
-        assert.match(topbarComponent, /const sp = props\.scrollProgress\(\);/);
+        assert.match(topbarComponent, /const sp = scrollProgress\(\);/);
         assert.match(topbarComponent, /if \(sp <= 0\.15\) return 0;/);
         assert.match(topbarComponent, /if \(sp >= 0\.4\) return 1;/);
         assert.match(topbarComponent, /return \(sp - 0\.15\) \/ 0\.25;/);
     });
 
-    it('exposes onMobileMenuOpen callback for mobile avatar click', () => {
-        assert.match(topbarComponent, /onMobileMenuOpen: \(\) => void/);
-        assert.match(topbarComponent, /props\.onMobileMenuOpen\(\)/);
+    it('dispatches custom event on mobile avatar click', () => {
+        assert.match(topbarComponent, /wakusei:open-mobile-menu/);
+        assert.match(topbarComponent, /window\.dispatchEvent\(new CustomEvent\('wakusei:open-mobile-menu'\)\)/);
+    });
+
+    it('accepts initialIsHomePage prop for SSR snapshot', () => {
+        assert.match(topbarComponent, /initialIsHomePage: boolean/);
     });
 
     it('has outside click cleanup for language popup', () => {

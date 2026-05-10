@@ -42,7 +42,7 @@
     z-index: 2;
     background: var(--bg);
     min-height: 100vh;
-    padding: 3rem 2rem;
+    padding: 0;
 }
 
 /* 占位内容 */

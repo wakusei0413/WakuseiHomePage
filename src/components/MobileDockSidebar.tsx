@@ -10,20 +10,26 @@ import { Icon } from './Icon';
 interface MobileDockSidebarProps {
     config: SiteConfig;
     i18n: I18nContext;
-    open: boolean;
-    onClose: () => void;
 }
 
 export function MobileDockSidebar(props: MobileDockSidebarProps) {
     const { locale, setLocale, t } = props.i18n;
     const [isDark, setIsDark] = createSignal(false);
     const [activePanel, setActivePanel] = createSignal<string | null>(null);
+    const [open, setOpen] = createSignal(false);
 
     let sidebarRef: HTMLDivElement | undefined;
     let outsideClickCleanup: (() => void) | undefined;
 
+    function close() {
+        setOpen(false);
+    }
+
     onMount(() => {
-        // Theme is initialized once by NavigationDock; we only track changes.
+        const handleOpen = () => setOpen(true);
+        window.addEventListener('wakusei:open-mobile-menu', handleOpen);
+        onCleanup(() => window.removeEventListener('wakusei:open-mobile-menu', handleOpen));
+
         setIsDark(getCurrentTheme() === 'dark');
 
         const unsubscribeThemeChange = subscribeThemeChange((newTheme) => {
@@ -87,23 +93,10 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
     function selectLanguage(lang: Locale) {
         setLocale(lang);
         setActivePanel(null);
-        props.onClose();
+        close();
     }
 
     /* ===== Dock item display helpers ===== */
-    function navigateToItem(href: string, openInNewTab?: boolean) {
-        if (isDockLinkDisabled(href)) {
-            return;
-        }
-
-        if (openInNewTab) {
-            window.open(href, '_blank', 'noopener,noreferrer');
-            props.onClose();
-            return;
-        }
-
-        window.location.href = href;
-    }
 
     /* ===== Outside Click ===== */
     function setupOutsideClick() {
@@ -112,7 +105,7 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
                 const target = e.target as Node;
                 const clickedInsideSidebar = sidebarRef?.contains(target) ?? false;
                 if (!clickedInsideSidebar) {
-                    props.onClose();
+                    close();
                 }
             };
             document.addEventListener('click', handler);
@@ -122,7 +115,7 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
 
     /* ===== Open/Close Side Effects ===== */
     createEffect(() => {
-        if (props.open) {
+        if (open()) {
             setupOutsideClick();
         } else {
             setActivePanel(null);
@@ -212,17 +205,36 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
             );
         }
 
+        const disabled = isDockLinkDisabled(item.href);
+        if (item.openInNewTab) {
+            return (
+                <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="sidebar-menu-item"
+                    aria-label={label()}
+                    onClick={() => close()}
+                >
+                    <Icon name={iconName()} class="sidebar-menu-icon" />
+                    <span>{label()}</span>
+                </a>
+            );
+        }
         return (
-            <button
+            <a
+                href={disabled ? undefined : item.href}
                 class="sidebar-menu-item"
-                classList={{ disabled: isDockLinkDisabled(item.href) }}
-                onClick={() => navigateToItem(item.href, item.openInNewTab)}
+                classList={{ disabled }}
                 aria-label={label()}
-                disabled={isDockLinkDisabled(item.href)}
+                onClick={(e) => {
+                    if (disabled) e.preventDefault();
+                    close();
+                }}
             >
                 <Icon name={iconName()} class="sidebar-menu-icon" />
                 <span>{label()}</span>
-            </button>
+            </a>
         );
     }
 
@@ -232,7 +244,7 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
                 ref={sidebarRef}
                 class="mobile-dock-sidebar"
                 classList={{ 'theme-light': !isDark(), 'theme-dark': isDark() }}
-                data-open={props.open ? '' : undefined}
+                data-open={open() ? '' : undefined}
                 role="dialog"
                 aria-label="Menu"
             >
@@ -257,11 +269,7 @@ export function MobileDockSidebar(props: MobileDockSidebarProps) {
                 {shouldRenderTrailingDivider() ? <div class="sidebar-divider"></div> : null}
             </div>
 
-            <div
-                class="mobile-dock-sidebar-overlay"
-                data-open={props.open ? '' : undefined}
-                onClick={() => props.onClose()}
-            ></div>
+            <div class="mobile-dock-sidebar-overlay" data-open={open() ? '' : undefined} onClick={() => close()}></div>
         </Portal>
     );
 }

@@ -6,11 +6,9 @@ import { createLogger } from '../lib/logger';
 import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations } from '../lib/runtime-effects';
 import { WallpaperScrollerController } from '../lib/wallpaper-scroller';
 import { ClockPanel } from './ClockPanel';
-import { MobileDockSidebar } from './MobileDockSidebar';
+import { Footer } from './Footer';
 import { LoadingOverlay } from './LoadingOverlay';
 import { SocialLinks } from './SocialLinks';
-import { Footer } from './Footer';
-import { TopBar } from './TopBar';
 import { TypewriterSlogan } from './TypewriterSlogan';
 
 function splitLatinText(text: string) {
@@ -29,7 +27,6 @@ export function HomepageApp() {
     const [ready, setReady] = createSignal(false);
     const [loadingText, setLoadingText] = createSignal(siteConfig.loading.texts[0]);
     const [loadingPercent, setLoadingPercent] = createSignal(0);
-    const [mobileDockOpen, setMobileDockOpen] = createSignal(false);
     const [scrollProgress, setScrollProgress] = createSignal(0);
 
     const heroAvatarNameOpacity = () => {
@@ -107,6 +104,8 @@ export function HomepageApp() {
     });
 
     onMount(() => {
+        window.dispatchEvent(new CustomEvent('wakusei:homepage-mounted'));
+
         if (siteConfig.contentProtection.preventCopyAndDrag) {
             pageCleanups.push(enableContentProtection(true));
         }
@@ -155,16 +154,7 @@ export function HomepageApp() {
 
     return (
         <>
-            <div class="noise-overlay"></div>
             <LoadingOverlay hidden={ready()} text={loadingText()} percent={loadingPercent()} />
-
-            <TopBar
-                config={siteConfig}
-                i18n={i18n}
-                isMobile={isMobile}
-                scrollProgress={scrollProgress}
-                onMobileMenuOpen={() => setMobileDockOpen(true)}
-            />
 
             <div class="page-scroller" ref={viewportRef}>
                 <div class="hero-sticky">
@@ -190,7 +180,7 @@ export function HomepageApp() {
                                         style={{ opacity: heroAvatarNameOpacity() }}
                                         onClick={() => {
                                             if (window.matchMedia('(max-width: 900px)').matches) {
-                                                setMobileDockOpen(true);
+                                                window.dispatchEvent(new CustomEvent('wakusei:open-mobile-menu'));
                                             } else if (viewportRef) {
                                                 viewportRef.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
                                             }
@@ -240,12 +230,6 @@ export function HomepageApp() {
                                 <div class="info-panel">
                                     <ClockPanel config={siteConfig.time} i18n={i18n} />
                                 </div>
-                                <MobileDockSidebar
-                                    config={siteConfig}
-                                    i18n={i18n}
-                                    open={mobileDockOpen()}
-                                    onClose={() => setMobileDockOpen(false)}
-                                />
                             </aside>
                         </main>
                     </div>

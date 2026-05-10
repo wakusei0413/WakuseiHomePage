@@ -20,9 +20,7 @@ export async function getStaticPaths() {
     return entries
         .filter(([, mod]) => !mod.frontmatter.draft)
         .map(([filePath, mod]) => {
-            const slug = filePath
-                .replace('../../content/blog/', '')
-                .replace('/index.md', '');
+            const slug = filePath.replace('../../content/blog/', '').replace('/index.md', '');
             return {
                 params: { slug },
                 props: {
@@ -44,7 +42,11 @@ const { frontmatter, Content } = Astro.props;
                 {frontmatter.tags && <span class="tags">{frontmatter.tags.join(', ')}</span>}
             </div>
         </header>
-        {frontmatter.cover && <img src={frontmatter.cover} alt={frontmatter.title} class="post-hero-image" loading="eager" />}
+        {
+            frontmatter.cover && (
+                <img src={frontmatter.cover} alt={frontmatter.title} class="post-hero-image" loading="eager" />
+            )
+        }
         <div class="post-body">
             <Content />
         </div>

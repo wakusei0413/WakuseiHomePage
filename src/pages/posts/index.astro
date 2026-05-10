@@ -18,9 +18,7 @@ const allPosts = import.meta.glob<MarkdownModule>('../../content/blog/**/index.m
 const posts = Object.entries(allPosts)
     .filter(([, mod]) => !mod.frontmatter.draft)
     .map(([filePath, mod]) => {
-        const slug = filePath
-            .replace('../../content/blog/', '')
-            .replace('/index.md', '');
+        const slug = filePath.replace('../../content/blog/', '').replace('/index.md', '');
         return {
             slug,
             data: mod.frontmatter

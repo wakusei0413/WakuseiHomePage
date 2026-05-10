@@ -1,6 +1,5 @@
 import { createSignal, onCleanup, onMount } from 'solid-js';
 import { Portal } from 'solid-js/web';
-import type { Accessor } from 'solid-js';
 import type { Locale } from '../data/i18n';
 import { getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel } from '../lib/dock';
 import type { I18nContext } from '../lib/i18n';
@@ -11,9 +10,7 @@ import { Icon } from './Icon';
 interface TopBarProps {
     config: SiteConfig;
     i18n: I18nContext;
-    isMobile: Accessor<boolean>;
-    scrollProgress: Accessor<number>;
-    onMobileMenuOpen: () => void;
+    initialIsHomePage: boolean;
 }
 
 export function TopBar(props: TopBarProps) {
@@ -26,31 +23,40 @@ export function TopBar(props: TopBarProps) {
     let languageBtnRef: HTMLButtonElement | undefined;
     let outsideClickCleanup: (() => void) | undefined;
 
+    const [isMobile, setIsMobile] = createSignal(
+        typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches
+    );
+
+    const [scrollProgress, setScrollProgress] = createSignal(0);
+    const [isHomePage, setIsHomePage] = createSignal(props.initialIsHomePage);
+
+    let scrollerEl: HTMLElement | null = null;
+    let scrollHandler: ((_e: Event) => void) | undefined;
+
     const topBarOpacity = () => {
-        if (!props.isMobile()) return 1;
-        const sp = props.scrollProgress();
+        if (!isHomePage()) return 1;
+        if (!isMobile()) return 1;
+        const sp = scrollProgress();
         if (sp <= 0.15) return 0;
         if (sp >= 0.4) return 1;
         return (sp - 0.15) / 0.25;
     };
 
     const expansionProgress = () => {
-        if (props.isMobile()) return 1;
-        const sp = props.scrollProgress();
-        // 降低起步阈值，让动作更早被感知
+        if (!isHomePage()) return 1;
+        if (isMobile()) return 1;
+        const sp = scrollProgress();
         if (sp <= 0.02) return 0;
         if (sp >= 0.45) return 1;
         const raw = (sp - 0.02) / 0.43;
-        // 使用 EaseOutQuart 曲线: 1 - (1 - x)^4，比线性更丝滑
         return 1 - Math.pow(1 - raw, 4);
     };
 
     const barStyle = () => {
-        if (props.isMobile()) return { opacity: topBarOpacity() };
+        if (!isHomePage()) return { opacity: 1, transform: 'translateX(0)' };
+        if (isMobile()) return { opacity: topBarOpacity(), transform: 'translateX(0)' };
 
         const p = expansionProgress();
-        // 核心：利用镜像位移保持右侧图标不动，背景拉伸
-        // 移除原有的 16px 偏移，适应贴边设计
         return {
             opacity: 1,
             transform: `translateX(calc(var(--left-panel-width, 500px) * ${1 - p}))`
@@ -58,17 +64,18 @@ export function TopBar(props: TopBarProps) {
     };
 
     const rightStyle = () => {
-        if (props.isMobile()) return {};
+        if (!isHomePage()) return { transform: 'translateX(0)' };
+        if (isMobile()) return { transform: 'translateX(0)' };
         const p = expansionProgress();
-        // 反向抵消父级的位移
         return {
             transform: `translateX(calc(var(--left-panel-width, 500px) * ${p - 1}))`
         };
     };
 
     const leftOpacity = () => {
-        if (props.isMobile()) return 1;
-        const sp = props.scrollProgress();
+        if (!isHomePage()) return 1;
+        if (isMobile()) return 1;
+        const sp = scrollProgress();
         if (sp <= 0.15) return 0;
         if (sp >= 0.4) return 1;
         return (sp - 0.15) / 0.25;
@@ -76,14 +83,39 @@ export function TopBar(props: TopBarProps) {
 
     const leftStyle = () => {
         const p = leftOpacity();
-        // 协同位移：淡入时伴随 8px 的向上位移，更加细腻
+        if (p >= 1) return { opacity: 1 };
         return {
             opacity: p,
             transform: `translateY(${(1 - p) * 8}px)`
         };
     };
 
+    function bindScroll() {
+        if (scrollHandler && scrollerEl) {
+            scrollerEl.removeEventListener('scroll', scrollHandler);
+            scrollHandler = undefined;
+        }
+        scrollerEl = document.querySelector('.page-scroller');
+        if (scrollerEl) {
+            setIsHomePage(true);
+            setScrollProgress(Math.min(scrollerEl.scrollTop / window.innerHeight, 1));
+            const handleScroll = (_e: Event) => {
+                const progress = Math.min(scrollerEl!.scrollTop / window.innerHeight, 1);
+                setScrollProgress(progress);
+            };
+            scrollerEl.addEventListener('scroll', handleScroll, { passive: true });
+            scrollHandler = handleScroll;
+        } else {
+            setIsHomePage(false);
+            setScrollProgress(1);
+        }
+    }
+
     onMount(() => {
+        bindScroll();
+        window.addEventListener('wakusei:homepage-mounted', bindScroll);
+        onCleanup(() => window.removeEventListener('wakusei:homepage-mounted', bindScroll));
+
         const theme = getCurrentTheme();
         setIsDark(theme === 'dark');
         applyTheme(theme);
@@ -94,18 +126,34 @@ export function TopBar(props: TopBarProps) {
         onCleanup(unsubscribeThemeChange);
 
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleMediaChange = (e: MediaQueryListEvent) => {
+        const handleMediaTheme = (e: MediaQueryListEvent) => {
             if (!getStoredTheme()) {
                 const newTheme = e.matches ? 'dark' : 'light';
                 setIsDark(newTheme === 'dark');
                 applyTheme(newTheme);
             }
         };
-        mediaQuery.addEventListener('change', handleMediaChange);
-        onCleanup(() => mediaQuery.removeEventListener('change', handleMediaChange));
+        mediaQuery.addEventListener('change', handleMediaTheme);
+        onCleanup(() => mediaQuery.removeEventListener('change', handleMediaTheme));
 
-        if (!props.isMobile()) {
+        const mql = window.matchMedia('(max-width: 900px)');
+        const handleMediaChange = (event: MediaQueryListEvent) => {
+            setIsMobile(event.matches);
+        };
+        mql.addEventListener('change', handleMediaChange);
+        onCleanup(() => mql.removeEventListener('change', handleMediaChange));
+
+        if (!isMobile() && isHomePage()) {
             setupIconMagnifyHover();
+        }
+    });
+
+    onCleanup(() => {
+        if (scrollHandler && scrollerEl) {
+            scrollerEl.removeEventListener('scroll', scrollHandler);
+        }
+        if (outsideClickCleanup) {
+            outsideClickCleanup();
         }
     });
 
@@ -252,12 +300,6 @@ export function TopBar(props: TopBarProps) {
         });
     }
 
-    onCleanup(() => {
-        if (outsideClickCleanup) {
-            outsideClickCleanup();
-        }
-    });
-
     const locales = () => props.config.i18n.locales;
 
     return (
@@ -267,12 +309,19 @@ export function TopBar(props: TopBarProps) {
                     class="top-bar-left"
                     style={leftStyle()}
                     onClick={() => {
-                        if (props.isMobile()) {
-                            props.onMobileMenuOpen();
+                        if (isMobile()) {
+                            window.dispatchEvent(new CustomEvent('wakusei:open-mobile-menu'));
+                        } else {
+                            const scroller = document.querySelector('.page-scroller');
+                            if (scroller) {
+                                scroller.scrollTo({ top: 0, behavior: 'smooth' });
+                            } else {
+                                window.location.href = '/';
+                            }
                         }
                     }}
-                    role={props.isMobile() ? 'button' : undefined}
-                    aria-label={props.isMobile() ? 'Open menu' : undefined}
+                    role={isMobile() ? 'button' : undefined}
+                    aria-label={isMobile() ? 'Open menu' : undefined}
                 >
                     <img class="top-bar-avatar" src={props.config.profile.avatar} alt="" width="40" height="40" />
                     <span class="top-bar-name">{props.config.profile.name}</span>
@@ -330,23 +379,34 @@ export function TopBar(props: TopBarProps) {
                         }
 
                         const disabled = isDockLinkDisabled(item.href);
+                        if (item.openInNewTab) {
+                            return (
+                                <a
+                                    href={item.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="top-bar-dock-item"
+                                    classList={{ active: false, 'has-text': mode !== 'icon' }}
+                                    title={label()}
+                                    aria-label={label()}
+                                >
+                                    {renderItem()}
+                                </a>
+                            );
+                        }
                         return (
-                            <button
+                            <a
+                                href={disabled ? undefined : item.href}
                                 class="top-bar-dock-item"
                                 classList={{ active: false, disabled, 'has-text': mode !== 'icon' }}
-                                onClick={() => {
-                                    if (disabled) return;
-                                    if (item.openInNewTab) {
-                                        window.open(item.href, '_blank', 'noopener,noreferrer');
-                                    } else {
-                                        window.location.href = item.href;
-                                    }
-                                }}
                                 title={label()}
                                 aria-label={label()}
+                                onClick={(e) => {
+                                    if (disabled) e.preventDefault();
+                                }}
                             >
                                 {renderItem()}
-                            </button>
+                            </a>
                         );
                     })}
                 </div>

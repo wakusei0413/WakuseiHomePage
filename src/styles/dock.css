@@ -233,6 +233,12 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
     display: none;
 }
 
+/* Hide mobile sidebar on desktop — its styles live inside @media (max-width: 900px) */
+.mobile-dock-sidebar,
+.mobile-dock-sidebar-overlay {
+    display: none;
+}
+
 /* ===== Responsive: Show bottom sheet on mobile ===== */
 @media (max-width: 900px) {
     /* 闅愯棌妗岄潰绔?Dock 鍜岀Щ鍔ㄧ bottom sheet */
@@ -614,10 +620,15 @@ html:not([data-theme='dark']) .dock-popup-option.selected {
         background: transparent;
         border: none;
         color: #fffef7;
+        text-decoration: none;
         font-size: 1rem;
         cursor: pointer;
         transition: background-color 0.2s ease;
         text-align: left;
+    }
+
+    .sidebar-menu-item:visited {
+        color: #fffef7;
     }
 
     .sidebar-menu-item:hover,
