@@ -6,10 +6,10 @@ import { createLogger } from '../lib/logger';
 import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations } from '../lib/runtime-effects';
 import { WallpaperScrollerController } from '../lib/wallpaper-scroller';
 import { ClockPanel } from './ClockPanel';
-import { NavigationDock } from './NavigationDock';
 import { MobileDockSidebar } from './MobileDockSidebar';
 import { LoadingOverlay } from './LoadingOverlay';
 import { SocialLinks } from './SocialLinks';
+import { TopBar } from './TopBar';
 import { TypewriterSlogan } from './TypewriterSlogan';
 
 function splitLatinText(text: string) {
@@ -30,6 +30,13 @@ export function HomepageApp() {
     const [loadingPercent, setLoadingPercent] = createSignal(0);
     const [mobileDockOpen, setMobileDockOpen] = createSignal(false);
     const [scrollProgress, setScrollProgress] = createSignal(0);
+
+    const heroAvatarNameOpacity = () => {
+        const sp = scrollProgress();
+        if (sp <= 0.15) return 1;
+        if (sp >= 0.4) return 0;
+        return 1 - (sp - 0.15) / 0.25;
+    };
 
     let containerRef: HTMLElement | undefined;
     let viewportRef: HTMLDivElement | undefined;
@@ -150,12 +157,12 @@ export function HomepageApp() {
             <div class="noise-overlay"></div>
             <LoadingOverlay hidden={ready()} text={loadingText()} percent={loadingPercent()} />
 
-            <div class={`compressed-header ${scrollProgress() > 0.4 ? 'visible' : ''}`}>
-                <div class="header-avatar">
-                    <img src={siteConfig.profile.avatar} alt="Avatar" />
-                </div>
-                <div class="header-name">{siteConfig.profile.name}</div>
-            </div>
+            <TopBar
+                config={siteConfig}
+                i18n={i18n}
+                scrollProgress={scrollProgress}
+                onMobileMenuOpen={() => setMobileDockOpen(true)}
+            />
 
             <div class="page-scroller" ref={viewportRef}>
                 <div class="hero-sticky">
@@ -178,6 +185,7 @@ export function HomepageApp() {
                                         class="avatar-box"
                                         id="avatarBox"
                                         ref={(element) => (avatarRef = element)}
+                                        style={{ opacity: heroAvatarNameOpacity() }}
                                         onClick={() => {
                                             if (window.matchMedia('(max-width: 900px)').matches) {
                                                 setMobileDockOpen(true);
@@ -198,7 +206,7 @@ export function HomepageApp() {
                                         />
                                     </div>
 
-                                    <h1 class="name">
+                                    <h1 class="name" style={{ opacity: heroAvatarNameOpacity() }}>
                                         {splitLatinText(siteConfig.profile.name).map((part) =>
                                             part.isLatin ? <span class="name-latin">{part.text}</span> : part.text
                                         )}
@@ -230,7 +238,6 @@ export function HomepageApp() {
                                 <div class="info-panel">
                                     <ClockPanel config={siteConfig.time} i18n={i18n} />
                                 </div>
-                                <NavigationDock config={siteConfig} i18n={i18n} />
                                 <MobileDockSidebar
                                     config={siteConfig}
                                     i18n={i18n}
