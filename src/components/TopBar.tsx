@@ -37,11 +37,11 @@ export function TopBar(props: TopBarProps) {
     const expansionProgress = () => {
         if (props.isMobile()) return 1;
         const sp = props.scrollProgress();
-        // 降低起步阈值，让动作更早被感知
-        if (sp <= 0.02) return 0;
-        if (sp >= 0.45) return 1;
-        const raw = (sp - 0.02) / 0.43;
-        // 使用 EaseOutQuart 曲线: 1 - (1 - x)^4，比线性更丝滑
+        // 调整阈值：0.05 开始动，0.5 完全展开，过程更平滑
+        if (sp <= 0.05) return 0;
+        if (sp >= 0.5) return 1;
+        const raw = (sp - 0.05) / 0.45;
+        // EaseOutQuart
         return 1 - Math.pow(1 - raw, 4);
     };
 
@@ -49,10 +49,14 @@ export function TopBar(props: TopBarProps) {
         if (props.isMobile()) return { opacity: topBarOpacity() };
 
         const p = expansionProgress();
-        // 核心：利用镜像位移保持右侧图标不动，背景拉伸
+        const isInitial = p < 0.01;
+        
         return {
             opacity: 1,
-            transform: `translateX(calc(var(--left-panel-width, 500px) * ${1 - p}))`
+            // 初始状态增加 8px 的额外右移，让它更“缩”在右侧
+            transform: `translateX(calc(var(--left-panel-width, 500px) * ${1 - p}))`,
+            // 初始状态圆角更圆，展开后恢复 14px
+            'border-radius': isInitial ? '28px' : '14px'
         };
     };
 

@@ -18,10 +18,16 @@
     left: 16px;
     right: 16px;
     height: 56px;
+    /* 增加不透明度以获得更多“分量感”，接近参考图 */
     background: var(--dock-bg);
-    backdrop-filter: blur(30px) saturate(180%);
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
-    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid var(--dock-border);
+    /* 核心：三层复合阴影，营造“挂”上去的深度感 */
+    box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        0 16px 48px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     border-radius: 14px;
     z-index: 2000;
     display: flex;
@@ -29,9 +35,12 @@
     justify-content: space-between;
     padding: 0 16px;
     box-sizing: border-box;
-    transition: opacity 0.3s var(--curve-delicate);
-    will-change: transform, opacity;
-    /* 强制 GPU 加速并防止微小抖动 */
+    /* 初始状态圆角更圆，展开后恢复 14px */
+    transition: 
+        opacity 0.3s var(--curve-delicate),
+        border-radius 0.6s var(--curve-delicate),
+        transform 0.4s var(--curve-delicate);
+    will-change: transform, opacity, border-radius;
     transform-style: preserve-3d;
     backface-visibility: hidden;
 }
