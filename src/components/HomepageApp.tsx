@@ -29,8 +29,10 @@ export function HomepageApp() {
     const [loadingText, setLoadingText] = createSignal(siteConfig.loading.texts[0]);
     const [loadingPercent, setLoadingPercent] = createSignal(0);
     const [mobileDockOpen, setMobileDockOpen] = createSignal(false);
+    const [scrollProgress, setScrollProgress] = createSignal(0);
 
     let containerRef: HTMLElement | undefined;
+    let viewportRef: HTMLDivElement | undefined;
     let avatarRef: HTMLDivElement | undefined;
     let wallpaperRef: HTMLDivElement | undefined;
     let wallpaperController: WallpaperScrollerController | null = null;
@@ -108,8 +110,18 @@ export function HomepageApp() {
         }
 
         if (containerRef && avatarRef) {
-            pageCleanups.push(initMobileStickyAvatar(containerRef, avatarRef));
+            // Mobile sticky avatar now tracks the viewport scroll
+            pageCleanups.push(initMobileStickyAvatar(viewportRef || containerRef, avatarRef));
         }
+
+        const handleScroll = (_e: Event) => {
+            if (!viewportRef) return;
+            const progress = Math.min(viewportRef.scrollTop / window.innerHeight, 1);
+            setScrollProgress(progress);
+        };
+
+        viewportRef?.addEventListener('scroll', handleScroll, { passive: true });
+        pageCleanups.push(() => viewportRef?.removeEventListener('scroll', handleScroll));
 
         // Watch media query for layout changes
         const mql = window.matchMedia('(max-width: 900px)');
@@ -138,73 +150,106 @@ export function HomepageApp() {
             <div class="noise-overlay"></div>
             <LoadingOverlay hidden={ready()} text={loadingText()} percent={loadingPercent()} />
 
-            <main class="container" ref={containerRef}>
-                <section class="left-panel">
-                    <header class="hero">
-                        <div
-                            class="avatar-box"
-                            id="avatarBox"
-                            ref={(element) => (avatarRef = element)}
-                            onClick={() => {
-                                if (window.matchMedia('(max-width: 900px)').matches) {
-                                    setMobileDockOpen(true);
-                                }
-                            }}
-                        >
-                            <img
-                                src={siteConfig.profile.avatar}
-                                alt="Avatar"
-                                class="avatar-image"
-                                width="150"
-                                height="150"
-                                loading="eager"
-                                decoding="async"
-                                fetchpriority="high"
-                            />
-                        </div>
+            <div class={`compressed-header ${scrollProgress() > 0.4 ? 'visible' : ''}`}>
+                <div class="header-avatar">
+                    <img src={siteConfig.profile.avatar} alt="Avatar" />
+                </div>
+                <div class="header-name">{siteConfig.profile.name}</div>
+            </div>
 
-                        <h1 class="name">
-                            {splitLatinText(siteConfig.profile.name).map((part) =>
-                                part.isLatin ? <span class="name-latin">{part.text}</span> : part.text
-                            )}
-                        </h1>
+            <div class="page-scroller" ref={viewportRef}>
+                <div class="hero-sticky">
+                    <div
+                        class="hero-content"
+                        style={{
+                            transform:
+                                `translateZ(${-600 * scrollProgress()}px) ` +
+                                `rotateX(${15 * scrollProgress()}deg) ` +
+                                `scale(${1 - 0.3 * scrollProgress()})`,
+                            opacity: Math.max(1 - scrollProgress() * 1.2, 0),
+                            filter: `brightness(${1 - scrollProgress() * 0.6}) ` + `blur(${scrollProgress() * 8}px)`
+                        }}
+                    >
+                        <main class="container" ref={containerRef}>
+                            <div class="wallpaper-scroll-area" ref={(element) => (wallpaperRef = element)}></div>
+                            <section class="left-panel">
+                                <header class="hero">
+                                    <div
+                                        class="avatar-box"
+                                        id="avatarBox"
+                                        ref={(element) => (avatarRef = element)}
+                                        onClick={() => {
+                                            if (window.matchMedia('(max-width: 900px)').matches) {
+                                                setMobileDockOpen(true);
+                                            } else if (viewportRef) {
+                                                viewportRef.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+                                            }
+                                        }}
+                                    >
+                                        <img
+                                            src={siteConfig.profile.avatar}
+                                            alt="Avatar"
+                                            class="avatar-image"
+                                            width="150"
+                                            height="150"
+                                            loading="eager"
+                                            decoding="async"
+                                            fetchpriority="high"
+                                        />
+                                    </div>
 
-                        <div class="status-bar">
-                            <span class="status-dot"></span>
-                            <span class="status-text">{siteConfig.profile.status}</span>
-                        </div>
+                                    <h1 class="name">
+                                        {splitLatinText(siteConfig.profile.name).map((part) =>
+                                            part.isLatin ? <span class="name-latin">{part.text}</span> : part.text
+                                        )}
+                                    </h1>
 
-                        <div class="bio-container" id="bioContainer">
-                            <TypewriterSlogan
-                                config={siteConfig.slogans}
-                                cursorStyle={siteConfig.animation.cursorStyle}
-                            />
-                        </div>
+                                    <div class="status-bar">
+                                        <span class="status-dot"></span>
+                                        <span class="status-text">{siteConfig.profile.status}</span>
+                                    </div>
 
-                        <SocialLinks config={siteConfig.socialLinks} />
-                    </header>
+                                    <div class="bio-container" id="bioContainer">
+                                        <TypewriterSlogan
+                                            config={siteConfig.slogans}
+                                            cursorStyle={siteConfig.animation.cursorStyle}
+                                        />
+                                    </div>
 
-                    <footer class="footer-left">
-                        <div class="footer-line"></div>
-                        <p class="footer-text">{`${siteConfig.footer.text} • ${new Date().getFullYear()}`}</p>
-                    </footer>
-                </section>
+                                    <SocialLinks config={siteConfig.socialLinks} />
+                                </header>
 
-                <aside class="right-panel">
-                    <div class="wallpaper-scroll-area" ref={(element) => (wallpaperRef = element)}></div>
-                    <div class="right-panel-shadow"></div>
-                    <div class="info-panel">
-                        <ClockPanel config={siteConfig.time} i18n={i18n} />
+                                <footer class="footer-left">
+                                    <div class="footer-line"></div>
+                                    <p class="footer-text">{`${siteConfig.footer.text} • ${new Date().getFullYear()}`}</p>
+                                </footer>
+                            </section>
+
+                            <aside class="right-panel">
+                                <div class="right-panel-shadow"></div>
+                                <div class="info-panel">
+                                    <ClockPanel config={siteConfig.time} i18n={i18n} />
+                                </div>
+                                <NavigationDock config={siteConfig} i18n={i18n} />
+                                <MobileDockSidebar
+                                    config={siteConfig}
+                                    i18n={i18n}
+                                    open={mobileDockOpen()}
+                                    onClose={() => setMobileDockOpen(false)}
+                                />
+                            </aside>
+                        </main>
                     </div>
-                    <NavigationDock config={siteConfig} i18n={i18n} />
-                    <MobileDockSidebar
-                        config={siteConfig}
-                        i18n={i18n}
-                        open={mobileDockOpen()}
-                        onClose={() => setMobileDockOpen(false)}
-                    />
-                </aside>
-            </main>
+                </div>
+
+                <div class="blog-content">
+                    <div class="placeholder-content">
+                        <h2>{i18n.t('nav.blog')}</h2>
+                        <p style={{ opacity: 0.5 }}>Coming Soon...</p>
+                        <div style={{ height: '150vh', 'background-color': 'var(--bg)' }} />
+                    </div>
+                </div>
+            </div>
         </>
     );
 }

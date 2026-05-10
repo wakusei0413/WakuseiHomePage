@@ -10,9 +10,8 @@
 .nav-dock {
     font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
     position: absolute;
-    right: 50%;
-    bottom: 20px;
-    transform: translateX(50%);
+    right: 20px;
+    top: 20px;
     z-index: var(--z-dock, 10000);
     display: flex;
     flex-direction: row;
@@ -22,7 +21,7 @@
     background: var(--dock-bg);
     backdrop-filter: blur(40px) saturate(220%);
     -webkit-backdrop-filter: blur(40px) saturate(220%);
-    border-radius: 32px;
+    border-radius: 24px;
     border: 1px solid var(--dock-border);
     box-shadow:
         0 8px 40px rgba(0, 0, 0, 0.2),
@@ -53,9 +52,9 @@ html:not([data-theme='dark']) .nav-dock-divider {
 }
 
 .nav-dock-item {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
     border: none;
     background: transparent;
     color: #ffffff;
@@ -68,8 +67,8 @@ html:not([data-theme='dark']) .nav-dock-divider {
         transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
         color 0.4s ease;
     touch-action: manipulation;
-    margin: 10px 4px;
-    font-size: 16px;
+    margin: 6px 4px;
+    font-size: 14px;
     position: relative;
     transform-origin: center center;
     will-change: transform;
@@ -93,7 +92,7 @@ html:not([data-theme='dark']) .nav-dock-divider {
 
 .nav-dock-divider {
     width: var(--dock-divider-thickness);
-    height: 28px;
+    height: 20px;
     background: rgba(255, 255, 255, 0.2);
     margin: 0;
 }
@@ -125,7 +124,7 @@ html:not([data-theme='dark']) .nav-dock-divider {
     overflow: hidden;
     /* 榛樿鍏抽棴鐘舵€侊細涓嶅彲瑙?+ 涓嶅彲浜や簰 */
     opacity: 0;
-    transform: translateX(-50%) translateY(6px) scale(0.96);
+    transform: translateX(-50%) translateY(-6px) scale(0.96);
     pointer-events: none;
     transition:
         opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),

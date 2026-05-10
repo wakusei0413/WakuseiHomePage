@@ -35,12 +35,14 @@
     justify-content: flex-start;
     align-items: center;
     border-right: 1px solid var(--panel-border);
-    background-color: var(--bg);
+    background-color: var(--panel-bg);
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;
     z-index: var(--z-content, 50);
-    contain: layout style paint;
+    contain: layout style;
     box-shadow: none; /* 去掉 PC 端的侧边大投影，改用细腻线条 */
     transition:
         width var(--transition-normal),
@@ -67,28 +69,11 @@
     z-index: 1;
 }
 
-[data-theme='dark'] .left-panel {
-    background-color: rgba(12, 12, 12, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-}
-
-[data-theme='dark'] .info-panel {
-    background: rgba(16, 16, 16, 0.92);
-    border-bottom-color: var(--glass-border);
-}
-
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-    [data-theme='dark'] .info-panel {
-        background: rgba(16, 16, 16, 0.85);
-    }
-}
-
 [data-theme='dark'] .wallpaper-scroll-area {
     background-color: var(--bg);
 }
 
-[data-theme='dark'] .left-panel .hero {
+.left-panel .hero {
     background: transparent;
 }
 
@@ -98,62 +83,12 @@
     padding: 1.5rem;
     padding: var(--space-md, 1.5rem);
     padding-bottom: 0;
-    background: rgba(10, 10, 10, 0.92);
-    border-bottom: 1px solid rgba(255, 254, 247, 0.15);
-    box-shadow:
-        0 8px 40px rgba(0, 0, 0, 0.35),
-        0 16px 64px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 254, 247, 0.12),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.15),
-        inset 0 0 0 1px rgba(255, 254, 247, 0.05);
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     z-index: 50;
     z-index: var(--z-content, 50);
-}
-
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-    .info-panel {
-        background: rgba(10, 10, 10, 0.75);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-    }
-}
-
-.info-panel::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 254, 247, 0.2), transparent);
-    pointer-events: none;
-    z-index: 2;
-}
-
-.info-panel::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background:
-        linear-gradient(180deg, rgba(255, 150, 80, 0.12) 0%, transparent 12%),
-        linear-gradient(90deg, rgba(255, 100, 100, 0.1) 0%, transparent 15%),
-        linear-gradient(270deg, rgba(100, 180, 255, 0.1) 0%, transparent 15%),
-        linear-gradient(0deg, rgba(150, 100, 255, 0.12) 0%, transparent 12%);
-    pointer-events: none;
-    z-index: 1;
-}
-
-[data-theme='dark'] .info-panel::after {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 12%),
-        linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0%, transparent 12%);
 }
 
 /* ===== 右侧面板阴影层 - 独立于壁纸 ===== */
@@ -179,13 +114,9 @@
 /* ===== 壁纸容器 ===== */
 .wallpaper-scroll-area {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    z-index: 0;
     z-index: var(--z-wallpaper, 0);
     background-color: #fffef7;
     background-color: var(--bg, #fffef7);

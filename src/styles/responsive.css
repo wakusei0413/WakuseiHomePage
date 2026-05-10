@@ -42,11 +42,12 @@
         overflow-y: visible;
     }
 
-    /* 粘性头部 */
     .hero {
         position: sticky;
         top: 0;
-        background: var(--bg);
+        background: var(--panel-bg);
+        backdrop-filter: var(--panel-blur);
+        -webkit-backdrop-filter: var(--panel-blur);
         z-index: 10;
         padding: var(--space-sm) 0;
         margin: calc(var(--space-sm) * -1) 0;
@@ -100,7 +101,7 @@
         pointer-events: auto;
     }
 
-    .right-panel .wallpaper-scroll-area,
+    .wallpaper-scroll-area,
     .right-panel .right-panel-shadow,
     .right-panel .info-panel {
         display: none;
@@ -131,12 +132,6 @@
     /* 手机端隐藏壁纸切换按钮 */
     .wallpaper-toggle {
         display: none !important;
-    }
-
-    [data-theme='dark'] .hero {
-        background: rgba(12, 12, 12, 0.95);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
     }
 }
 

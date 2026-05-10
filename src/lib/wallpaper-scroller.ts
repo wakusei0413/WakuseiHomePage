@@ -28,6 +28,7 @@ export class WallpaperScrollerController {
     private autoScrollId: number | null = null;
     private hasStartedAutoScroll = false;
     private isDestroyed = false;
+    private isPaused = true;
     private interactionHandler: ((event: Event) => void) | null = null;
     private visibilityHandler: (() => void) | null = null;
     private readonly callbacks: WallpaperCallbacks;
@@ -78,8 +79,21 @@ export class WallpaperScrollerController {
             }
 
             this.callbacks.onReady?.();
-            this.startAutoScroll();
+            this.resume();
         });
+    }
+
+    pause() {
+        this.isPaused = true;
+        if (this.autoScrollId !== null) {
+            cancelAnimationFrame(this.autoScrollId);
+            this.autoScrollId = null;
+        }
+    }
+
+    resume() {
+        this.isPaused = false;
+        this.startAutoScroll();
     }
 
     destroy() {
@@ -265,7 +279,9 @@ export class WallpaperScrollerController {
                 return;
             }
 
-            this.startAutoScroll();
+            if (!this.isPaused) {
+                this.startAutoScroll();
+            }
         };
 
         document.addEventListener('visibilitychange', this.visibilityHandler);
@@ -389,7 +405,8 @@ export class WallpaperScrollerController {
     }
 
     private autoScroll = () => {
-        if (!this.container) {
+        if (!this.container || this.isPaused) {
+            this.autoScrollId = null;
             return;
         }
 
@@ -405,7 +422,7 @@ export class WallpaperScrollerController {
     };
 
     private startAutoScroll() {
-        if (!this.container || this.autoScrollId !== null) {
+        if (!this.container || this.isPaused || this.autoScrollId !== null) {
             return;
         }
 

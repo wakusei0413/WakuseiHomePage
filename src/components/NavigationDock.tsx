@@ -17,7 +17,7 @@ export function NavigationDock(props: NavigationDockProps) {
     const [isDark, setIsDark] = createSignal(false);
     const [isMobile, setIsMobile] = createSignal(false);
     const [activePanel, setActivePanel] = createSignal<string | null>(null);
-    const [popupStyle, setPopupStyle] = createSignal<{ left: string; bottom: string }>({ left: '0px', bottom: '0px' });
+    const [popupStyle, setPopupStyle] = createSignal<{ left: string; top: string }>({ left: '0px', top: '0px' });
 
     let dockRef: HTMLDivElement | undefined;
     let popupRef: HTMLDivElement | undefined;
@@ -162,7 +162,7 @@ export function NavigationDock(props: NavigationDockProps) {
         const rect = languageBtnRef.getBoundingClientRect();
         setPopupStyle({
             left: `${rect.left + rect.width / 2}px`,
-            bottom: `${window.innerHeight - rect.top + 14}px`
+            top: `${rect.bottom + 14}px`
         });
     }
 
@@ -208,7 +208,7 @@ export function NavigationDock(props: NavigationDockProps) {
                 const itemRect = item.getBoundingClientRect();
                 const itemCenter = itemRect.left - rect.left + itemRect.width / 2;
                 const distance = Math.abs(latestMouseX - itemCenter);
-                const scale = 1 + 0.12 * Math.exp(-(distance * distance) / (2 * 38 * 38));
+                const scale = 1 + 0.12 * Math.exp(-(distance * distance) / (2 * 30 * 30));
                 item.style.transform = `scale(${scale})`;
             });
             frameId = null;
