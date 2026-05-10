@@ -70,7 +70,7 @@ export const editableSiteConfig: SiteConfig = {
     footer: {
         text: '© 2026 遊星 Wakusei',
         links: [
-            { name: 'Blog', href: 'https://blog.wakusei.top/' },
+            { name: '博客', href: '/posts' },
             { name: 'Status', href: 'https://status.wakusei.top/' },
             { name: 'Testing', href: 'https://testing.wakusei.top/' },
             { name: 'GitHub', href: 'https://github.com/wakusei0413' }
@@ -173,10 +173,9 @@ export const editableSiteConfig: SiteConfig = {
         items: [
             {
                 type: 'link',
-                href: '/blog',
-                openInNewTab: true,
+                href: '/posts',
                 display: {
-                    icon: 'blog',
+                    icon: 'fa-solid fa-newspaper',
                     i18nKey: 'dock.blog',
                     renderMode: 'text'
                 }

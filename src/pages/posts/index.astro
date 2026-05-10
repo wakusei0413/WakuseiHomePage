@@ -1,0 +1,150 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+interface MarkdownModule {
+    frontmatter: {
+        title: string;
+        description: string;
+        cover: string;
+        language?: string;
+        tags?: string[];
+        draft?: boolean;
+    };
+    default: unknown;
+}
+
+const allPosts = import.meta.glob<MarkdownModule>('../../content/blog/**/index.md', { eager: true });
+
+const posts = Object.entries(allPosts)
+    .filter(([, mod]) => !mod.frontmatter.draft)
+    .map(([filePath, mod]) => {
+        const slug = filePath
+            .replace('../../content/blog/', '')
+            .replace('/index.md', '');
+        return {
+            slug,
+            data: mod.frontmatter
+        };
+    });
+---
+
+<BaseLayout title="博客">
+    <main class="blog-container">
+        <h1>博客文章</h1>
+        <ul class="post-list">
+            {
+                posts.map((post) => (
+                    <li class="post-item">
+                        <a href={`/posts/${post.slug}`} class="post-link">
+                            <div class="post-card">
+                                {post.data.cover && (
+                                    <img
+                                        src={post.data.cover}
+                                        alt={post.data.title}
+                                        class="post-cover"
+                                        loading="lazy"
+                                    />
+                                )}
+                                <div class="post-info">
+                                    <h2>{post.data.title}</h2>
+                                    <p class="post-desc">{post.data.description}</p>
+                                    {post.data.tags && (
+                                        <div class="post-meta">
+                                            <span class="post-tags">{post.data.tags.join(', ')}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                ))
+            }
+        </ul>
+        <a href="/" class="back-link">← 返回首页</a>
+    </main>
+</BaseLayout>
+
+<style>
+    .blog-container {
+        max-width: 800px;
+        margin: 60px auto 80px;
+        padding: 0 24px;
+        color: var(--fg, #0a0a0a);
+        font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    }
+    .blog-container h1 {
+        font-size: 2rem;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+    .post-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .post-item {
+        border: var(--border-width, 2px) solid var(--border-color, #0a0a0a);
+        background: var(--bg-card, #ffffff);
+        box-shadow: var(--shadow-offset-sm, 4px) var(--shadow-offset-sm, 4px) 0 var(--border-color, #0a0a0a);
+        transition:
+            transform 0.15s ease,
+            box-shadow 0.15s ease;
+    }
+    .post-item:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: var(--shadow-offset, 8px) var(--shadow-offset, 8px) 0 var(--border-color, #0a0a0a);
+    }
+    .post-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+    .post-card {
+        display: flex;
+        gap: 16px;
+        padding: 16px;
+    }
+    .post-cover {
+        width: 120px;
+        height: 80px;
+        object-fit: cover;
+        border: 2px solid var(--border-color, #0a0a0a);
+        flex-shrink: 0;
+    }
+    .post-info h2 {
+        font-size: 1.25rem;
+        margin: 0 0 4px;
+    }
+    .post-desc {
+        margin: 0 0 8px;
+        color: var(--muted, #666);
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    .post-meta {
+        font-size: 0.8rem;
+        color: var(--muted, #666);
+    }
+    .back-link {
+        display: inline-block;
+        margin-top: 32px;
+        text-decoration: none;
+        color: inherit;
+        font-weight: 600;
+    }
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+        .post-card {
+            flex-direction: column;
+        }
+        .post-cover {
+            width: 100%;
+            height: 160px;
+        }
+    }
+</style>

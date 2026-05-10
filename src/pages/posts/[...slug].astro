@@ -1,0 +1,148 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+interface MarkdownModule {
+    frontmatter: {
+        title: string;
+        description: string;
+        cover: string;
+        language?: string;
+        tags?: string[];
+        draft?: boolean;
+    };
+    default: any;
+}
+
+export async function getStaticPaths() {
+    const posts = import.meta.glob<MarkdownModule>('../../content/blog/**/index.md', { eager: true });
+    const entries = Object.entries(posts);
+
+    return entries
+        .filter(([, mod]) => !mod.frontmatter.draft)
+        .map(([filePath, mod]) => {
+            const slug = filePath
+                .replace('../../content/blog/', '')
+                .replace('/index.md', '');
+            return {
+                params: { slug },
+                props: {
+                    frontmatter: mod.frontmatter,
+                    Content: mod.default
+                }
+            };
+        });
+}
+
+const { frontmatter, Content } = Astro.props;
+---
+
+<BaseLayout title={frontmatter.title} description={frontmatter.description}>
+    <article class="post-container">
+        <header class="post-header">
+            <h1>{frontmatter.title}</h1>
+            <div class="post-meta">
+                {frontmatter.tags && <span class="tags">{frontmatter.tags.join(', ')}</span>}
+            </div>
+        </header>
+        {frontmatter.cover && <img src={frontmatter.cover} alt={frontmatter.title} class="post-hero-image" loading="eager" />}
+        <div class="post-body">
+            <Content />
+        </div>
+        <footer class="post-footer">
+            <a href="/posts" class="back-link">← 返回博客列表</a>
+            <a href="/" class="back-link">返回首页</a>
+        </footer>
+    </article>
+</BaseLayout>
+
+<style>
+    .post-container {
+        max-width: 720px;
+        margin: 40px auto 80px;
+        padding: 0 24px;
+        color: var(--fg, #0a0a0a);
+        font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    }
+    .post-header {
+        margin-bottom: 24px;
+    }
+    .post-header h1 {
+        font-size: 2rem;
+        margin: 0 0 8px;
+    }
+    .post-meta {
+        font-size: 0.85rem;
+        color: var(--muted, #666);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .post-hero-image {
+        width: 100%;
+        height: auto;
+        border: var(--border-width, 2px) solid var(--border-color, #0a0a0a);
+        box-shadow: var(--shadow-offset-sm, 4px) var(--shadow-offset-sm, 4px) 0 var(--border-color, #0a0a0a);
+        margin-bottom: 24px;
+    }
+    .post-body {
+        line-height: 1.7;
+    }
+    .post-body :global(h2) {
+        font-size: 1.5rem;
+        margin-top: 32px;
+        margin-bottom: 12px;
+    }
+    .post-body :global(p) {
+        margin: 0 0 12px;
+    }
+    .post-body :global(ul) {
+        margin: 0 0 16px;
+        padding-left: 24px;
+    }
+    .post-body :global(li) {
+        margin-bottom: 6px;
+    }
+    .post-footer {
+        margin-top: 48px;
+        display: flex;
+        gap: 16px;
+    }
+    .back-link {
+        text-decoration: none;
+        color: inherit;
+        font-weight: 600;
+    }
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+<style is:global>
+    .post-body img {
+        max-width: 100%;
+        height: auto;
+        border: 2px solid var(--border-color, #0a0a0a);
+    }
+    .post-body pre {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 16px;
+        border-radius: 0;
+        border: 2px solid var(--border-color, #0a0a0a);
+        overflow-x: auto;
+    }
+    .post-body code {
+        background: rgba(0, 0, 0, 0.06);
+        padding: 2px 6px;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    }
+    .post-body pre code {
+        background: transparent;
+        padding: 0;
+    }
+    .post-body blockquote {
+        border-left: 4px solid var(--border-color, #0a0a0a);
+        padding-left: 16px;
+        margin: 16px 0;
+        color: var(--muted, #666);
+    }
+</style>
