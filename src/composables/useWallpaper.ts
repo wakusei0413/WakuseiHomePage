@@ -3,11 +3,7 @@ import { WallpaperScrollerController } from '../lib/wallpaper-scroller';
 import { useLogger } from './useLogger';
 import type { WallpaperConfig, LoadingConfig } from '../types/site';
 
-export function useWallpaper(
-    wallpaperConfig: WallpaperConfig,
-    loadingConfig: LoadingConfig,
-    isMobile: () => boolean
-) {
+export function useWallpaper(wallpaperConfig: WallpaperConfig, loadingConfig: LoadingConfig, isMobile: () => boolean) {
     const logger = useLogger(true);
     const wallpaperRef = ref<HTMLDivElement | null>(null);
     const ready = ref(false);

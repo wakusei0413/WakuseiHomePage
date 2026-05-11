@@ -122,19 +122,19 @@ function shouldRenderTrailingDivider() {
             <span class="sidebar-name">{{ siteConfig.profile.name }}</span>
         </div>
 
-        <div class="sidebar-divider"></div>
+        <div class="sidebar-divider" />
 
         <template v-for="(item, index) in siteConfig.dock.items" :key="index">
-            <div v-if="item.type === 'divider'" class="sidebar-divider"></div>
+            <div v-if="item.type === 'divider'" class="sidebar-divider" />
 
             <template v-else>
                 <div v-if="item.type === 'panel'" class="sidebar-menu-group">
                     <button
                         class="sidebar-menu-item"
                         :class="{ active: getLangActive(item), expanded: getLangActive(item) }"
-                        @click="handlePanel(item.panel)"
                         :aria-label="getLangLabel(item.display)"
                         :aria-expanded="getLangActive(item)"
+                        @click="handlePanel(item.panel)"
                     >
                         <Icon :name="getLangIcon(item.display, getLangActive(item))" class="sidebar-menu-icon" />
                         <span>{{ getLangLabel(item.display) }}</span>
@@ -150,9 +150,9 @@ function shouldRenderTrailingDivider() {
                             :key="lang"
                             class="sidebar-submenu-item"
                             :class="{ selected: locale === lang }"
-                            @click="selectLanguage(lang)"
                             role="option"
                             :aria-selected="locale === lang"
+                            @click="selectLanguage(lang)"
                         >
                             <Icon name="check" class="check-icon" />
                             <span>{{ t(`dock.lang.${lang}`) }}</span>
@@ -164,8 +164,8 @@ function shouldRenderTrailingDivider() {
                     v-else-if="item.type === 'action'"
                     class="sidebar-menu-item"
                     :class="{ active: getLangActive(item) }"
-                    @click="handleAction(item.action)"
                     :aria-label="getLangLabel(item.display)"
+                    @click="handleAction(item.action)"
                 >
                     <Icon :name="getLangIcon(item.display, getLangActive(item))" class="sidebar-menu-icon" />
                     <span>{{ getLangLabel(item.display) }}</span>
@@ -216,8 +216,8 @@ function shouldRenderTrailingDivider() {
             </template>
         </template>
 
-        <div v-if="shouldRenderTrailingDivider()" class="sidebar-divider"></div>
+        <div v-if="shouldRenderTrailingDivider()" class="sidebar-divider" />
     </div>
 
-    <div class="mobile-dock-sidebar-overlay" :data-open="open ? '' : undefined" @click="close()"></div>
+    <div class="mobile-dock-sidebar-overlay" :data-open="open ? '' : undefined" @click="close()" />
 </template>

@@ -1,6 +1,3 @@
-import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
-
 import {
     decorateWallpaperImage,
     prepareWallpaperImageForDisplay,
@@ -48,10 +45,10 @@ describe('WallpaperScrollerController internals', () => {
 
         controller.cleanupOverflowImages();
 
-        assert.deepStrictEqual(controller.images, placeholders.slice(2));
-        assert.deepStrictEqual(unobserved, placeholders.slice(0, 2));
-        assert.strictEqual(placeholders[0].removed, true);
-        assert.strictEqual(placeholders[1].removed, true);
+        expect(controller.images).toEqual(placeholders.slice(2));
+        expect(unobserved).toEqual(placeholders.slice(0, 2));
+        expect(placeholders[0].removed).toBe(true);
+        expect(placeholders[1].removed).toBe(true);
     });
 
     it('retries loading until raceLoadImage succeeds', async () => {
@@ -82,8 +79,8 @@ describe('WallpaperScrollerController internals', () => {
 
         const result = await controller.loadWithRetry('7');
 
-        assert.strictEqual(result.src, 'ok');
-        assert.strictEqual(attempts, 3);
+        expect(result.src).toBe('ok');
+        expect(attempts).toBe(3);
     });
 
     it('marks wallpaper images as decorative for accessibility audits', () => {
@@ -97,8 +94,8 @@ describe('WallpaperScrollerController internals', () => {
 
         decorateWallpaperImage(image as unknown as HTMLImageElement);
 
-        assert.strictEqual(image.alt, '');
-        assert.strictEqual(attributes['aria-hidden'], 'true');
+        expect(image.alt).toBe('');
+        expect(attributes['aria-hidden']).toBe('true');
     });
 
     it('keeps preload images eager before they are inserted into the page', () => {
@@ -114,9 +111,9 @@ describe('WallpaperScrollerController internals', () => {
 
         decorateWallpaperImage(image as unknown as HTMLImageElement);
 
-        assert.strictEqual(image.loading, 'eager');
-        assert.strictEqual(image.decoding, 'sync');
-        assert.strictEqual(attributes['aria-hidden'], 'true');
+        expect(image.loading).toBe('eager');
+        expect(image.decoding).toBe('sync');
+        expect(attributes['aria-hidden']).toBe('true');
     });
 
     it('marks rendered wallpaper images for lazy loading', () => {
@@ -128,7 +125,7 @@ describe('WallpaperScrollerController internals', () => {
 
         prepareWallpaperImageForDisplay(image as unknown as HTMLImageElement);
 
-        assert.strictEqual(image.loading, 'lazy');
-        assert.strictEqual(image.decoding, 'async');
+        expect(image.loading).toBe('lazy');
+        expect(image.decoding).toBe('async');
     });
 });

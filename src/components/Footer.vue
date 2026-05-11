@@ -41,7 +41,7 @@ defineProps<{
             </div>
         </div>
 
-        <div class="footer-divider"></div>
+        <div class="footer-divider" />
 
         <div class="footer-bottom">
             <span class="footer-copyright">{{ copyrightText }}</span>

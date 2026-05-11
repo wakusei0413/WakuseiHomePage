@@ -157,9 +157,9 @@ onMounted(() => {
 <template>
     <nav
         v-if="props.config.links.length <= ITEMS_PER_PAGE"
+        id="socialLinks"
         ref="navRef"
         class="social-links"
-        id="socialLinks"
         :class="{ 'breathe-once': breathe }"
     >
         <div
@@ -193,16 +193,16 @@ onMounted(() => {
         </div>
     </nav>
 
-    <nav v-else ref="navRef" class="social-links-wrapper" id="socialLinks" :class="{ 'breathe-once': breathe }">
+    <nav v-else id="socialLinks" ref="navRef" class="social-links-wrapper" :class="{ 'breathe-once': breathe }">
         <div
             id="socialLinksPage"
             class="social-links-page"
             :data-page-key="animationKey"
-            @animationend="() => (transitionDirection = null)"
             :class="{
                 'is-swap-fade': transitionDirection !== null,
                 'is-animation-alt': animationKey % 2 === 1
             }"
+            @animationend="() => (transitionDirection = null)"
         >
             <div
                 v-for="(link, index) in currentLinks"
@@ -239,7 +239,7 @@ onMounted(() => {
                 :key="'placeholder-' + i"
                 class="social-link-slot social-link-slot--placeholder"
                 aria-hidden="true"
-            ></div>
+            />
         </div>
 
         <div v-if="totalPages > 1" class="social-links-dots">
@@ -251,9 +251,9 @@ onMounted(() => {
                 type="button"
                 :aria-current="currentPage === i ? 'page' : undefined"
                 aria-controls="socialLinksPage"
-                @click="showPage(i)"
                 :aria-label="`social page ${i + 1}`"
-            ></button>
+                @click="showPage(i)"
+            />
         </div>
     </nav>
 </template>

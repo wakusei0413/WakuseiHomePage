@@ -1,73 +1,73 @@
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const topbarComponent = readFileSync(join(process.cwd(), 'src', 'components', 'TopBar.svelte'), 'utf-8');
+const topbarComponent = readFileSync(join(process.cwd(), 'src', 'components', 'TopBar.vue'), 'utf-8');
 
 describe('TopBar unified navigation component', () => {
     it('renders a fixed top bar with avatar, name, and dock items', () => {
-        assert.match(topbarComponent, /class="top-bar"/);
-        assert.match(topbarComponent, /class="top-bar-left"/);
-        assert.match(topbarComponent, /class="top-bar-avatar"/);
-        assert.match(topbarComponent, /class="top-bar-name"/);
-        assert.match(topbarComponent, /class="top-bar-right"/);
+        expect(topbarComponent).toMatch(/class="top-bar"/);
+        expect(topbarComponent).toMatch(/class="top-bar-left"/);
+        expect(topbarComponent).toMatch(/class="top-bar-avatar"/);
+        expect(topbarComponent).toMatch(/class="top-bar-name"/);
+        expect(topbarComponent).toMatch(/class="top-bar-right"/);
     });
 
     it('supports theme toggle via dock action items', () => {
-        assert.match(topbarComponent, /case 'toggleTheme'/);
-        assert.match(topbarComponent, /toggleTheme\(\)/);
-        assert.match(topbarComponent, /import.*toggleTheme.*from/);
+        expect(topbarComponent).toMatch(/case 'toggleTheme'/);
+        expect(topbarComponent).toMatch(/toggleTheme\(\)/);
+        expect(topbarComponent).toMatch(/import.*useTheme.*from/);
     });
 
     it('supports language panel with popup', () => {
-        assert.match(topbarComponent, /case 'language'/);
-        assert.match(topbarComponent, /toggleLanguagePanel\(\)/);
-        assert.match(topbarComponent, /class="top-bar-language-popup"/);
+        expect(topbarComponent).toMatch(/case 'language'/);
+        expect(topbarComponent).toMatch(/toggleLanguagePanel\(\)/);
+        expect(topbarComponent).toMatch(/class="top-bar-language-popup"/);
     });
 
     it('uses dock lib helpers for item rendering', () => {
-        assert.match(topbarComponent, /getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel/);
-        assert.match(topbarComponent, /resolveDockLabel\(display, t\)/);
-        assert.match(topbarComponent, /resolveDockIcon\(display, active\)/);
+        expect(topbarComponent).toMatch(
+            /getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel/
+        );
+        expect(topbarComponent).toMatch(/resolveDockLabel\(display, t\)/);
+        expect(topbarComponent).toMatch(/resolveDockIcon\(display, active\)/);
     });
 
     it('supports link items with new tab option', () => {
-        assert.match(topbarComponent, /openInNewTab/);
-        assert.match(topbarComponent, /target="_blank"/);
-        assert.match(topbarComponent, /rel="noopener noreferrer"/);
+        expect(topbarComponent).toMatch(/openInNewTab/);
+        expect(topbarComponent).toMatch(/target="_blank"/);
+        expect(topbarComponent).toMatch(/rel="noopener noreferrer"/);
     });
 
     it('respects disabled state for dock links', () => {
-        assert.match(topbarComponent, /isDockLinkDisabled/);
-        assert.match(topbarComponent, /if \(disabled\)/);
-        assert.match(topbarComponent, /e\.preventDefault\(\)/);
+        expect(topbarComponent).toMatch(/isDockLinkDisabled/);
+        expect(topbarComponent).toMatch(/isDockLinkDisabled\(item\.href\)/);
+        expect(topbarComponent).toMatch(/e\.preventDefault\(\)/);
     });
 
     it('reuses expansion progress for left-side transition timing', () => {
-        assert.match(topbarComponent, /let expansionProgress = \$derived\.by/);
-        assert.match(topbarComponent, /const raw = \(sp - 0\.02\) \/ 0\.43;/);
-        assert.match(topbarComponent, /const p = expansionProgress;/);
-        assert.match(topbarComponent, /const x = \(1 - expansionProgress\) \* 18;/);
+        expect(topbarComponent).toMatch(/const expansionProgress = computed\(\(\) =>/);
+        expect(topbarComponent).toMatch(/const raw = \(sp - 0\.02\) \/ 0\.43;/);
+        expect(topbarComponent).toMatch(/const p = expansionProgress\.value;/);
+        expect(topbarComponent).toMatch(/const x = \(1 - expansionProgress\.value\) \* 18;/);
     });
 
     it('dispatches custom event on mobile avatar click', () => {
-        assert.match(topbarComponent, /wakusei:open-mobile-menu/);
-        assert.match(topbarComponent, /new CustomEvent\('wakusei:open-mobile-menu'\)/);
+        expect(topbarComponent).toMatch(/wakusei:open-mobile-menu/);
+        expect(topbarComponent).toMatch(/new CustomEvent\('wakusei:open-mobile-menu'\)/);
     });
 
     it('uses anchor navigation for desktop home click to preserve transitions', () => {
-        assert.match(topbarComponent, /href="\/"/);
-        assert.doesNotMatch(topbarComponent, /window\.location\.href = '\/'/);
+        expect(topbarComponent).toMatch(/href="\/"/);
+        expect(topbarComponent).not.toMatch(/window\.location\.href = '\/'/);
     });
 
     it('accepts initialIsHomePage prop for SSR snapshot', () => {
-        assert.match(topbarComponent, /initialIsHomePage: boolean/);
+        expect(topbarComponent).toMatch(/initialIsHomePage: boolean/);
     });
 
     it('has outside click cleanup for language popup', () => {
-        assert.match(topbarComponent, /outsideClickCleanup/);
-        assert.match(topbarComponent, /setupOutsideClick\(\)/);
-        assert.match(topbarComponent, /document\.addEventListener\('click', handler\)/);
+        expect(topbarComponent).toMatch(/outsideClickCleanup/);
+        expect(topbarComponent).toMatch(/setupOutsideClick\(\)/);
+        expect(topbarComponent).toMatch(/document\.addEventListener\('click', handler\)/);
     });
 });

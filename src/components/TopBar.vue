@@ -321,6 +321,8 @@ function getMode(display: { renderMode?: string }) {
             class="top-bar-left"
             href="/"
             :style="leftStyle"
+            :role="isMobile ? 'button' : undefined"
+            :aria-label="isMobile ? 'Open menu' : undefined"
             @click="
                 (e: MouseEvent) => {
                     if (isMobile) {
@@ -335,8 +337,6 @@ function getMode(display: { renderMode?: string }) {
                     }
                 }
             "
-            :role="isMobile ? 'button' : undefined"
-            :aria-label="isMobile ? 'Open menu' : undefined"
         >
             <img class="top-bar-avatar" :src="siteConfig.profile.avatar" alt="" width="40" height="40" />
             <span class="top-bar-name">{{ siteConfig.profile.name }}</span>
@@ -344,16 +344,16 @@ function getMode(display: { renderMode?: string }) {
 
         <div class="top-bar-right" :style="rightStyle">
             <template v-for="(item, index) in siteConfig.dock.items" :key="index">
-                <div v-if="item.type === 'divider'" class="top-bar-divider"></div>
+                <div v-if="item.type === 'divider'" class="top-bar-divider" />
 
                 <template v-else>
                     <button
                         v-if="item.type === 'action'"
                         class="top-bar-dock-item"
                         :class="{ active: getActive(item), 'has-text': getMode(item.display) !== 'icon' }"
-                        @click="handleAction(item.action)"
                         :title="getLabel(item.display)"
                         :aria-label="getLabel(item.display)"
+                        @click="handleAction(item.action)"
                     >
                         <Icon v-if="getMode(item.display) !== 'text'" :name="getIcon(item.display, getActive(item))" />
                         <span
@@ -368,11 +368,11 @@ function getMode(display: { renderMode?: string }) {
                         v-else-if="item.type === 'panel'"
                         class="top-bar-dock-item"
                         :class="{ active: getActive(item), 'has-text': getMode(item.display) !== 'icon' }"
+                        :title="getLabel(item.display)"
+                        :aria-label="getLabel(item.display)"
                         @click="
                             (event: MouseEvent) => handlePanel(item.panel, event.currentTarget as HTMLButtonElement)
                         "
-                        :title="getLabel(item.display)"
-                        :aria-label="getLabel(item.display)"
                     >
                         <Icon v-if="getMode(item.display) !== 'text'" :name="getIcon(item.display, getActive(item))" />
                         <span
@@ -442,15 +442,17 @@ function getMode(display: { renderMode?: string }) {
     </div>
 
     <div ref="popupRef" class="top-bar-language-popup" role="dialog" aria-label="Language selection">
-        <div class="top-bar-popup-title">{{ t('dock.language') }}</div>
+        <div class="top-bar-popup-title">
+            {{ t('dock.language') }}
+        </div>
         <div
             v-for="lang in siteConfig.i18n.locales"
             :key="lang"
             class="top-bar-popup-option"
             :class="{ selected: locale === lang }"
-            @click="selectLanguage(lang)"
             role="option"
             :aria-selected="locale === lang"
+            @click="selectLanguage(lang)"
         >
             <Icon name="check" class="check-icon" />
             <span>{{ t(`dock.lang.${lang}`) }}</span>

@@ -94,7 +94,7 @@ const definition = computed(() => icons[resolveIconName(props.name)]);
         :height="props.size"
         :role="props.title ? 'img' : undefined"
         :aria-hidden="props.title ? undefined : 'true'"
-        style="display:inline-block;flex-shrink:0;pointer-events:none;vertical-align:-0.125em"
+        style="display: inline-block; flex-shrink: 0; pointer-events: none; vertical-align: -0.125em"
     >
         <title v-if="props.title">{{ props.title }}</title>
         <path fill="currentColor" :d="definition.path" />
