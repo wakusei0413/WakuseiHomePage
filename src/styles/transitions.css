@@ -1,7 +1,7 @@
 /* ========================================
-   博客转场动画 — 连续自然滚动
-   Sticky Hero + 文档流 Blog
-   ======================================== */
+    博客转场动画 — 连续自然滚动
+    Sticky Hero + 文档流 Blog
+    ======================================== */
 
 /* 页面滚动根容器 */
 .page-scroller {
@@ -57,4 +57,22 @@
     font-family: var(--font-serif);
     opacity: 0.15;
     margin: 0 0 0.5rem;
+}
+
+/* ===== View Transitions — 页面导航动画 ===== */
+
+@keyframes vt-fade-in {
+    from { opacity: 0; transform: translateY(12px); }
+}
+
+@keyframes vt-fade-out {
+    to { opacity: 0; transform: translateY(-12px); }
+}
+
+::view-transition-old(root) {
+    animation: vt-fade-out 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+::view-transition-new(root) {
+    animation: vt-fade-in 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
 }

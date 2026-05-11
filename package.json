@@ -2,17 +2,17 @@
     "name": "wakusei-homepage",
     "version": "2.0.0",
     "private": true,
-    "description": "Wakusei 个人主页 - Astro + SolidJS static site",
+    "description": "Wakusei 个人主页 - Astro + Svelte static site",
     "engines": {
         "node": ">=22.12.0",
         "npm": ">=9.6.5"
     },
     "scripts": {
         "dev": "astro dev",
-        "lint": "eslint \"src/**/*.{ts,tsx}\" \"tests/**/*.test.ts\" astro.config.mjs",
-        "lint:fix": "eslint \"src/**/*.{ts,tsx}\" \"tests/**/*.test.ts\" astro.config.mjs --fix",
-        "format": "prettier --write \"src/**/*.{ts,tsx,astro}\" \"tests/**/*.test.ts\" \"src/styles/**/*.css\" css/**/*.css astro.config.mjs tsconfig.json package.json",
-        "format:check": "prettier --check \"src/**/*.{ts,tsx,astro}\" \"tests/**/*.test.ts\" \"src/styles/**/*.css\" css/**/*.css astro.config.mjs tsconfig.json package.json",
+        "lint": "eslint \"src/**/*.{ts,svelte}\" \"tests/**/*.test.ts\" astro.config.mjs",
+        "lint:fix": "eslint \"src/**/*.{ts,svelte}\" \"tests/**/*.test.ts\" astro.config.mjs --fix",
+        "format": "prettier --write \"src/**/*.{ts,svelte,astro}\" \"tests/**/*.test.ts\" \"src/styles/**/*.css\" css/**/*.css astro.config.mjs svelte.config.js tsconfig.json package.json",
+        "format:check": "prettier --check \"src/**/*.{ts,svelte,astro}\" \"tests/**/*.test.ts\" \"src/styles/**/*.css\" css/**/*.css astro.config.mjs svelte.config.js tsconfig.json package.json",
         "build": "astro build",
         "check": "astro check",
         "serve": "npx serve dist",
@@ -26,17 +26,25 @@
         "@typescript-eslint/parser": "^7.18.0",
         "astro": "^6.2.2",
         "eslint": "^8.56.0",
+        "eslint-plugin-svelte": "^3.17.1",
         "prettier": "^3.2.0",
         "prettier-plugin-astro": "^0.14.1",
+        "prettier-plugin-svelte": "^3.5.1",
         "tsx": "^4.19.3",
         "typescript": "^5.8.3",
         "zod": "^3.24.4"
     },
     "dependencies": {
         "@astrojs/sitemap": "^3.7.2",
-        "@astrojs/solid-js": "^6.0.1",
+        "@astrojs/svelte": "^8.1.0",
         "@fortawesome/fontawesome-free": "^7.2.0",
+        "@swup/a11y-plugin": "^5.1.0",
         "@swup/astro": "^1.8.0",
-        "solid-js": "^1.9.5"
+        "@swup/head-plugin": "^2.3.1",
+        "@swup/preload-plugin": "^3.2.11",
+        "@swup/scripts-plugin": "^2.1.0",
+        "@swup/scroll-plugin": "^4.0.0",
+        "svelte": "^5.55.5",
+        "swup": "^4.9.0"
     }
 }

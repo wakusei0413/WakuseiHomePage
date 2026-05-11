@@ -1,9 +1,9 @@
 import { defineConfig } from 'astro/config';
-import solid from '@astrojs/solid-js';
+import svelte from '@astrojs/svelte';
 
 export default defineConfig({
     site: 'https://www.wakusei.top',
-    integrations: [solid()],
+    integrations: [svelte()],
     output: 'static',
     outDir: './dist',
     devToolbar: {

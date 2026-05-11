@@ -3,8 +3,7 @@
     "compilerOptions": {
         "baseUrl": ".",
         "types": ["node"],
-        "jsx": "preserve",
-        "jsxImportSource": "solid-js"
+        "jsx": "preserve"
     },
     "include": [".astro/types.d.ts", "src/**/*", "tests/**/*.ts", "astro.config.mjs"]
 }

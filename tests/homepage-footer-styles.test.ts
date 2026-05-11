@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 const componentsCss = readFileSync(join(process.cwd(), 'src', 'styles', 'components.css'), 'utf8');
-const homepageApp = readFileSync(join(process.cwd(), 'src', 'components', 'HomepageApp.tsx'), 'utf8');
+const homepageApp = readFileSync(join(process.cwd(), 'src', 'components', 'HomepageApp.svelte'), 'utf8');
 
 describe('homepage footer visibility', () => {
     it('keeps the footer logic in the component while hiding it from layout', () => {

@@ -1,29 +1,44 @@
 {
-  "env": {
-    "browser": true,
-    "es2022": true,
-    "node": true
-  },
-  "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
-  "parserOptions": {
-    "ecmaVersion": 2022,
-    "sourceType": "module",
-    "ecmaFeatures": {
-      "jsx": true
-    }
-  },
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
-  "rules": {
-    "no-undef": "off",
-    "no-console": "off",
-    "prefer-const": "warn",
-    "no-var": "error",
-    "eqeqeq": ["error", "always"],
-    "no-trailing-spaces": "error",
-    "no-multiple-empty-lines": ["error", { "max": 1 }],
-    "semi": ["error", "always"],
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
-  },
-  "ignorePatterns": ["dist", "public", "node_modules"]
+    "env": {
+        "browser": true,
+        "es2022": true,
+        "node": true
+    },
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint", "svelte"],
+    "parserOptions": {
+        "ecmaVersion": 2022,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "extraFileExtensions": [".svelte"]
+    },
+    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+    "overrides": [
+        {
+            "files": ["*.svelte"],
+            "parser": "svelte-eslint-parser",
+            "parserOptions": {
+                "parser": "@typescript-eslint/parser"
+            },
+            "rules": {
+                "no-inner-declarations": "off",
+                "prefer-const": "off",
+                "no-undef": "off"
+            }
+        }
+    ],
+    "rules": {
+        "no-undef": "off",
+        "no-console": "off",
+        "prefer-const": "warn",
+        "no-var": "error",
+        "eqeqeq": ["error", "always"],
+        "no-trailing-spaces": "error",
+        "no-multiple-empty-lines": ["error", { "max": 1 }],
+        "semi": ["error", "always"],
+        "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+    },
+    "ignorePatterns": ["dist", "public", "node_modules"]
 }

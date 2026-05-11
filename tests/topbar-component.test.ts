@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const topbarComponent = readFileSync(join(process.cwd(), 'src', 'components', 'TopBar.tsx'), 'utf-8');
+const topbarComponent = readFileSync(join(process.cwd(), 'src', 'components', 'TopBar.svelte'), 'utf-8');
 
 describe('TopBar unified navigation component', () => {
     it('renders a fixed top bar with avatar, name, and dock items', () => {
@@ -20,37 +20,32 @@ describe('TopBar unified navigation component', () => {
         assert.match(topbarComponent, /if \(typeof doc\.startViewTransition === 'function'\)/);
     });
 
-    it('supports language panel with popup portal', () => {
+    it('supports language panel with popup', () => {
         assert.match(topbarComponent, /case 'language'/);
         assert.match(topbarComponent, /toggleLanguagePanel\(\)/);
         assert.match(topbarComponent, /class="top-bar-language-popup"/);
-        assert.match(topbarComponent, /import \{ Portal \} from 'solid-js\/web'/);
     });
 
     it('uses dock lib helpers for item rendering', () => {
         assert.match(topbarComponent, /getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel/);
         assert.match(topbarComponent, /resolveDockLabel\(display, t\)/);
-        assert.match(topbarComponent, /resolveDockIcon\(display, active\(\)\)/);
-        assert.match(
-            topbarComponent,
-            /getDockItemActiveState\(item, \{ isDark: isDark\(\), activePanel: activePanel\(\) \}\)/
-        );
+        assert.match(topbarComponent, /resolveDockIcon\(display, active\)/);
     });
 
     it('supports link items with new tab option', () => {
-        assert.match(topbarComponent, /item\.openInNewTab/);
+        assert.match(topbarComponent, /openInNewTab/);
         assert.match(topbarComponent, /target="_blank"/);
         assert.match(topbarComponent, /rel="noopener noreferrer"/);
     });
 
     it('respects disabled state for dock links', () => {
-        assert.match(topbarComponent, /isDockLinkDisabled\(item\.href\)/);
+        assert.match(topbarComponent, /isDockLinkDisabled/);
         assert.match(topbarComponent, /if \(disabled\) e\.preventDefault\(\)/);
     });
 
     it('computes left opacity from scroll progress on homepage', () => {
-        assert.match(topbarComponent, /const leftOpacity = \(\) => \{/);
-        assert.match(topbarComponent, /const sp = scrollProgress\(\);/);
+        assert.match(topbarComponent, /leftOpacity = \$derived\.by/);
+        assert.match(topbarComponent, /const sp = scrollProgress/);
         assert.match(topbarComponent, /if \(sp <= 0\.15\) return 0;/);
         assert.match(topbarComponent, /if \(sp >= 0\.4\) return 1;/);
         assert.match(topbarComponent, /return \(sp - 0\.15\) \/ 0\.25;/);
@@ -58,7 +53,7 @@ describe('TopBar unified navigation component', () => {
 
     it('dispatches custom event on mobile avatar click', () => {
         assert.match(topbarComponent, /wakusei:open-mobile-menu/);
-        assert.match(topbarComponent, /window\.dispatchEvent\(new CustomEvent\('wakusei:open-mobile-menu'\)\)/);
+        assert.match(topbarComponent, /new CustomEvent\('wakusei:open-mobile-menu'\)/);
     });
 
     it('accepts initialIsHomePage prop for SSR snapshot', () => {
@@ -66,7 +61,7 @@ describe('TopBar unified navigation component', () => {
     });
 
     it('has outside click cleanup for language popup', () => {
-        assert.match(topbarComponent, /let outsideClickCleanup: \(\(\) => void\) \| undefined/);
+        assert.match(topbarComponent, /outsideClickCleanup/);
         assert.match(topbarComponent, /setupOutsideClick\(\)/);
         assert.match(topbarComponent, /document\.addEventListener\('click', handler\)/);
     });

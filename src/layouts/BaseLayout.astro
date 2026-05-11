@@ -8,7 +8,8 @@ import '../styles/dock.css';
 import '../styles/topbar.css';
 import '../styles/footer.css';
 
-import { SiteShell } from '../components/SiteShell';
+import { ClientRouter } from 'astro:transitions';
+import SiteShell from '../components/SiteShell.svelte';
 import { siteConfig } from '../data/site';
 
 interface Props {
@@ -75,6 +76,7 @@ const isHomePage = Astro.url.pathname === '/';
         <noscript>
             <link href={googleFontsUrl} rel="stylesheet" />
         </noscript>
+        <ClientRouter />
         <script is:inline define:vars={{ darkBg: DARK_THEME_BG }}>
             (function () {
                 var theme = localStorage.getItem('theme');
@@ -92,8 +94,102 @@ const isHomePage = Astro.url.pathname === '/';
         </script>
     </head>
     <body style={!isHomePage ? 'padding-top: 72px; overflow: auto; height: auto' : undefined}>
+        <div id="globalLoadingOverlay" class="loading-overlay">
+            <div class="loading-panel">
+                <div class="loading-spinner"></div>
+                <div id="globalLoadingText" class="loading-text">{siteConfig.loading.texts[0]}</div>
+                <div class="loading-progress">
+                    <div id="globalLoadingBar" class="loading-bar" style="width: 0%"></div>
+                </div>
+                <div id="globalLoadingPercent" class="loading-percent">0%</div>
+            </div>
+        </div>
+        <script is:inline define:vars={{ loadingTexts: siteConfig.loading.texts }}>
+            (function () {
+                var storageKey = '__wakusei_skip_entry_loader';
+                var overlay = document.getElementById('globalLoadingOverlay');
+                var text = document.getElementById('globalLoadingText');
+                var bar = document.getElementById('globalLoadingBar');
+                var percentLabel = document.getElementById('globalLoadingPercent');
+                var skipEntryLoader = sessionStorage.getItem('__wakusei_skip_entry_loader') === 'true';
+                var progress = 0;
+                var textIndex = 0;
+                var pageLoaded = false;
+                var homepageReady = false;
+                var hidden = false;
+                var progressTimer;
+                var textTimer;
+
+                function setProgress(value) {
+                    progress = Math.max(progress, Math.min(100, Math.round(value)));
+                    if (bar) bar.style.width = progress + '%';
+                    if (percentLabel) percentLabel.textContent = progress + '%';
+                }
+
+                function hideOverlay() {
+                    if (hidden) return;
+                    hidden = true;
+                    setProgress(100);
+                    window.setTimeout(function () {
+                        if (overlay) overlay.classList.add('hidden');
+                        window.clearInterval(progressTimer);
+                        window.clearInterval(textTimer);
+                        sessionStorage.removeItem(storageKey);
+                    }, 250);
+                }
+
+                function shouldWaitForHomepage() {
+                    return !!document.querySelector('.page-scroller') && !homepageReady;
+                }
+
+                function maybeHideOverlay() {
+                    if (!pageLoaded || shouldWaitForHomepage()) return;
+                    hideOverlay();
+                }
+
+                if (!overlay) return;
+
+                if (skipEntryLoader) {
+                    overlay.classList.add('hidden');
+                    sessionStorage.removeItem('__wakusei_skip_entry_loader');
+                    return;
+                }
+
+                window.addEventListener('wakusei:homepage-ready', function () {
+                    homepageReady = true;
+                    maybeHideOverlay();
+                });
+
+                progressTimer = window.setInterval(function () {
+                    if (progress < 90) setProgress(progress + 3);
+                }, 100);
+
+                if (loadingTexts.length > 1 && text) {
+                    textTimer = window.setInterval(function () {
+                        textIndex = (textIndex + 1) % loadingTexts.length;
+                        text.textContent = loadingTexts[textIndex];
+                    }, 900);
+                }
+
+                if (document.readyState === 'complete') {
+                    pageLoaded = true;
+                    maybeHideOverlay();
+                } else {
+                    window.addEventListener(
+                        'load',
+                        function () {
+                            pageLoaded = true;
+                            maybeHideOverlay();
+                        },
+                        { once: true }
+                    );
+                }
+            })();
+        </script>
         <slot />
-        <SiteShell client:load initialIsHomePage={isHomePage} />
+        <div transition:persist="site-shell">
+            <SiteShell client:load initialIsHomePage={isHomePage} />
+        </div>
         <noscript>
             <style>
                 .container {
@@ -105,5 +201,31 @@ const isHomePage = Astro.url.pathname === '/';
                 }
             </style>
         </noscript>
+        <script is:inline>
+            document.addEventListener('astro:before-swap', (event) => {
+                sessionStorage.setItem('__wakusei_skip_entry_loader', 'true');
+                const incomingOverlay = event.newDocument.querySelector('#globalLoadingOverlay');
+                if (incomingOverlay) incomingOverlay.classList.add('hidden');
+            });
+
+            document.addEventListener('astro:after-swap', () => {
+                const isHome = !!document.querySelector('.page-scroller');
+                const h = document.documentElement;
+                const b = document.body;
+                if (isHome) {
+                    h.style.overflow = '';
+                    h.style.height = '';
+                    b.style.overflow = '';
+                    b.style.height = '';
+                    b.style.paddingTop = '';
+                } else {
+                    h.style.overflow = 'auto';
+                    h.style.height = 'auto';
+                    b.style.overflow = 'auto';
+                    b.style.height = 'auto';
+                    b.style.paddingTop = '72px';
+                }
+            });
+        </script>
     </body>
 </html>

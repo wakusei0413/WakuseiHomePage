@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
-const homepageApp = readFileSync(join(process.cwd(), 'src', 'components', 'HomepageApp.tsx'), 'utf8');
+const homepageApp = readFileSync(join(process.cwd(), 'src', 'components', 'HomepageApp.svelte'), 'utf8');
 const layoutCss = readFileSync(join(process.cwd(), 'src', 'styles', 'layout.css'), 'utf8');
 const responsiveCss = readFileSync(join(process.cwd(), 'src', 'styles', 'responsive.css'), 'utf8');
 

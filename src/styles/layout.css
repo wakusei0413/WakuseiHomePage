@@ -8,19 +8,16 @@
     flex-wrap: nowrap;
     height: 100vh;
     overflow: hidden;
-    transition:
-        filter 0.5s ease-out,
-        opacity 0.5s ease-out;
     opacity: 1;
     visibility: visible;
-    filter: blur(30px);
-    pointer-events: none;
+    filter: none;
+    pointer-events: auto;
 }
 
 .container.visible {
     opacity: 1;
     visibility: visible;
-    filter: blur(0);
+    filter: none;
     pointer-events: auto;
 }
 
