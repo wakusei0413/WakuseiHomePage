@@ -4,10 +4,10 @@
     import type { Locale } from '../data/i18n';
     import { getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel } from '../lib/dock';
     import { t, setLocale, getLocale } from '../lib/i18n.svelte';
-    import { applyTheme, getCurrentTheme, getStoredTheme } from '../lib/i18n';
+    import { getIsDark, toggleTheme } from '../lib/theme.svelte';
     import { siteConfig } from '../data/site';
 
-    let isDark = $state(false);
+    let isDark = $derived(getIsDark());
     let activePanel = $state<string | null>(null);
     let open = $state(false);
 
@@ -34,17 +34,8 @@
         const handleOpen = () => (open = true);
         window.addEventListener('wakusei:open-mobile-menu', handleOpen);
 
-        isDark = getCurrentTheme() === 'dark';
-
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleMediaChange = (e: MediaQueryListEvent) => {
-            if (!getStoredTheme()) isDark = e.matches;
-        };
-        mediaQuery.addEventListener('change', handleMediaChange);
-
         return () => {
             window.removeEventListener('wakusei:open-mobile-menu', handleOpen);
-            mediaQuery.removeEventListener('change', handleMediaChange);
             if (outsideClickCleanup) outsideClickCleanup();
         };
     });
@@ -67,17 +58,6 @@
             default:
                 console.warn(`[MobileDockSidebar] Unsupported panel: "${panel}".`);
                 activePanel = null;
-        }
-    }
-
-    function toggleTheme() {
-        const newTheme = isDark ? 'light' : 'dark';
-        isDark = newTheme === 'dark';
-        const doc = document as Document & { startViewTransition?: (callback: () => void) => unknown };
-        if (typeof doc.startViewTransition === 'function') {
-            doc.startViewTransition(() => applyTheme(newTheme));
-        } else {
-            applyTheme(newTheme);
         }
     }
 
@@ -212,8 +192,20 @@
                         class:disabled
                         aria-label={label}
                         onclick={(e) => {
-                            if (disabled) e.preventDefault();
-                            close();
+                            if (disabled) {
+                                e.preventDefault();
+                                close();
+                                return;
+                            }
+                            const currentPath = window.location.pathname;
+                            const targetPath = item.href;
+                            if (currentPath === targetPath || currentPath === targetPath + '/') {
+                                e.preventDefault();
+                                close();
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            } else {
+                                close();
+                            }
                         }}
                     >
                         <Icon name={iconName} class="sidebar-menu-icon" />

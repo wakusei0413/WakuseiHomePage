@@ -25,7 +25,9 @@
 </script>
 
 <div class="clock">{formatTimeString(now, config.format)}</div>
-<div class="weekday">{dateParts.weekday}</div>
-{#if dateParts.dateDisplay}
+{#if config.showWeekday}
+    <div class="weekday">{dateParts.weekday}</div>
+{/if}
+{#if config.showDate && dateParts.dateDisplay}
     <div class="date-display">{dateParts.dateDisplay}</div>
 {/if}

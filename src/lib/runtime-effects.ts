@@ -4,7 +4,18 @@ export function enableContentProtection(enabled: boolean) {
     }
 
     document.body.classList.add('no-copy');
-    const preventDefault = (event: Event) => event.preventDefault();
+    const isEditableTarget = (target: EventTarget | null) => {
+        const element = target as HTMLElement | null;
+        if (!element) return false;
+        const tagName = element.tagName;
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tagName)) return true;
+        return element.isContentEditable;
+    };
+
+    const preventDefault = (event: Event) => {
+        if (isEditableTarget(event.target)) return;
+        event.preventDefault();
+    };
     const mouseDownHandler = (event: Event) => {
         const target = event.target as HTMLElement | null;
         const tagName = target?.tagName;

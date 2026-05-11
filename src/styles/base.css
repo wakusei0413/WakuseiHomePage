@@ -143,10 +143,9 @@ html {
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    height: 100%;
-    overflow: hidden;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    transition: none;
 }
 
 html::-webkit-scrollbar {
@@ -162,11 +161,41 @@ body {
     color: var(--fg, #0a0a0a);
     background-color: #fffef7;
     background-color: var(--bg, #fffef7);
-    height: 100%;
-    overflow: hidden;
     transition:
         background-color var(--transition-normal),
         color var(--transition-normal);
+}
+
+html.is-home {
+    height: 100%;
+
+
+html::-webkit-scrollbar {
+    display: none;
+}
+
+body {
+    font-family: 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    font-family: var(--font-serif, 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #0a0a0a;
+    color: var(--fg, #0a0a0a);
+    background-color: #fffef7;
+    background-color: var(--bg, #fffef7);
+    transition:
+        background-color var(--transition-normal),
+        color var(--transition-normal);
+}
+
+html.is-home {
+    height: 100%;
+    overflow: hidden;
+}
+
+body.is-home {
+    height: 100%;
+    overflow: hidden;
 }
 
 *::-webkit-scrollbar {

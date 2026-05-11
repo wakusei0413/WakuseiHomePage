@@ -17,7 +17,7 @@ describe('TopBar unified navigation component', () => {
     it('supports theme toggle via dock action items', () => {
         assert.match(topbarComponent, /case 'toggleTheme'/);
         assert.match(topbarComponent, /toggleTheme\(\)/);
-        assert.match(topbarComponent, /if \(typeof doc\.startViewTransition === 'function'\)/);
+        assert.match(topbarComponent, /import.*toggleTheme.*from/);
     });
 
     it('supports language panel with popup', () => {
@@ -40,20 +40,25 @@ describe('TopBar unified navigation component', () => {
 
     it('respects disabled state for dock links', () => {
         assert.match(topbarComponent, /isDockLinkDisabled/);
-        assert.match(topbarComponent, /if \(disabled\) e\.preventDefault\(\)/);
+        assert.match(topbarComponent, /if \(disabled\)/);
+        assert.match(topbarComponent, /e\.preventDefault\(\)/);
     });
 
-    it('computes left opacity from scroll progress on homepage', () => {
-        assert.match(topbarComponent, /leftOpacity = \$derived\.by/);
-        assert.match(topbarComponent, /const sp = scrollProgress/);
-        assert.match(topbarComponent, /if \(sp <= 0\.15\) return 0;/);
-        assert.match(topbarComponent, /if \(sp >= 0\.4\) return 1;/);
-        assert.match(topbarComponent, /return \(sp - 0\.15\) \/ 0\.25;/);
+    it('reuses expansion progress for left-side transition timing', () => {
+        assert.match(topbarComponent, /let expansionProgress = \$derived\.by/);
+        assert.match(topbarComponent, /const raw = \(sp - 0\.02\) \/ 0\.43;/);
+        assert.match(topbarComponent, /const p = expansionProgress;/);
+        assert.match(topbarComponent, /const x = \(1 - expansionProgress\) \* 18;/);
     });
 
     it('dispatches custom event on mobile avatar click', () => {
         assert.match(topbarComponent, /wakusei:open-mobile-menu/);
         assert.match(topbarComponent, /new CustomEvent\('wakusei:open-mobile-menu'\)/);
+    });
+
+    it('uses anchor navigation for desktop home click to preserve transitions', () => {
+        assert.match(topbarComponent, /href="\/"/);
+        assert.doesNotMatch(topbarComponent, /window\.location\.href = '\/'/);
     });
 
     it('accepts initialIsHomePage prop for SSR snapshot', () => {

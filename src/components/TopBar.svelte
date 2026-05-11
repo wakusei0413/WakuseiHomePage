@@ -4,18 +4,20 @@
     import type { Locale } from '../data/i18n';
     import { getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel } from '../lib/dock';
     import { t, setLocale, getLocale } from '../lib/i18n.svelte';
-    import { applyTheme, getCurrentTheme, getStoredTheme } from '../lib/i18n';
+    import { isHomePageDocument, subscribeHomePageStateChange } from '../lib/homepage-context';
+    import { getIsDark, initTheme, toggleTheme } from '../lib/theme.svelte';
     import { siteConfig } from '../data/site';
 
     let { initialIsHomePage }: { initialIsHomePage: boolean } = $props();
 
-    let isDark = $state(false);
+    let isDark = $derived(getIsDark());
     let activePanel = $state<string | null>(null);
 
     let barRef: HTMLDivElement | undefined = $state();
     let popupRef: HTMLDivElement | undefined = $state();
     let languageBtnRef: HTMLButtonElement | undefined = $state();
     let outsideClickCleanup: (() => void) | undefined;
+    let magnifyCleanup: (() => void) | undefined;
 
     let isMobile = $state(typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
     let scrollProgress = $state(0);
@@ -23,6 +25,40 @@
 
     let scrollerEl: HTMLElement | null = null;
     let scrollHandler: ((_e: Event) => void) | undefined;
+    let progressAnimationId: number | null = null;
+
+    function stopProgressAnimation() {
+        if (progressAnimationId !== null) {
+            cancelAnimationFrame(progressAnimationId);
+            progressAnimationId = null;
+        }
+    }
+
+    function animateScrollProgressTo(target: number) {
+        stopProgressAnimation();
+        const start = scrollProgress;
+        const delta = target - start;
+        if (Math.abs(delta) < 0.001) {
+            scrollProgress = target;
+            return;
+        }
+
+        const duration = 460;
+        const startTime = performance.now();
+
+        const tick = (now: number) => {
+            const t = Math.min((now - startTime) / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 4);
+            scrollProgress = start + delta * eased;
+            if (t >= 1) {
+                progressAnimationId = null;
+                return;
+            }
+            progressAnimationId = requestAnimationFrame(tick);
+        };
+
+        progressAnimationId = requestAnimationFrame(tick);
+    }
 
     let topBarOpacity = $derived.by(() => {
         if (!isHomePage) return 1;
@@ -57,78 +93,88 @@
         return `transform: translateX(calc(var(--left-panel-width, 500px) * ${p - 1}))`;
     });
 
-    let leftOpacity = $derived.by(() => {
-        if (!isHomePage) return 1;
-        if (isMobile) return 1;
-        const sp = scrollProgress;
-        if (sp <= 0.15) return 0;
-        if (sp >= 0.4) return 1;
-        return (sp - 0.15) / 0.25;
-    });
-
     let leftStyle = $derived.by(() => {
-        const p = leftOpacity;
-        if (p >= 1) return '';
-        return `opacity: ${p}; transform: translateY(${(1 - p) * 8}px)`;
+        if (!isHomePage || isMobile) return '';
+        const p = expansionProgress;
+        const x = (1 - expansionProgress) * 18;
+        if (p >= 1 && x <= 0.01) return '';
+        return `opacity: ${p}; transform: translateX(${-x}px)`;
     });
 
-    function bindScroll() {
+    function bindScroll(animateProgress = false) {
         if (scrollHandler && scrollerEl) {
             scrollerEl.removeEventListener('scroll', scrollHandler);
             scrollHandler = undefined;
         }
-        scrollerEl = document.querySelector('.page-scroller');
+        scrollerEl = isHomePageDocument() ? (document.querySelector('.page-scroller') as HTMLElement | null) : null;
         if (scrollerEl) {
-            isHomePage = true;
-            scrollProgress = Math.min(scrollerEl.scrollTop / window.innerHeight, 1);
+            const nextProgress = Math.min(scrollerEl.scrollTop / window.innerHeight, 1);
+            if (animateProgress) {
+                animateScrollProgressTo(nextProgress);
+            } else {
+                stopProgressAnimation();
+                scrollProgress = nextProgress;
+            }
             const handleScroll = (_e: Event) => {
+                stopProgressAnimation();
                 scrollProgress = Math.min(scrollerEl!.scrollTop / window.innerHeight, 1);
             };
             scrollerEl.addEventListener('scroll', handleScroll, { passive: true });
             scrollHandler = handleScroll;
         } else {
-            isHomePage = false;
-            scrollProgress = 1;
+            if (animateProgress) {
+                animateScrollProgressTo(1);
+            } else {
+                stopProgressAnimation();
+                scrollProgress = 1;
+            }
         }
     }
 
-    onMount(() => {
-        bindScroll();
-        window.addEventListener('wakusei:homepage-mounted', bindScroll);
-        document.addEventListener('astro:after-swap', bindScroll);
-
-        const theme = getCurrentTheme();
-        isDark = theme === 'dark';
-        applyTheme(theme);
-
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleMediaTheme = (e: MediaQueryListEvent) => {
-            if (!getStoredTheme()) {
-                const newTheme = e.matches ? 'dark' : 'light';
-                isDark = newTheme === 'dark';
-                applyTheme(newTheme);
-            }
-        };
-        mediaQuery.addEventListener('change', handleMediaTheme);
-
+    function setupViewportMediaSync() {
         const mql = window.matchMedia('(max-width: 900px)');
         const handleMediaChange = (event: MediaQueryListEvent) => {
             isMobile = event.matches;
         };
         mql.addEventListener('change', handleMediaChange);
 
-        if (!isMobile && isHomePage) {
-            setupIconMagnifyHover();
-        }
+        return () => mql.removeEventListener('change', handleMediaChange);
+    }
+
+    onMount(() => {
+        initTheme();
+        const cleanups: Array<() => void> = [];
+        bindScroll(false);
+        cleanups.push(setupViewportMediaSync());
+        cleanups.push(
+            subscribeHomePageStateChange((next) => {
+                const stateChanged = next !== isHomePage;
+                isHomePage = next;
+                bindScroll(stateChanged);
+            })
+        );
 
         return () => {
-            window.removeEventListener('wakusei:homepage-mounted', bindScroll);
-            document.removeEventListener('astro:after-swap', bindScroll);
+            cleanups.forEach((cleanup) => cleanup());
+            stopProgressAnimation();
             if (scrollHandler && scrollerEl) scrollerEl.removeEventListener('scroll', scrollHandler);
             if (outsideClickCleanup) outsideClickCleanup();
-            mediaQuery.removeEventListener('change', handleMediaTheme);
-            mql.removeEventListener('change', handleMediaChange);
+            if (magnifyCleanup) magnifyCleanup();
         };
+    });
+
+    $effect(() => {
+        const mobile = isMobile;
+        const homePage = isHomePage;
+        const bar = barRef;
+
+        if (magnifyCleanup) {
+            magnifyCleanup();
+            magnifyCleanup = undefined;
+        }
+
+        if (!bar || mobile || !homePage) return;
+        magnifyCleanup = setupIconMagnifyHover();
     });
 
     function handleAction(action: string) {
@@ -141,24 +187,16 @@
         }
     }
 
-    function handlePanel(panel: string) {
+    function handlePanel(panel: string, trigger?: HTMLButtonElement) {
+        if (panel === 'language' && trigger) {
+            languageBtnRef = trigger;
+        }
         switch (panel) {
             case 'language':
                 toggleLanguagePanel();
                 break;
             default:
                 console.warn(`[TopBar] Unsupported panel: "${panel}".`);
-        }
-    }
-
-    function toggleTheme() {
-        const newTheme = isDark ? 'light' : 'dark';
-        isDark = newTheme === 'dark';
-        const doc = document as Document & { startViewTransition?: (callback: () => void) => unknown };
-        if (typeof doc.startViewTransition === 'function') {
-            doc.startViewTransition(() => applyTheme(newTheme));
-        } else {
-            applyTheme(newTheme);
         }
     }
 
@@ -245,6 +283,18 @@
         };
         el.addEventListener('mousemove', handleMouseMove);
         el.addEventListener('mouseleave', handleMouseLeave);
+
+        return () => {
+            if (frameId !== null) {
+                cancelAnimationFrame(frameId);
+                frameId = null;
+            }
+            items.forEach((item) => {
+                item.style.transform = '';
+            });
+            el.removeEventListener('mousemove', handleMouseMove);
+            el.removeEventListener('mouseleave', handleMouseLeave);
+        };
     }
 
     function getLabel(display: { text?: string; i18nKey?: string }) {
@@ -265,16 +315,20 @@
 </script>
 
 <div bind:this={barRef} class="top-bar" role="toolbar" aria-label="Top navigation" style={barStyle}>
-    <div
+    <a
         class="top-bar-left"
+        href="/"
         style={leftStyle}
-        onclick={() => {
+        onclick={(e) => {
             if (isMobile) {
+                e.preventDefault();
                 window.dispatchEvent(new CustomEvent('wakusei:open-mobile-menu'));
             } else {
                 const s = document.querySelector('.page-scroller');
-                if (s) s.scrollTo({ top: 0, behavior: 'smooth' });
-                else window.location.href = '/';
+                if (s) {
+                    e.preventDefault();
+                    s.scrollTo({ top: 0, behavior: 'smooth' });
+                }
             }
         }}
         role={isMobile ? 'button' : undefined}
@@ -282,7 +336,7 @@
     >
         <img class="top-bar-avatar" src={siteConfig.profile.avatar} alt="" width="40" height="40" />
         <span class="top-bar-name">{siteConfig.profile.name}</span>
-    </div>
+    </a>
 
     <div class="top-bar-right" style={rightStyle}>
         {#each siteConfig.dock.items as item}
@@ -308,11 +362,10 @@
                     </button>
                 {:else if item.type === 'panel'}
                     <button
-                        bind:this={languageBtnRef}
                         class="top-bar-dock-item"
                         class:active
                         class:has-text={mode !== 'icon'}
-                        onclick={() => handlePanel(item.panel)}
+                        onclick={(event) => handlePanel(item.panel, event.currentTarget as HTMLButtonElement)}
                         title={label}
                         aria-label={label}
                     >
@@ -343,7 +396,16 @@
                             title={label}
                             aria-label={label}
                             onclick={(e) => {
-                                if (disabled) e.preventDefault();
+                                if (disabled) {
+                                    e.preventDefault();
+                                    return;
+                                }
+                                const currentPath = window.location.pathname;
+                                const targetPath = item.href;
+                                if (currentPath === targetPath || currentPath === targetPath + '/') {
+                                    e.preventDefault();
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }
                             }}
                         >
                             {#if mode !== 'text'}<Icon name={iconClass} />{/if}

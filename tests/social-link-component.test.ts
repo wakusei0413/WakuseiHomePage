@@ -63,7 +63,7 @@ describe('SocialLinks component interactions', () => {
         assert.match(socialLinksComponent, /Array\.from\(\{ length: ITEMS_PER_PAGE - currentLinks\.length \}\)/);
     });
 
-    it('drives discrete slide animation when changing pages', () => {
+    it('drives fade swap animation when changing pages', () => {
         assert.match(socialLinksComponent, /let transitionDirection = \$state/);
         assert.match(socialLinksComponent, /let animationKey = \$state\(0\);/);
         assert.match(socialLinksComponent, /function showPage/);
@@ -72,8 +72,7 @@ describe('SocialLinks component interactions', () => {
         assert.match(socialLinksComponent, /data-page-key=\{animationKey\}/);
         assert.match(socialLinksComponent, /animationKey % 2 === 1/);
         assert.match(socialLinksComponent, /onanimationend=\{\(\) => \(transitionDirection = null\)\}/);
-        assert.match(socialLinksComponent, /is-slide-next/);
-        assert.match(socialLinksComponent, /is-slide-prev/);
+        assert.match(socialLinksComponent, /is-swap-fade/);
     });
 
     it('exposes current page state for pagination dots', () => {

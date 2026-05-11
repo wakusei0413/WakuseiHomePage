@@ -186,8 +186,7 @@
             class="social-links-page"
             data-page-key={animationKey}
             onanimationend={() => (transitionDirection = null)}
-            class:is-slide-next={transitionDirection === 'next'}
-            class:is-slide-prev={transitionDirection === 'prev'}
+            class:is-swap-fade={transitionDirection !== null}
             class:is-animation-alt={animationKey % 2 === 1}
         >
             {#each currentLinks as link, index}

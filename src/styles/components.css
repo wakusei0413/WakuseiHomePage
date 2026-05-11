@@ -1163,20 +1163,12 @@
     will-change: transform, opacity, filter;
 }
 
-.social-links-page.is-slide-next {
-    animation: social-page-slide-next 0.34s var(--curve-delicate);
+.social-links-page.is-swap-fade {
+    animation: social-page-fade 0.28s var(--curve-delicate);
 }
 
-.social-links-page.is-slide-next.is-animation-alt {
-    animation: social-page-slide-next-alt 0.34s var(--curve-delicate);
-}
-
-.social-links-page.is-slide-prev {
-    animation: social-page-slide-prev 0.34s var(--curve-delicate);
-}
-
-.social-links-page.is-slide-prev.is-animation-alt {
-    animation: social-page-slide-prev-alt 0.34s var(--curve-delicate);
+.social-links-page.is-swap-fade.is-animation-alt {
+    animation: social-page-fade-alt 0.28s var(--curve-delicate);
 }
 
 .social-links-page .social-link-slot {
@@ -1199,11 +1191,11 @@
     aspect-ratio: 1;
 }
 
-@keyframes social-page-slide-next {
+@keyframes social-page-fade {
     from {
         opacity: 0;
-        transform: translate3d(22px, 0, 0);
-        filter: blur(2px);
+        transform: translate3d(0, 0, 0);
+        filter: blur(1px);
     }
 
     to {
@@ -1213,39 +1205,11 @@
     }
 }
 
-@keyframes social-page-slide-next-alt {
+@keyframes social-page-fade-alt {
     from {
         opacity: 0;
-        transform: translate3d(22px, 0, 0);
-        filter: blur(2px);
-    }
-
-    to {
-        opacity: 1;
         transform: translate3d(0, 0, 0);
-        filter: blur(0);
-    }
-}
-
-@keyframes social-page-slide-prev {
-    from {
-        opacity: 0;
-        transform: translate3d(-22px, 0, 0);
-        filter: blur(2px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translate3d(0, 0, 0);
-        filter: blur(0);
-    }
-}
-
-@keyframes social-page-slide-prev-alt {
-    from {
-        opacity: 0;
-        transform: translate3d(-22px, 0, 0);
-        filter: blur(2px);
+        filter: blur(1px);
     }
 
     to {
@@ -1256,10 +1220,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .social-links-page.is-slide-next,
-    .social-links-page.is-slide-next.is-animation-alt,
-    .social-links-page.is-slide-prev.is-animation-alt,
-    .social-links-page.is-slide-prev {
+    .social-links-page.is-swap-fade,
+    .social-links-page.is-swap-fade.is-animation-alt {
         animation: none;
     }
 }

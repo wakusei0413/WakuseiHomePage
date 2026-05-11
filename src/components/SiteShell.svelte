@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { siteConfig } from '../data/site';
+    import { subscribeHomePageStateChange } from '../lib/homepage-context';
     import Footer from './Footer.svelte';
     import MobileDockSidebar from './MobileDockSidebar.svelte';
     import TopBar from './TopBar.svelte';
@@ -9,17 +10,13 @@
 
     let isHomePage = $state(initialIsHomePage);
 
-    function checkHomePage() {
-        isHomePage = document.querySelector('.page-scroller') !== null;
-    }
-
     onMount(() => {
-        checkHomePage();
-        window.addEventListener('wakusei:homepage-mounted', checkHomePage);
-        document.addEventListener('astro:after-swap', checkHomePage);
+        const cleanup = subscribeHomePageStateChange((next) => {
+            isHomePage = next;
+        });
+
         return () => {
-            window.removeEventListener('wakusei:homepage-mounted', checkHomePage);
-            document.removeEventListener('astro:after-swap', checkHomePage);
+            cleanup();
         };
     });
 </script>

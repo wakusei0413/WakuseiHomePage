@@ -82,15 +82,11 @@ describe('social link interaction styles', () => {
         );
     });
 
-    it('uses discrete page animations instead of exposing adjacent pages', () => {
-        assert.match(componentsCss, /\.social-links-page\.is-slide-next\s*\{/);
-        assert.match(componentsCss, /\.social-links-page\.is-slide-next\.is-animation-alt\s*\{/);
-        assert.match(componentsCss, /\.social-links-page\.is-slide-prev\s*\{/);
-        assert.match(componentsCss, /\.social-links-page\.is-slide-prev\.is-animation-alt\s*\{/);
-        assert.match(componentsCss, /@keyframes social-page-slide-next/);
-        assert.match(componentsCss, /@keyframes social-page-slide-next-alt/);
-        assert.match(componentsCss, /@keyframes social-page-slide-prev/);
-        assert.match(componentsCss, /@keyframes social-page-slide-prev-alt/);
+    it('uses fade swap animations instead of exposing adjacent pages', () => {
+        assert.match(componentsCss, /\.social-links-page\.is-swap-fade\s*\{/);
+        assert.match(componentsCss, /\.social-links-page\.is-swap-fade\.is-animation-alt\s*\{/);
+        assert.match(componentsCss, /@keyframes social-page-fade/);
+        assert.match(componentsCss, /@keyframes social-page-fade-alt/);
         assert.doesNotMatch(componentsCss, /scroll-snap-type:\s*x mandatory/);
         assert.doesNotMatch(componentsCss, /overflow-x:\s*auto/);
     });

@@ -40,7 +40,7 @@ const isHomePage = Astro.url.pathname === '/';
 ---
 
 <!doctype html>
-<html lang={siteConfig.lang} style={!isHomePage ? 'overflow: auto; height: auto' : undefined}>
+<html lang={siteConfig.lang} class:list={[isHomePage && 'is-home']}>
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -93,7 +93,7 @@ const isHomePage = Astro.url.pathname === '/';
             })();
         </script>
     </head>
-    <body style={!isHomePage ? 'padding-top: 72px; overflow: auto; height: auto' : undefined}>
+    <body class:list={[isHomePage && 'is-home']}>
         <div id="globalLoadingOverlay" class="loading-overlay">
             <div class="loading-panel">
                 <div class="loading-spinner"></div>
@@ -209,21 +209,16 @@ const isHomePage = Astro.url.pathname === '/';
             });
 
             document.addEventListener('astro:after-swap', () => {
+                sessionStorage.removeItem('__wakusei_skip_entry_loader');
                 const isHome = !!document.querySelector('.page-scroller');
                 const h = document.documentElement;
                 const b = document.body;
                 if (isHome) {
-                    h.style.overflow = '';
-                    h.style.height = '';
-                    b.style.overflow = '';
-                    b.style.height = '';
-                    b.style.paddingTop = '';
+                    h.classList.add('is-home');
+                    b.classList.add('is-home');
                 } else {
-                    h.style.overflow = 'auto';
-                    h.style.height = 'auto';
-                    b.style.overflow = 'auto';
-                    b.style.height = 'auto';
-                    b.style.paddingTop = '72px';
+                    h.classList.remove('is-home');
+                    b.classList.remove('is-home');
                 }
             });
         </script>
