@@ -6,7 +6,7 @@ export default defineConfig({
     integrations: [
         vue({
             appEntrypoint: '/src/pages/_app',
-            devtools: true
+            devtools: false
         })
     ],
     output: 'static',
