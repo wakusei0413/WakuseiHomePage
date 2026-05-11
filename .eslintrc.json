@@ -5,27 +5,32 @@
         "node": true
     },
     "parser": "@typescript-eslint/parser",
-    "plugins": ["@typescript-eslint", "svelte"],
+    "plugins": ["@typescript-eslint"],
     "parserOptions": {
         "ecmaVersion": 2022,
         "sourceType": "module",
         "ecmaFeatures": {
             "jsx": true
         },
-        "extraFileExtensions": [".svelte"]
+        "extraFileExtensions": [".vue"]
     },
-    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:vue/vue3-recommended"
+    ],
     "overrides": [
         {
-            "files": ["*.svelte"],
-            "parser": "svelte-eslint-parser",
+            "files": ["*.vue"],
+            "parser": "vue-eslint-parser",
             "parserOptions": {
                 "parser": "@typescript-eslint/parser"
             },
             "rules": {
                 "no-inner-declarations": "off",
                 "prefer-const": "off",
-                "no-undef": "off"
+                "no-undef": "off",
+                "vue/multi-word-component-names": "off"
             }
         }
     ],

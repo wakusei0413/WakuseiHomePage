@@ -1,9 +1,14 @@
 import { defineConfig } from 'astro/config';
-import svelte from '@astrojs/svelte';
+import vue from '@astrojs/vue';
 
 export default defineConfig({
     site: 'https://www.wakusei.top',
-    integrations: [svelte()],
+    integrations: [
+        vue({
+            appEntrypoint: '/src/pages/_app',
+            devtools: true
+        })
+    ],
     output: 'static',
     outDir: './dist',
     devToolbar: {

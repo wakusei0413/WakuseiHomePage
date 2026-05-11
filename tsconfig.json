@@ -5,5 +5,5 @@
         "types": ["node"],
         "jsx": "preserve"
     },
-    "include": [".astro/types.d.ts", "src/**/*", "tests/**/*.ts", "astro.config.mjs"]
+    "include": [".astro/types.d.ts", "src/**/*", "tests/**/*.ts", "astro.config.mjs", "vitest.config.ts"]
 }
