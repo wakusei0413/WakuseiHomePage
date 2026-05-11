@@ -52,7 +52,9 @@ describe('SocialLinks component interactions', () => {
     });
 
     it('renders only the current social page with stable color indexes', () => {
-        expect(socialLinksComponent).toMatch(/currentLinks = computed\(\(\) => pages\.value\[currentPage\.value\] \?\? \[\]\)/);
+        expect(socialLinksComponent).toMatch(
+            /currentLinks = computed\(\(\) => pages\.value\[currentPage\.value\] \?\? \[\]\)/
+        );
         expect(socialLinksComponent).toMatch(/class="social-links-wrapper"/);
         expect(socialLinksComponent).toMatch(/id="socialLinksPage"/);
         expect(socialLinksComponent).toMatch(/ITEMS_PER_PAGE/);
@@ -65,7 +67,9 @@ describe('SocialLinks component interactions', () => {
         expect(socialLinksComponent).toMatch(/const transitionDirection = ref/);
         expect(socialLinksComponent).toMatch(/const animationKey = ref\(0\);/);
         expect(socialLinksComponent).toMatch(/function showPage/);
-        expect(socialLinksComponent).toMatch(/transitionDirection\.value = target > currentPage\.value \? 'next' : 'prev';/);
+        expect(socialLinksComponent).toMatch(
+            /transitionDirection\.value = target > currentPage\.value \? 'next' : 'prev';/
+        );
         expect(socialLinksComponent).toMatch(/animationKey\.value \+= 1;/);
         expect(socialLinksComponent).toMatch(/:data-page-key="animationKey"/);
         expect(socialLinksComponent).toMatch(/animationKey % 2 === 1/);
