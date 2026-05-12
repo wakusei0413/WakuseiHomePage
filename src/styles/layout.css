@@ -2,16 +2,17 @@
    粗放主义 - 布局层：两栏布局、面板结构
    ======================================== */
 
-/* ===== 主容器：两栏布局 ===== */
+/* ===== 主容器：单栏布局 ===== */
 .container {
     display: flex;
-    flex-wrap: nowrap;
+    flex-direction: column;
     height: 100vh;
     overflow: hidden;
     opacity: 1;
     visibility: visible;
     filter: none;
     pointer-events: auto;
+    position: relative;
 }
 
 .container.visible {
@@ -54,16 +55,9 @@
     animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ===== 右侧面板 ===== */
+/* ===== 右侧面板（已隐藏） ===== */
 .right-panel {
-    flex: 1;
-    min-width: 300px;
-    display: flex;
-    flex-direction: column;
-    background-color: transparent;
-    color: #fffef7;
-    position: relative;
-    z-index: 1;
+    display: none;
 }
 
 [data-theme='dark'] .wallpaper-scroll-area {
@@ -118,9 +112,6 @@
     background-color: #fffef7;
     background-color: var(--bg, #fffef7);
     scrollbar-width: none;
-    contain: layout style paint;
-
-    /* 禁用用户交互 */
     pointer-events: none;
     touch-action: none;
     user-select: none;
