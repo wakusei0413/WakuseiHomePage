@@ -1,5 +1,5 @@
 /* ========================================
-   粗放主义 - 布局层：两栏布局、面板结构
+   粗放主义 - 布局层：单栏布局、面板结构
    ======================================== */
 
 /* ===== 主容器：单栏布局 ===== */
@@ -52,6 +52,7 @@
 .left-panel .hero {
     width: 100%;
     text-align: left;
+    background: transparent;
     animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -64,42 +65,16 @@
     background-color: var(--bg);
 }
 
-.left-panel .hero {
-    background: transparent;
-}
-
-/* ===== 右侧：信息面板 ===== */
+/* ===== 信息面板 ===== */
 .info-panel {
     font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
-    padding: 1.5rem;
     padding: var(--space-md, 1.5rem);
     padding-bottom: 0;
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 50;
     z-index: var(--z-content, 50);
-}
-
-/* ===== 右侧面板阴影层 - 独立于壁纸 ===== */
-.right-panel-shadow {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    pointer-events: none;
-    z-index: 10;
-    background: linear-gradient(
-        90deg,
-        rgba(0, 0, 0, 0.25) 0%,
-        rgba(0, 0, 0, 0.05) 8%,
-        transparent 15%,
-        transparent 85%,
-        rgba(0, 0, 0, 0.05) 92%,
-        rgba(0, 0, 0, 0.25) 100%
-    );
 }
 
 /* ===== 壁纸容器 ===== */
