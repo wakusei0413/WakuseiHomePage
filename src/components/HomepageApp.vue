@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 import { siteConfig } from '../data/site';
 import { createLogger } from '../lib/logger';
 import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations } from '../lib/runtime-effects';
@@ -57,18 +57,7 @@ function teardownWallpaper() {
     }
 }
 
-watch(isMobile, (mobile) => {
-    teardownWallpaper();
-
-    if (mobile) {
-        logger.log('Mobile layout detected - skipping wallpaper loading');
-        ready.value = true;
-    } else {
-        logger.log('Desktop layout detected - starting wallpaper loading');
-        ready.value = false;
-        startWallpaperLoading();
-    }
-});
+let watchStop: (() => void) | null = null;
 
 onMounted(() => {
     window.dispatchEvent(new CustomEvent('wakusei:homepage-mounted'));
@@ -89,13 +78,13 @@ onMounted(() => {
         pageCleanups.push(initMobileStickyAvatar(viewportRef.value || container, avatar));
     }
 
-    const ref = viewportRef.value;
-    if (ref) {
+    const scroller = viewportRef.value;
+    if (scroller) {
         const handleScroll = (_e: Event) => {
-            scrollProgress.value = Math.min(ref.scrollTop / window.innerHeight, 1);
+            scrollProgress.value = Math.min(scroller.scrollTop / window.innerHeight, 1);
         };
-        ref.addEventListener('scroll', handleScroll, { passive: true });
-        pageCleanups.push(() => ref.removeEventListener('scroll', handleScroll));
+        scroller.addEventListener('scroll', handleScroll, { passive: true });
+        pageCleanups.push(() => scroller.removeEventListener('scroll', handleScroll));
     }
 
     const mql = window.matchMedia('(max-width: 900px)');
@@ -105,10 +94,24 @@ onMounted(() => {
     mql.addEventListener('change', handleMediaChange);
     pageCleanups.push(() => mql.removeEventListener('change', handleMediaChange));
 
-    return () => {
+    watchStop = watch(isMobile, (mobile) => {
         teardownWallpaper();
-        pageCleanups.forEach((cleanup) => cleanup());
-    };
+
+        if (mobile) {
+            logger.log('Mobile layout detected - skipping wallpaper loading');
+            ready.value = true;
+        } else {
+            logger.log('Desktop layout detected - starting wallpaper loading');
+            ready.value = false;
+            startWallpaperLoading();
+        }
+    }, { immediate: true });
+});
+
+onUnmounted(() => {
+    watchStop?.();
+    teardownWallpaper();
+    pageCleanups.forEach((cleanup) => cleanup());
 });
 
 watch(ready, (isReady) => {
