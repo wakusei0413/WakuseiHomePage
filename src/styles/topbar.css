@@ -19,13 +19,6 @@ body {
     transition: none;
 }
 
-body.is-home {
-    padding-top: 0;
-    overflow: hidden;
-    height: 100vh;
-    transition: none;
-}
-
 .top-bar {
     position: fixed;
     top: 0;
