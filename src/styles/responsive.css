@@ -102,26 +102,6 @@
     }
 
     .right-panel {
-        display: block;
-        position: fixed;
-        top: 0;
-        right: 0;
-        z-index: var(--z-dock);
-        width: 100vw;
-        min-width: 0;
-        height: 0;
-        flex: 0 0 0;
-        overflow: visible;
-        pointer-events: none;
-    }
-
-    .right-panel .nav-dock {
-        pointer-events: auto;
-    }
-
-    .wallpaper-scroll-area,
-    .right-panel .right-panel-shadow,
-    .right-panel .info-panel {
         display: none;
     }
 
