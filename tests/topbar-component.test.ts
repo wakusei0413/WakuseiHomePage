@@ -44,11 +44,10 @@ describe('TopBar unified navigation component', () => {
         expect(topbarComponent).toMatch(/e\.preventDefault\(\)/);
     });
 
-    it('reuses expansion progress for left-side transition timing', () => {
-        expect(topbarComponent).toMatch(/const expansionProgress = computed\(\(\) =>/);
-        expect(topbarComponent).toMatch(/const raw = \(sp - 0\.02\) \/ 0\.43;/);
-        expect(topbarComponent).toMatch(/const p = expansionProgress\.value;/);
-        expect(topbarComponent).toMatch(/const x = \(1 - expansionProgress\.value\) \* 18;/);
+    it('uses static styles without expansion animation', () => {
+        expect(topbarComponent).not.toMatch(/expansionProgress/);
+        expect(topbarComponent).toMatch(/const barStyle = computed\(\(\) =>/);
+        expect(topbarComponent).toMatch(/return 'opacity: 1; transform: translateX\(0\)';/);
     });
 
     it('dispatches custom event on mobile avatar click', () => {

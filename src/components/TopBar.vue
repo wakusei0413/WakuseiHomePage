@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import Icon from './Icon.vue';
 import type { Locale } from '../data/i18n';
 import { getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel } from '../lib/dock';
@@ -23,6 +23,7 @@ const barRef = ref<HTMLDivElement>();
 const popupRef = ref<HTMLDivElement>();
 const languageBtnRef = ref<HTMLButtonElement>();
 let outsideClickCleanup: (() => void) | undefined;
+let outsideClickTimer: ReturnType<typeof setTimeout> | undefined;
 let magnifyCleanup: (() => void) | undefined;
 
 const isMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
@@ -75,36 +76,18 @@ const topBarOpacity = computed(() => {
     return (sp - 0.15) / 0.25;
 });
 
-const expansionProgress = computed(() => {
-    if (!isHomePage.value) return 1;
-    if (isMobile.value) return 1;
-    const sp = scrollProgress.value;
-    if (sp <= 0.02) return 0;
-    if (sp >= 0.45) return 1;
-    const raw = (sp - 0.02) / 0.43;
-    return 1 - Math.pow(1 - raw, 4);
-});
-
 const barStyle = computed(() => {
     if (!isHomePage.value) return 'opacity: 1; transform: translateX(0)';
     if (isMobile.value) return `opacity: ${topBarOpacity.value}; transform: translateX(0)`;
-    const p = expansionProgress.value;
-    return `opacity: 1; transform: translateX(calc(var(--left-panel-width, 500px) * ${1 - p}))`;
+    return 'opacity: 1; transform: translateX(0)';
 });
 
 const rightStyle = computed(() => {
-    if (!isHomePage.value) return 'transform: translateX(0)';
-    if (isMobile.value) return 'transform: translateX(0)';
-    const p = expansionProgress.value;
-    return `transform: translateX(calc(var(--left-panel-width, 500px) * ${p - 1}))`;
+    return 'transform: translateX(0)';
 });
 
 const leftStyle = computed(() => {
-    if (!isHomePage.value || isMobile.value) return '';
-    const p = expansionProgress.value;
-    const x = (1 - expansionProgress.value) * 18;
-    if (p >= 1 && x <= 0.01) return '';
-    return `opacity: ${p}; transform: translateX(${-x}px)`;
+    return '';
 });
 
 function bindScroll(animateProgress = false) {
@@ -147,8 +130,9 @@ function setupViewportMediaSync() {
     return () => mql.removeEventListener('change', handleMediaChange);
 }
 
+const cleanups: Array<() => void> = [];
+
 onMounted(() => {
-    const cleanups: Array<() => void> = [];
     bindScroll(false);
     cleanups.push(setupViewportMediaSync());
     cleanups.push(
@@ -158,14 +142,15 @@ onMounted(() => {
             bindScroll(stateChanged);
         })
     );
+});
 
-    return () => {
-        cleanups.forEach((cleanup) => cleanup());
-        stopProgressAnimation();
-        if (scrollHandler && scrollerEl) scrollerEl.removeEventListener('scroll', scrollHandler);
-        if (outsideClickCleanup) outsideClickCleanup();
-        if (magnifyCleanup) magnifyCleanup();
-    };
+onUnmounted(() => {
+    cleanups.forEach((cleanup) => cleanup());
+    stopProgressAnimation();
+    if (scrollHandler && scrollerEl) scrollerEl.removeEventListener('scroll', scrollHandler);
+    clearTimeout(outsideClickTimer);
+    if (outsideClickCleanup) outsideClickCleanup();
+    if (magnifyCleanup) magnifyCleanup();
 });
 
 watch([isMobile, isHomePage, barRef], () => {
@@ -210,6 +195,8 @@ function toggleLanguagePanel() {
 }
 
 function setOpen(open: boolean) {
+    clearTimeout(outsideClickTimer);
+    outsideClickTimer = undefined;
     if (outsideClickCleanup) {
         outsideClickCleanup();
         outsideClickCleanup = undefined;
@@ -238,7 +225,8 @@ function selectLanguage(lang: Locale) {
 }
 
 function setupOutsideClick() {
-    setTimeout(() => {
+    outsideClickTimer = setTimeout(() => {
+        outsideClickTimer = undefined;
         const handler = (e: MouseEvent) => {
             const target = e.target as Node;
             if (!barRef.value?.contains(target) && !popupRef.value?.contains(target)) setOpen(false);
