@@ -313,6 +313,32 @@ function getIcon(display: { icon?: string; iconActive?: string }, active: boolea
 function getMode(display: { renderMode?: string }) {
     return display.renderMode ?? 'icon';
 }
+
+function handleLeftClick(e: MouseEvent) {
+    if (isMobile.value) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('wakusei:open-mobile-menu'));
+    } else {
+        const s = document.querySelector('.page-scroller');
+        if (s) {
+            e.preventDefault();
+            s.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+}
+
+function handleDockLinkClick(e: MouseEvent, href: string) {
+    if (isDockLinkDisabled(href)) {
+        e.preventDefault();
+        return;
+    }
+    const currentPath = window.location.pathname;
+    const targetPath = href;
+    if (currentPath === targetPath || currentPath === targetPath + '/') {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
 </script>
 
 <template>
@@ -323,20 +349,7 @@ function getMode(display: { renderMode?: string }) {
             :style="leftStyle"
             :role="isMobile ? 'button' : undefined"
             :aria-label="isMobile ? 'Open menu' : undefined"
-            @click="
-                (e: MouseEvent) => {
-                    if (isMobile) {
-                        e.preventDefault();
-                        window.dispatchEvent(new CustomEvent('wakusei:open-mobile-menu'));
-                    } else {
-                        const s = document.querySelector('.page-scroller');
-                        if (s) {
-                            e.preventDefault();
-                            s.scrollTo({ top: 0, behavior: 'smooth' });
-                        }
-                    }
-                }
-            "
+            @click="handleLeftClick"
         >
             <img class="top-bar-avatar" :src="siteConfig.profile.avatar" alt="" width="40" height="40" />
             <span class="top-bar-name">{{ siteConfig.profile.name }}</span>
@@ -412,20 +425,7 @@ function getMode(display: { renderMode?: string }) {
                             }"
                             :title="getLabel(item.display)"
                             :aria-label="getLabel(item.display)"
-                            @click="
-                                (e: MouseEvent) => {
-                                    if (isDockLinkDisabled(item.href)) {
-                                        e.preventDefault();
-                                        return;
-                                    }
-                                    const currentPath = window.location.pathname;
-                                    const targetPath = item.href;
-                                    if (currentPath === targetPath || currentPath === targetPath + '/') {
-                                        e.preventDefault();
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }
-                                }
-                            "
+                            @click="(e: MouseEvent) => handleDockLinkClick(e, item.href)"
                         >
                             <Icon v-if="getMode(item.display) !== 'text'" :name="getIcon(item.display, false)" />
                             <span
