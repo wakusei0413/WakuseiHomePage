@@ -34,10 +34,5 @@ export const useThemeStore = defineStore('theme', () => {
         }
     }
 
-    function syncFromStorage() {
-        const theme = getCurrentTheme();
-        isDark.value = theme === 'dark';
-    }
-
-    return { isDark, init, toggle, syncFromStorage };
+    return { isDark, init, toggle };
 });
