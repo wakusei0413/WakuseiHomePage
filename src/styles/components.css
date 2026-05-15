@@ -3,16 +3,6 @@
    ======================================== */
 
 /* ===== 批量过渡应用（解耦） ===== */
-/* 头像和按钮 */
-.avatar-box {
-    transition: var(--transition-all);
-}
-
-/* 文字区域 */
-.bio-container {
-    transition: var(--transition-all);
-}
-
 /* 字体大小过渡 */
 .name,
 .weekday,
@@ -74,26 +64,6 @@
     animation: loading-fade-in 0.8s var(--curve-delicate);
 }
 
-/* 旋转方块 - 细腻风格 */
-.loading-spinner {
-    width: 32px;
-    height: 32px;
-    border: var(--border-width) solid var(--panel-border);
-    background: var(--bg);
-    animation: loading-rotate 2s linear infinite;
-}
-
-/* 细腻进度条 */
-.loading-progress {
-    width: 180px;
-    height: 6px;
-    border: var(--border-width) solid var(--panel-border);
-    background: var(--bg);
-    position: relative;
-    overflow: hidden;
-    border-radius: 3px;
-}
-
 @keyframes loading-fade-in {
     from {
         opacity: 0;
@@ -103,60 +73,6 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-/* 旋转方块 - 细腻风格 */
-.loading-spinner {
-    width: 32px;
-    height: 32px;
-    border: 1px solid var(--panel-border);
-    background: var(--bg);
-    animation: loading-rotate 2s linear infinite;
-}
-
-@keyframes loading-rotate {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-/* 移除旧的 bounce 动画 */
-.loading-panel {
-    animation: loading-fade-in 0.8s var(--curve-delicate);
-}
-
-/* 加载文字 */
-.loading-text {
-    font-family: var(--font-display);
-    font-size: 1.1rem;
-    font-weight: 400;
-    font-style: normal;
-    letter-spacing: 0.02em;
-    color: var(--fg);
-    min-height: 1.5em;
-}
-
-/* 细腻进度条 */
-.loading-progress {
-    width: 180px;
-    height: 4px;
-    border: 1px solid var(--panel-border);
-    background: var(--bg);
-    position: relative;
-    overflow: hidden;
-    border-radius: 2px;
-}
-
-.loading-bar {
-    height: 100%;
-    background: var(--fg);
-    width: 0%;
-    transition: width 0.4s var(--curve-delicate);
-    position: relative;
-    overflow: hidden;
 }
 
 /* IE11 flexbox gap fallback */
@@ -325,118 +241,6 @@
 }
 
 /* ===== 状态栏 ===== */
-.status-bar {
-    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs, 0.5rem);
-    padding: var(--space-xs, 0.5rem) var(--space-sm, 1rem);
-    background-color: var(--panel-glass);
-    margin-bottom: 2rem;
-    margin-bottom: var(--space-lg, 2rem);
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    /* 统一勾线：1px 边框 + 细腻阴影 */
-    border: 1px solid var(--panel-border);
-    box-shadow: var(--panel-shadow);
-    border-radius: 4px;
-}
-
-.status-dot {
-    width: 10px;
-    height: 10px;
-    background-color: var(--accent-yellow, #ffe600);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    animation: pulse 2s ease-in-out infinite;
-    margin-right: var(--space-xs, 0.5rem);
-}
-
-@supports (gap: 0.5rem) {
-    .status-dot {
-        margin-right: 0;
-    }
-}
-
-@keyframes pulse {
-    0%,
-    100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
-}
-
-.status-text {
-    font-weight: 500;
-    color: var(--fg);
-}
-
-/* ===== 简介区域 ===== */
-.bio-container {
-    margin-bottom: var(--space-xl, 3rem);
-    padding: var(--space-md, 1.5rem);
-    background-color: var(--panel-glass);
-    text-align: left;
-    min-height: 100px;
-    /* 统一勾线 */
-    border: 1px solid var(--panel-border);
-    box-shadow: var(--panel-shadow);
-    border-radius: 4px;
-}
-
-.bio {
-    font-family: var(--font-serif, 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif);
-    font-weight: 400;
-    font-style: normal;
-    font-size: 1rem;
-    line-height: 1.8;
-    color: var(--fg);
-}
-
-.status-dot {
-    width: 10px;
-    height: 10px;
-    background-color: var(--accent-yellow, #ffe600);
-    border: 1px solid rgba(0, 0, 0, 0.15); /* 始终保留一个细微的勾线 */
-    animation: pulse 2s ease-in-out infinite;
-    margin-right: var(--space-xs, 0.5rem);
-}
-
-.status-dot {
-    width: 10px;
-    height: 10px;
-    background-color: #ffe600;
-    background-color: var(--accent-yellow, #ffe600);
-    border: 2px solid #0a0a0a;
-    border: 2px solid var(--fg, #0a0a0a);
-    animation: pulse 2s ease-in-out infinite;
-    margin-right: 0.5rem;
-    margin-right: var(--space-xs, 0.5rem);
-}
-
-@supports (gap: 0.5rem) {
-    .status-dot {
-        margin-right: 0;
-    }
-}
-
-@keyframes pulse {
-    0%,
-    100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
-}
-
-.status-text {
-    font-weight: 500;
-    color: #0a0a0a;
-    color: var(--fg, #0a0a0a);
-}
-
 /* ===== 简介区域 ===== */
 .bio-container {
     margin-bottom: 3rem;
@@ -453,17 +257,6 @@
 }
 
 .bio {
-    font-family: 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
-    font-family: var(--font-serif, 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif);
-    font-weight: 400;
-    font-style: normal;
-    font-size: 1rem;
-    line-height: 1.8;
-    color: #0a0a0a;
-    color: var(--fg, #0a0a0a);
-}
-
-.typewriter-text {
     white-space: pre-wrap;
     word-break: break-word;
 }
@@ -765,26 +558,6 @@
     color: var(--fg);
 }
 
-/* ===== 简介区域 ===== */
-.bio-container {
-    margin-bottom: var(--space-xl, 3rem);
-    padding: var(--space-md, 1.5rem);
-    border: 1px solid var(--panel-border);
-    background-color: var(--panel-glass);
-    text-align: left;
-    box-shadow: var(--panel-shadow);
-    min-height: 100px;
-    border-radius: 6px;
-}
-
-.bio {
-    font-family: var(--font-serif, 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif);
-    font-weight: 400;
-    font-style: normal;
-    font-size: 1rem;
-    line-height: 1.8;
-    color: var(--fg);
-}
 [data-theme='dark'] .status-dot {
     border-color: var(--glass-border);
 }
