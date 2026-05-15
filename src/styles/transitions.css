@@ -6,11 +6,11 @@
 /* 页面滚动根容器 */
 .page-scroller {
     height: 100vh;
-    width: 100vw;
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;
-    background: var(--bg);
+    background: var(--bg, #fffef7);
+    scrollbar-width: none;
 }
 
 .page-scroller::-webkit-scrollbar {
@@ -23,7 +23,7 @@
     top: 0;
     height: 100vh;
     width: 100vw;
-    z-index: 1;
+    z-index: var(--z-content, 50);
     perspective: 1500px;
     transform-style: preserve-3d;
     overflow: hidden;
@@ -36,52 +36,120 @@
     backface-visibility: hidden;
 }
 
-/* Blog 内容区：正常文档流，从 Hero 下方自然滚入 */
-.blog-content {
-    position: relative;
-    z-index: 2;
-    background: var(--bg);
-    min-height: 100vh;
-    padding: 0;
-}
-
-/* 占位内容 */
-.placeholder-content {
-    text-align: center;
-    color: var(--fg);
-    padding: 4rem 0;
-}
-
-.placeholder-content h2 {
-    font-size: 3rem;
-    font-family: var(--font-serif);
-    opacity: 0.15;
-    margin: 0 0 0.5rem;
-}
-
 /* ===== View Transitions — 页面导航动画 ===== */
 
-@keyframes vt-fade-in {
+@keyframes vt-content-in {
     from {
         opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-@keyframes vt-fade-out {
+@keyframes vt-content-out {
     to {
         opacity: 0;
+        transform: translateY(-6px);
     }
 }
 
-::view-transition-old(root) {
-    animation: vt-fade-out 0.2s ease both;
+.page-transition-surface {
+    min-height: 100vh;
+    padding: 4.5rem 2rem;
+    background: var(--bg, #fffef7);
+    position: relative;
+    z-index: var(--z-content, 50);
 }
 
-::view-transition-new(root) {
-    animation: vt-fade-in 0.2s ease both;
+::view-transition-old(page-content) {
+    animation: vt-content-out 0.16s ease both;
+}
+
+::view-transition-new(page-content) {
+    animation: vt-content-in 0.22s ease both;
 }
 
 ::view-transition-old(site-shell),
 ::view-transition-new(site-shell) {
     animation: none;
+}
+
+/* ===== Top navigation progress ===== */
+
+.navigation-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: calc(var(--z-loading, 9998) + 2);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-3px);
+    transition:
+        opacity 0.16s ease,
+        transform 0.16s ease;
+}
+
+.navigation-progress--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.navigation-progress__bar {
+    width: 100%;
+    height: 100%;
+    transform: scaleX(0);
+    transform-origin: left center;
+    background: linear-gradient(90deg, var(--accent-blue, #3e59ff), var(--accent-yellow, #ffe600));
+    box-shadow: 0 0 18px color-mix(in srgb, var(--accent-blue, #3e59ff) 55%, transparent);
+    transition: transform 0.18s ease-out;
+}
+
+.navigation-progress--done .navigation-progress__bar {
+    transition-duration: 0.12s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .navigation-progress,
+    .navigation-progress__bar {
+        transition: none;
+    }
+}
+
+.left-panel-content-enter-active,
+.left-panel-content-leave-active {
+    transition:
+        opacity 0.22s ease,
+        transform 0.22s ease,
+        filter 0.22s ease;
+}
+
+.left-panel-content-enter-from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+    filter: blur(8px);
+}
+
+.left-panel-content-leave-to {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+    filter: blur(8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .left-panel-content-enter-active,
+    .left-panel-content-leave-active {
+        transition: opacity 0.12s ease;
+    }
+
+    .left-panel-content-enter-from,
+    .left-panel-content-leave-to {
+        transform: none;
+        filter: none;
+    }
 }
