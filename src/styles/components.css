@@ -9,9 +9,7 @@
 }
 
 /* 文字区域 */
-.bio-container,
-.time-widget,
-.wallpaper-container {
+.bio-container {
     transition: var(--transition-all);
 }
 
@@ -606,35 +604,6 @@
     letter-spacing: 0.1em;
 }
 
-/* ===== 左侧底部 ===== */
-.footer-left {
-    display: none;
-    margin-top: auto;
-    padding-top: 2rem;
-    padding-top: var(--space-lg, 2rem);
-}
-
-.footer-line {
-    height: 4px;
-    height: var(--border-width, 4px);
-    background-color: #0a0a0a;
-    background-color: var(--fg, #0a0a0a);
-    margin-bottom: 1rem;
-    margin-bottom: var(--space-sm, 1rem);
-}
-
-.footer-text {
-    font-family: 'Inter', 'Noto Sans SC', sans-serif;
-    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
-    font-size: 0.75rem;
-    font-weight: 500;
-    font-style: normal;
-    color: #666666;
-    color: var(--muted, #666666);
-    letter-spacing: 0.15em;
-    text-align: center;
-}
-
 /* ===== 时间组件 ===== */
 .time-widget {
     text-align: left;
@@ -673,99 +642,6 @@
     letter-spacing: 0.05em;
 }
 
-/* ===== 手机端壁纸切换按钮 ===== */
-.wallpaper-toggle {
-    position: fixed;
-    bottom: 85px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    border: 1px solid rgba(240, 238, 230, 0.6);
-    background: rgba(255, 254, 247, 0.4);
-    color: #0a0a0a;
-    color: var(--fg, #0a0a0a);
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.25),
-        0 2px 12px rgba(0, 0, 0, 0.08);
-    transition:
-        transform 0.08s cubic-bezier(0.2, 0, 0, 1),
-        box-shadow 0.08s cubic-bezier(0.2, 0, 0, 1),
-        background-color 0.08s cubic-bezier(0.2, 0, 0, 1);
-    z-index: 1000;
-    z-index: var(--z-buttons, 1000);
-    padding: 0;
-}
-
-.wallpaper-toggle:hover {
-    transform: translate3d(-2px, -2px, 0);
-    box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.25),
-        0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.wallpaper-toggle:active {
-    transform: translate3d(-1px, -1px, 0);
-}
-
-.wallpaper-toggle:focus {
-    outline: 2px solid var(--accent-blue);
-    outline-offset: 2px;
-}
-
-.wallpaper-toggle.active {
-    background: #ffe600;
-    background: var(--accent-yellow, #ffe600);
-}
-
-/* ===== 手机端关闭按钮 ===== */
-.close-panel {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    border: 1px solid rgba(240, 238, 230, 0.6);
-    background: rgba(255, 254, 247, 0.95);
-    color: #0a0a0a;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.25),
-        0 2px 12px rgba(0, 0, 0, 0.08);
-    z-index: 1002;
-    z-index: calc(var(--z-buttons, 1000) + 2);
-    padding: 0;
-    transition:
-        transform 0.08s cubic-bezier(0.2, 0, 0, 1),
-        box-shadow 0.08s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.close-panel.active {
-    display: flex;
-}
-
-.close-panel:hover {
-    transform: scale(1.1);
-    box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.25),
-        0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.close-panel:active {
-    transform: scale(1.05);
-}
-
-.close-panel:focus {
-    outline: 2px solid var(--accent-yellow);
-    outline-offset: 2px;
-}
-
 /* ===== 交互特效 ===== */
 
 /* 滚动触发动画 */
@@ -782,17 +658,6 @@
     transform: translateY(0);
 }
 
-/* IE11 object-fit fallback */
-.no-object-fit .avatar-image {
-    display: none;
-}
-
-.no-object-fit .avatar-box {
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
 /* 性能优化 */
 /* GPU 加速：提前创建合成层，避免 hover 时延迟 */
 .avatar-box,
@@ -805,9 +670,7 @@
 /* 防止 hover 位移导致的边缘闪烁：
    ::before 作为静止悬停热区，反向 translate 与父元素 transition 同步，
    确保 ::before 在动画每一帧都精确停留在原位 */
-.avatar-box::before,
-.wallpaper-toggle::before,
-.close-panel::before {
+.avatar-box::before {
     content: '';
     position: absolute;
     top: -15px;
@@ -822,141 +685,10 @@
     transform: translate(5px, 5px);
 }
 
-.wallpaper-toggle:hover::before {
-    transform: translate(3px, 3px);
-}
-
 .container,
 .left-panel,
 .right-panel {
     backface-visibility: hidden;
-}
-
-/* ===== 旧版浏览器兼容模式 ===== */
-.legacy-compat .noise-overlay,
-.legacy-compat .right-panel,
-.legacy-compat .bio-container,
-.legacy-compat .wallpaper-toggle,
-.legacy-compat .close-panel,
-.legacy-compat .loading-spinner,
-.legacy-compat .loading-progress,
-.legacy-compat .loading-percent,
-.legacy-compat .right-panel-shadow,
-.legacy-compat .info-panel {
-    display: none;
-}
-
-.legacy-compat,
-.legacy-compat body {
-    height: auto;
-    overflow: auto;
-}
-
-.legacy-compat .container {
-    display: block;
-    height: auto;
-    min-height: 100vh;
-    overflow: visible;
-    filter: none;
-    pointer-events: auto;
-}
-
-.legacy-compat .left-panel {
-    width: 100%;
-    max-width: 680px;
-    min-width: 0;
-    margin: 0 auto;
-    padding: 2.5rem 2rem;
-    border-right: 0;
-    box-shadow: none;
-    overflow: visible;
-    contain: none;
-}
-
-.legacy-compat .left-panel .hero,
-.legacy-compat .avatar-box,
-.legacy-compat .social-link,
-.legacy-compat .status-dot,
-.legacy-compat .typewriter-cursor,
-.legacy-compat .loading-panel,
-.legacy-compat .loading-text {
-    animation: none;
-    transition: none;
-    transform: none;
-}
-
-.legacy-compat .avatar-box {
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 2rem;
-    cursor: default;
-    box-shadow: none;
-}
-
-.legacy-compat .avatar-box:hover {
-    transform: none;
-    box-shadow: none;
-}
-
-.legacy-compat .avatar-box::before,
-.legacy-compat .avatar-box::after {
-    content: none;
-    display: none;
-}
-
-.legacy-compat .social-links {
-    display: block;
-}
-
-.legacy-compat .social-link {
-    display: block;
-    width: 100%;
-    max-width: none;
-    padding: 1rem 1.25rem;
-    margin: 0;
-    text-align: left;
-    box-shadow: none;
-}
-
-.legacy-compat .social-link::before,
-.legacy-compat .social-link::after {
-    content: none;
-    display: none;
-    pointer-events: none;
-}
-
-.legacy-compat .social-link + .social-link {
-    margin-top: 1rem;
-}
-
-.legacy-compat .loading-overlay {
-    background: #fffef7;
-    transition: none;
-}
-
-.legacy-compat .loading-panel {
-    gap: 0;
-    padding: 1.5rem;
-    border-width: 4px;
-    box-shadow: none;
-}
-
-.legacy-compat .loading-text {
-    min-height: 0;
-    font-size: 1rem;
-    letter-spacing: 0.05em;
-    text-transform: none;
-}
-
-.legacy-compat .status-bar {
-    border: 3px solid #0a0a0a;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .loading-bar::after,
-    .typewriter-cursor.cursor-idle {
-        animation: none !important;
-    }
 }
 
 /* ===== Loading Overlay ===== */
@@ -1080,64 +812,6 @@
         0 2px 12px rgba(0, 0, 0, 0.3);
 }
 /* Social link hover glow is unified — same CSS in both modes, driven by --custom-color */
-
-/* ===== Footer ===== */
-.footer-left {
-    margin-top: auto;
-    padding-top: 2rem;
-    padding-top: var(--space-lg, 2rem);
-}
-
-.footer-line {
-    height: var(--border-width, 1px);
-    background-color: var(--panel-border);
-    margin-bottom: 1rem;
-    margin-bottom: var(--space-sm, 1rem);
-}
-
-.footer-text {
-    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
-    font-size: 0.75rem;
-    font-weight: 500;
-    font-style: normal;
-    color: var(--muted, #666666);
-    letter-spacing: 0.15em;
-    text-align: center;
-}
-
-/* ===== Wallpaper Toggle ===== */
-[data-theme='dark'] .wallpaper-toggle {
-    border-color: var(--glass-border);
-    background: var(--glass-bg);
-    color: var(--fg);
-    box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.2),
-        0 2px 12px rgba(0, 0, 0, 0.3);
-}
-[data-theme='dark'] .wallpaper-toggle:hover {
-    box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.2),
-        0 4px 16px rgba(0, 0, 0, 0.4);
-}
-
-/* ===== Close Panel ===== */
-[data-theme='dark'] .close-panel {
-    border-color: var(--glass-border);
-    background: rgba(22, 22, 22, 0.9);
-    color: var(--fg);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-[data-theme='dark'] .close-panel:hover {
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
-    background: rgba(32, 32, 32, 0.95);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .loading-bar::after,
-    .typewriter-cursor.cursor-idle {
-        animation: none !important;
-    }
-}
 
 /* ===== Social Links Pagination ===== */
 .social-links-wrapper {

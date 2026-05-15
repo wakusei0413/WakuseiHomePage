@@ -6,7 +6,7 @@ const componentsCss = readFileSync(join(process.cwd(), 'src', 'styles', 'compone
 describe('social link interaction styles', () => {
     it('keeps social link hover areas inside each card gap', () => {
         expect(componentsCss).not.toMatch(
-            /\.avatar-box::before,\s*\.social-link::before,\s*\.wallpaper-toggle::before,\s*\.close-panel::before/
+            /\.avatar-box::before,\s*\.social-link::before/
         );
     });
 
