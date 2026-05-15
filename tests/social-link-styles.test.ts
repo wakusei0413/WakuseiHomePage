@@ -5,9 +5,7 @@ const componentsCss = readFileSync(join(process.cwd(), 'src', 'styles', 'compone
 
 describe('social link interaction styles', () => {
     it('keeps social link hover areas inside each card gap', () => {
-        expect(componentsCss).not.toMatch(
-            /\.avatar-box::before,\s*\.social-link::before/
-        );
+        expect(componentsCss).not.toMatch(/\.avatar-box::before,\s*\.social-link::before/);
     });
 
     it('uses the glass-lens hover lift for custom social links', () => {
