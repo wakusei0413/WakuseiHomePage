@@ -26,9 +26,9 @@ const posts = Object.entries(allPosts)
     });
 ---
 
-<BaseLayout title="博客">
-    <main class="blog-container">
-        <h1>博客文章</h1>
+<BaseLayout title="博客" shellMode="blog" shellTitle="博客">
+    <div class="blog-container">
+        <h2 class="blog-title">博客文章</h2>
         <ul class="post-list">
             {
                 posts.map((post) => (
@@ -44,7 +44,7 @@ const posts = Object.entries(allPosts)
                                     />
                                 )}
                                 <div class="post-info">
-                                    <h2>{post.data.title}</h2>
+                                    <h3>{post.data.title}</h3>
                                     <p class="post-desc">{post.data.description}</p>
                                     {post.data.tags && (
                                         <div class="post-meta">
@@ -59,18 +59,18 @@ const posts = Object.entries(allPosts)
             }
         </ul>
         <a href="/" class="back-link">← 返回首页</a>
-    </main>
+    </div>
 </BaseLayout>
 
 <style>
     .blog-container {
         max-width: 800px;
-        margin: 60px auto 80px;
+        margin: 0 auto;
         padding: 0 24px;
         color: var(--fg, #0a0a0a);
         font-family: 'Inter', 'Noto Sans SC', sans-serif;
     }
-    .blog-container h1 {
+    .blog-title {
         font-size: 2rem;
         margin-bottom: 24px;
         text-align: center;
@@ -112,7 +112,7 @@ const posts = Object.entries(allPosts)
         border: 2px solid var(--border-color, #0a0a0a);
         flex-shrink: 0;
     }
-    .post-info h2 {
+    .post-info h3 {
         font-size: 1.25rem;
         margin: 0 0 4px;
     }

@@ -34,10 +34,14 @@ export async function getStaticPaths() {
 const { frontmatter, Content } = Astro.props;
 ---
 
-<BaseLayout title={frontmatter.title} description={frontmatter.description}>
+<BaseLayout
+    shellMode="article"
+    shellTitle={frontmatter.title}
+    title={frontmatter.title}
+    description={frontmatter.description}
+>
     <article class="post-container">
         <header class="post-header">
-            <h1>{frontmatter.title}</h1>
             <div class="post-meta">
                 {frontmatter.tags && <span class="tags">{frontmatter.tags.join(', ')}</span>}
             </div>
@@ -60,17 +64,13 @@ const { frontmatter, Content } = Astro.props;
 <style>
     .post-container {
         max-width: 720px;
-        margin: 40px auto 80px;
+        margin: 0 auto;
         padding: 0 24px;
         color: var(--fg, #0a0a0a);
         font-family: 'Inter', 'Noto Sans SC', sans-serif;
     }
     .post-header {
         margin-bottom: 24px;
-    }
-    .post-header h1 {
-        font-size: 2rem;
-        margin: 0 0 8px;
     }
     .post-meta {
         font-size: 0.85rem;

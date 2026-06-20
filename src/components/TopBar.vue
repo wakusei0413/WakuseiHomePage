@@ -5,8 +5,7 @@ import type { Locale } from '../data/i18n';
 import { getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel } from '../lib/dock';
 import { useI18n } from '../composables/useI18n';
 import { useTheme } from '../composables/useTheme';
-import { useHomepage } from '../composables/useHomepage';
-import { isHomePageDocument } from '../lib/homepage-context';
+import { usePageShellStore } from '../stores/page-shell';
 import { siteConfig } from '../data/site';
 
 const props = defineProps<{
@@ -15,7 +14,7 @@ const props = defineProps<{
 
 const { t, setLocale, locale } = useI18n();
 const { isDark, toggle: toggleTheme } = useTheme();
-const { subscribeStateChange } = useHomepage();
+const pageShell = usePageShellStore();
 
 const activePanel = ref<string | null>(null);
 
@@ -27,98 +26,41 @@ let outsideClickTimer: ReturnType<typeof setTimeout> | undefined;
 let magnifyCleanup: (() => void) | undefined;
 
 const isMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
-const scrollProgress = ref(0);
-const isHomePage = ref(props.initialIsHomePage);
 
-let scrollerEl: HTMLElement | null = null;
-let scrollHandler: ((_e: Event) => void) | undefined;
-let progressAnimationId: number | null = null;
+const sidebarOpen = ref(false);
+const sidebarRef = ref<HTMLDivElement>();
+let sidebarOutsideClickCleanup: (() => void) | undefined;
+let sidebarOutsideClickTimer: ReturnType<typeof setTimeout> | undefined;
 
-function stopProgressAnimation() {
-    if (progressAnimationId !== null) {
-        cancelAnimationFrame(progressAnimationId);
-        progressAnimationId = null;
+function openSidebar() {
+    sidebarOpen.value = true;
+    setupSidebarOutsideClick();
+}
+
+function closeSidebar() {
+    sidebarOpen.value = false;
+    activePanel.value = null;
+    clearTimeout(sidebarOutsideClickTimer);
+    sidebarOutsideClickTimer = undefined;
+    if (sidebarOutsideClickCleanup) {
+        sidebarOutsideClickCleanup();
+        sidebarOutsideClickCleanup = undefined;
     }
 }
 
-function animateScrollProgressTo(target: number) {
-    stopProgressAnimation();
-    const start = scrollProgress.value;
-    const delta = target - start;
-    if (Math.abs(delta) < 0.001) {
-        scrollProgress.value = target;
-        return;
-    }
-
-    const duration = 460;
-    const startTime = performance.now();
-
-    const tick = (now: number) => {
-        const t = Math.min((now - startTime) / duration, 1);
-        const eased = 1 - Math.pow(1 - t, 4);
-        scrollProgress.value = start + delta * eased;
-        if (t >= 1) {
-            progressAnimationId = null;
-            return;
-        }
-        progressAnimationId = requestAnimationFrame(tick);
-    };
-
-    progressAnimationId = requestAnimationFrame(tick);
-}
-
-const topBarOpacity = computed(() => {
-    if (!isHomePage.value) return 1;
-    if (!isMobile.value) return 1;
-    const sp = scrollProgress.value;
-    if (sp <= 0.15) return 0;
-    if (sp >= 0.4) return 1;
-    return (sp - 0.15) / 0.25;
+const expansionProgress = computed(() => {
+    if (isMobile.value) return 1;
+    const sp = pageShell.scrollProgress;
+    if (sp <= 0.02) return 0;
+    if (sp >= 0.45) return 1;
+    const raw = (sp - 0.02) / 0.43;
+    return 1 - Math.pow(1 - raw, 4);
 });
 
-const barStyle = computed(() => {
-    if (!isHomePage.value) return 'opacity: 1; transform: translateX(0)';
-    if (isMobile.value) return `opacity: ${topBarOpacity.value}; transform: translateX(0)`;
-    return 'opacity: 1; transform: translateX(0)';
+const barExpandStyle = computed(() => {
+    const p = expansionProgress.value;
+    return `--bar-left: calc(var(--left-panel-width, 500px) * ${1 - p}); --left-width: calc(${p} * var(--left-panel-width, 500px))`;
 });
-
-const rightStyle = computed(() => {
-    return 'transform: translateX(0)';
-});
-
-const leftStyle = computed(() => {
-    return '';
-});
-
-function bindScroll(animateProgress = false) {
-    if (scrollHandler && scrollerEl) {
-        scrollerEl.removeEventListener('scroll', scrollHandler);
-        scrollHandler = undefined;
-    }
-    scrollerEl = isHomePageDocument() ? (document.querySelector('.page-scroller') as HTMLElement | null) : null;
-    if (scrollerEl) {
-        const nextProgress = Math.min(scrollerEl.scrollTop / window.innerHeight, 1);
-        if (animateProgress) {
-            animateScrollProgressTo(nextProgress);
-        } else {
-            stopProgressAnimation();
-            scrollProgress.value = nextProgress;
-        }
-        const handleScroll = (_e: Event) => {
-            stopProgressAnimation();
-            scrollProgress.value = Math.min(scrollerEl!.scrollTop / window.innerHeight, 1);
-        };
-        scrollerEl.addEventListener('scroll', handleScroll, { passive: true });
-        scrollHandler = handleScroll;
-    } else {
-        if (animateProgress) {
-            animateScrollProgressTo(1);
-        } else {
-            stopProgressAnimation();
-            scrollProgress.value = 1;
-        }
-    }
-}
 
 function setupViewportMediaSync() {
     const mql = window.matchMedia('(max-width: 900px)');
@@ -133,34 +75,32 @@ function setupViewportMediaSync() {
 const cleanups: Array<() => void> = [];
 
 onMounted(() => {
-    bindScroll(false);
     cleanups.push(setupViewportMediaSync());
-    cleanups.push(
-        subscribeStateChange((next: boolean) => {
-            const stateChanged = next !== isHomePage.value;
-            isHomePage.value = next;
-            bindScroll(stateChanged);
-        })
-    );
 });
 
 onUnmounted(() => {
     cleanups.forEach((cleanup) => cleanup());
-    stopProgressAnimation();
-    if (scrollHandler && scrollerEl) scrollerEl.removeEventListener('scroll', scrollHandler);
     clearTimeout(outsideClickTimer);
     if (outsideClickCleanup) outsideClickCleanup();
     if (magnifyCleanup) magnifyCleanup();
+    clearTimeout(sidebarOutsideClickTimer);
+    if (sidebarOutsideClickCleanup) sidebarOutsideClickCleanup();
 });
 
-watch([isMobile, isHomePage, barRef], () => {
+watch([isMobile, barRef], () => {
     if (magnifyCleanup) {
         magnifyCleanup();
         magnifyCleanup = undefined;
     }
 
-    if (!barRef.value || isMobile.value || !isHomePage.value) return;
+    if (!barRef.value || isMobile.value) return;
     magnifyCleanup = setupIconMagnifyHover();
+});
+
+watch(isMobile, (mobile) => {
+    if (!mobile) {
+        closeSidebar();
+    }
 });
 
 function handleAction(action: string) {
@@ -183,6 +123,17 @@ function handlePanel(panel: string, trigger?: HTMLButtonElement) {
             break;
         default:
             console.warn(`[TopBar] Unsupported panel: "${panel}".`);
+    }
+}
+
+function handleSidebarPanel(panel: string) {
+    switch (panel) {
+        case 'language':
+            activePanel.value = activePanel.value === panel ? null : panel;
+            break;
+        default:
+            console.warn(`[TopBar] Unsupported sidebar panel: "${panel}".`);
+            activePanel.value = null;
     }
 }
 
@@ -224,6 +175,12 @@ function selectLanguage(lang: Locale) {
     setOpen(false);
 }
 
+function selectSidebarLanguage(lang: Locale) {
+    setLocale(lang);
+    activePanel.value = null;
+    closeSidebar();
+}
+
 function setupOutsideClick() {
     outsideClickTimer = setTimeout(() => {
         outsideClickTimer = undefined;
@@ -233,6 +190,24 @@ function setupOutsideClick() {
         };
         document.addEventListener('click', handler);
         outsideClickCleanup = () => document.removeEventListener('click', handler);
+    }, 0);
+}
+
+function setupSidebarOutsideClick() {
+    clearTimeout(sidebarOutsideClickTimer);
+    sidebarOutsideClickTimer = undefined;
+    if (sidebarOutsideClickCleanup) {
+        sidebarOutsideClickCleanup();
+        sidebarOutsideClickCleanup = undefined;
+    }
+    sidebarOutsideClickTimer = setTimeout(() => {
+        sidebarOutsideClickTimer = undefined;
+        const handler = (e: MouseEvent) => {
+            const target = e.target as Node;
+            if (!sidebarRef.value?.contains(target)) closeSidebar();
+        };
+        document.addEventListener('click', handler);
+        sidebarOutsideClickCleanup = () => document.removeEventListener('click', handler);
     }, 0);
 }
 
@@ -302,16 +277,28 @@ function getMode(display: { renderMode?: string }) {
     return display.renderMode ?? 'icon';
 }
 
+function scrollCurrentPageToTop() {
+    const s = document.getElementById('pageScroller') ?? document.querySelector('.page-scroller');
+    if (s) {
+        s.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function handleLeftClick(e: MouseEvent) {
     if (isMobile.value) {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent('wakusei:open-mobile-menu'));
-    } else {
-        const s = document.querySelector('.page-scroller');
-        if (s) {
-            e.preventDefault();
-            s.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        openSidebar();
+        return;
+    }
+
+    const isCurrentHome = window.location.pathname === '/';
+    const s = document.getElementById('pageScroller') ?? document.querySelector('.page-scroller');
+    if (isCurrentHome && s) {
+        e.preventDefault();
+        s.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 
@@ -324,17 +311,40 @@ function handleDockLinkClick(e: MouseEvent, href: string) {
     const targetPath = href;
     if (currentPath === targetPath || currentPath === targetPath + '/') {
         e.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        scrollCurrentPageToTop();
     }
+}
+
+function handleSidebarDockLinkClick(e: MouseEvent, href: string) {
+    if (isDockLinkDisabled(href)) {
+        e.preventDefault();
+        closeSidebar();
+        return;
+    }
+    const currentPath = window.location.pathname;
+    const targetPath = href;
+    if (currentPath === targetPath || currentPath === targetPath + '/') {
+        e.preventDefault();
+        closeSidebar();
+        scrollCurrentPageToTop();
+    } else {
+        closeSidebar();
+    }
+}
+
+function shouldRenderTrailingDivider() {
+    const items = siteConfig.dock.items;
+    const lastItem = items[items.length - 1];
+    return items.length > 0 && lastItem?.type !== 'divider';
 }
 </script>
 
 <template>
-    <div ref="barRef" class="top-bar" role="toolbar" aria-label="Top navigation" :style="barStyle">
+    <!-- Desktop / Mobile bar -->
+    <div ref="barRef" class="top-bar" role="toolbar" aria-label="Top navigation" :style="barExpandStyle">
         <a
             class="top-bar-left"
             href="/"
-            :style="leftStyle"
             :role="isMobile ? 'button' : undefined"
             :aria-label="isMobile ? 'Open menu' : undefined"
             @click="handleLeftClick"
@@ -343,7 +353,7 @@ function handleDockLinkClick(e: MouseEvent, href: string) {
             <span class="top-bar-name">{{ siteConfig.profile.name }}</span>
         </a>
 
-        <div class="top-bar-right" :style="rightStyle">
+        <div class="top-bar-right">
             <template v-for="(item, index) in siteConfig.dock.items" :key="index">
                 <div v-if="item.type === 'divider'" class="top-bar-divider" />
 
@@ -429,6 +439,7 @@ function handleDockLinkClick(e: MouseEvent, href: string) {
         </div>
     </div>
 
+    <!-- Desktop language popup -->
     <div ref="popupRef" class="top-bar-language-popup" role="dialog" aria-label="Language selection">
         <div class="top-bar-popup-title">
             {{ t('dock.language') }}
@@ -446,4 +457,117 @@ function handleDockLinkClick(e: MouseEvent, href: string) {
             <span>{{ t(`dock.lang.${lang}`) }}</span>
         </div>
     </div>
+
+    <!-- Mobile sidebar -->
+    <div
+        v-if="isMobile"
+        ref="sidebarRef"
+        class="top-bar-sidebar"
+        :class="{ 'theme-light': !isDark, 'theme-dark': isDark }"
+        :data-open="sidebarOpen ? '' : undefined"
+        role="dialog"
+        aria-label="Menu"
+    >
+        <div class="sidebar-header">
+            <div class="sidebar-avatar-frame">
+                <img
+                    :src="siteConfig.profile.avatar"
+                    alt=""
+                    class="sidebar-avatar"
+                    width="48"
+                    height="48"
+                    loading="lazy"
+                    decoding="async"
+                />
+            </div>
+            <span class="sidebar-name">{{ siteConfig.profile.name }}</span>
+        </div>
+
+        <div class="sidebar-divider" />
+
+        <template v-for="(item, index) in siteConfig.dock.items" :key="index">
+            <div v-if="item.type === 'divider'" class="sidebar-divider" />
+
+            <template v-else>
+                <div v-if="item.type === 'panel'" class="sidebar-menu-group">
+                    <button
+                        class="sidebar-menu-item"
+                        :class="{ active: getActive(item), expanded: getActive(item) }"
+                        :aria-label="getLabel(item.display)"
+                        :aria-expanded="getActive(item)"
+                        @click="handleSidebarPanel(item.panel)"
+                    >
+                        <Icon :name="getIcon(item.display, getActive(item))" class="sidebar-menu-icon" />
+                        <span>{{ getLabel(item.display) }}</span>
+                        <Icon name="fa-solid fa-chevron-down" class="expand-icon" />
+                    </button>
+                    <div
+                        v-if="item.panel === 'language'"
+                        class="sidebar-submenu"
+                        :class="{ expanded: activePanel === item.panel }"
+                    >
+                        <div
+                            v-for="lang in siteConfig.i18n.locales"
+                            :key="lang"
+                            class="sidebar-submenu-item"
+                            :class="{ selected: locale === lang }"
+                            role="option"
+                            :aria-selected="locale === lang"
+                            @click="selectSidebarLanguage(lang)"
+                        >
+                            <Icon name="check" class="check-icon" />
+                            <span>{{ t(`dock.lang.${lang}`) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button
+                    v-else-if="item.type === 'action'"
+                    class="sidebar-menu-item"
+                    :class="{ active: getActive(item) }"
+                    :aria-label="getLabel(item.display)"
+                    @click="handleAction(item.action)"
+                >
+                    <Icon :name="getIcon(item.display, getActive(item))" class="sidebar-menu-icon" />
+                    <span>{{ getLabel(item.display) }}</span>
+                </button>
+
+                <template v-else>
+                    <a
+                        v-if="item.openInNewTab"
+                        :href="item.href"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="sidebar-menu-item"
+                        :aria-label="getLabel(item.display)"
+                        @click="closeSidebar()"
+                    >
+                        <Icon :name="getIcon(item.display, false)" class="sidebar-menu-icon" />
+                        <span>{{ getLabel(item.display) }}</span>
+                    </a>
+                    <a
+                        v-else
+                        :href="isDockLinkDisabled(item.href) ? undefined : item.href"
+                        class="sidebar-menu-item"
+                        :class="{ disabled: isDockLinkDisabled(item.href) }"
+                        :aria-label="getLabel(item.display)"
+                        @click="(e: MouseEvent) => handleSidebarDockLinkClick(e, item.href)"
+                    >
+                        <Icon :name="getIcon(item.display, false)" class="sidebar-menu-icon" />
+                        <span>{{ getLabel(item.display) }}</span>
+                    </a>
+                </template>
+            </template>
+        </template>
+
+        <div v-if="shouldRenderTrailingDivider()" class="sidebar-divider" />
+    </div>
+
+    <!-- Mobile sidebar overlay -->
+    <div
+        v-if="isMobile"
+        class="top-bar-sidebar-overlay"
+        :data-open="sidebarOpen ? '' : undefined"
+        @click="closeSidebar()"
+    />
 </template>

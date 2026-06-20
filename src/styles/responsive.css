@@ -42,12 +42,19 @@
         overflow-y: visible;
     }
 
+    .page-transition-surface {
+        padding: 2.5rem 1rem;
+    }
+
+    .hero-sticky {
+        min-height: auto;
+    }
+
     .hero {
         position: sticky;
         top: 0;
         background: var(--panel-bg);
         backdrop-filter: var(--panel-blur);
-        -webkit-backdrop-filter: var(--panel-blur);
         z-index: 10;
         padding: var(--space-sm) 0;
         margin: calc(var(--space-sm) * -1) 0;
@@ -102,6 +109,26 @@
     }
 
     .right-panel {
+        display: block;
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: var(--z-dock);
+        width: 100vw;
+        min-width: 0;
+        height: 0;
+        flex: 0 0 0;
+        overflow: visible;
+        pointer-events: none;
+    }
+
+    .right-panel .nav-dock {
+        pointer-events: auto;
+    }
+
+    .wallpaper-scroll-area,
+    .right-panel .right-panel-shadow,
+    .right-panel .info-panel {
         display: none;
     }
 

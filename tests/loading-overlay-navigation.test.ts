@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const baseLayout = readFileSync(join(process.cwd(), 'src', 'layouts', 'BaseLayout.astro'), 'utf8');
-const pageFrame = readFileSync(join(process.cwd(), 'src', 'components', 'PageFrame.vue'), 'utf8');
+const homepageApp = readFileSync(join(process.cwd(), 'src', 'components', 'HomepageApp.vue'), 'utf8');
+
 const layoutCss = readFileSync(join(process.cwd(), 'src', 'styles', 'layout.css'), 'utf8');
 const transitionsCss = readFileSync(join(process.cwd(), 'src', 'styles', 'transitions.css'), 'utf8');
 
@@ -48,15 +49,34 @@ describe('loading overlay navigation behavior', () => {
     });
 
     it('keeps the homepage component free of loading overlay ownership', () => {
-        expect(pageFrame).not.toMatch(/LoadingOverlay/);
-        expect(pageFrame).not.toMatch(/loadingPercent/);
-        expect(pageFrame).not.toMatch(/loadingText/);
+        expect(homepageApp).not.toMatch(/LoadingOverlay/);
+        expect(homepageApp).not.toMatch(/loadingPercent/);
+        expect(homepageApp).not.toMatch(/loadingText/);
+    });
+
+    it('waits for shell readiness before hiding entry loads on shell pages', () => {
+        expect(baseLayout).toContain('wakusei:shell-ready');
+        expect(baseLayout).toMatch(/var shellReady = false;/);
+        expect(baseLayout).toMatch(/shouldWaitForShell/);
+        expect(baseLayout).toMatch(/shouldWaitForShell\(\) \|\| shouldWaitForHomepage\(\)/);
     });
 
     it('waits for homepage readiness before hiding direct homepage entry loads', () => {
+        const loaderStart = baseLayout.indexOf("var storageKey = '__wakusei_skip_entry_loader';");
+        const loaderEnd = baseLayout.indexOf('</script>', loaderStart);
+        const loaderBlock = baseLayout.slice(loaderStart, loaderEnd);
+
         expect(baseLayout).toMatch(/window\.addEventListener\('wakusei:homepage-ready'/);
-        expect(baseLayout).toMatch(/document\.querySelector\('\.page-scroller'\)/);
-        expect(pageFrame).toMatch(/window\.dispatchEvent\(new CustomEvent\('wakusei:homepage-ready'\)\)/);
+        expect(baseLayout).toMatch(/document\.documentElement\.classList\.contains\('is-home'\)/);
+        expect(baseLayout).toMatch(/document\.body\.classList\.contains\('is-home'\)/);
+        expect(loaderBlock).not.toMatch(/document\.querySelector\('\.page-scroller'\)/);
+        expect(loaderBlock).not.toContain("document.querySelector('.page-scroller') && !homepageReady");
+    });
+
+    it('does not make non-home direct entry loads wait on homepage readiness', () => {
+        expect(baseLayout).toMatch(/function shouldWaitForHomepage\(\) \{[\s\S]*const isHomeRoute =/);
+        expect(baseLayout).toMatch(/return isHomeRoute && !homepageReady;/);
+        expect(baseLayout).not.toMatch(/return !!document\.querySelector\('\.page-scroller'\) && !homepageReady;/);
     });
 
     it('does not keep the legacy homepage blur reveal after the global loader is skipped', () => {
@@ -64,7 +84,23 @@ describe('loading overlay navigation behavior', () => {
         expect(layoutCss).not.toMatch(/filter\s+0\.5s\s+ease-out/);
         expect(layoutCss).toMatch(/\.container\s*\{[\s\S]*?filter:\s*none;/);
         expect(baseLayout).not.toMatch(/__wakusei_skip_homepage_reveal/);
-        expect(pageFrame).not.toMatch(/__wakusei_skip_homepage_reveal/);
+        expect(homepageApp).not.toMatch(/__wakusei_skip_homepage_reveal/);
+    });
+
+    it('wraps page content in a named transition surface while keeping the shell persistent', () => {
+        expect(baseLayout).toMatch(/id="pageTransitionSurface"/);
+        expect(baseLayout).toMatch(/class="page-transition-surface"/);
+        expect(baseLayout).toMatch(/<html[^>]*transition:name="root"[^>]*transition:animate="none"/);
+        expect(baseLayout).toMatch(/transition:name="page-content"/);
+        expect(baseLayout).toMatch(/transition:name="site-shell"/);
+        expect(baseLayout).toMatch(/transition:persist/);
+    });
+
+    it('animates the page content surface instead of the whole root document', () => {
+        expect(transitionsCss).toMatch(/::view-transition-old\(page-content\)/);
+        expect(transitionsCss).toMatch(/::view-transition-new\(page-content\)/);
+        expect(transitionsCss).not.toMatch(/::view-transition-old\(root\)/);
+        expect(transitionsCss).not.toMatch(/::view-transition-new\(root\)/);
     });
 
     it('renders and drives a delayed top navigation progress bar', () => {
@@ -88,6 +124,37 @@ describe('loading overlay navigation behavior', () => {
     it('registers navigation runtime listeners only once across inline script reruns', () => {
         expect(baseLayout).toMatch(/if \(!window\.__wakuseiNavigationRuntimeInitialized\) \{/);
         expect(baseLayout).toMatch(/window\.__wakuseiNavigationRuntimeInitialized = true;/);
+    });
+
+    it('keeps navigation runtime free of debug console noise', () => {
+        expect(baseLayout).not.toMatch(/console\.log\([\s\S]*NavigationProgress/);
+    });
+
+    it('clears pending home readiness waits when navigation progress settles', () => {
+        expect(baseLayout).toMatch(/function clearPendingResourceWait\(\)/);
+        expect(baseLayout).toMatch(/function settle\(\)/);
+        expect(baseLayout).toMatch(/if \(epoch !== navigationEpoch\) return;/);
+        expect(baseLayout).toMatch(/resourceTimeout = window\.setTimeout\(settle, 10000\)/);
+    });
+
+    it('recovers from homepage readiness events fired before after-swap listeners attach', () => {
+        expect(baseLayout).toMatch(/function isIncomingHomeReady\(\)/);
+        expect(baseLayout).toMatch(/document\.querySelector\('\.container\.visible'\)/);
+        expect(baseLayout).toMatch(/resourceProbeTimer = window\.setTimeout/);
+    });
+
+    it('finishes navigation progress immediately for non-home Astro swaps', () => {
+        expect(baseLayout).toMatch(
+            /function waitForResources\(\) \{[\s\S]*if \(!incomingIsHomePage\) \{\s*finish\(\);\s*return;\s*\}/
+        );
+        expect(baseLayout).toMatch(
+            /if \(!incomingIsHomePage\) \{[\s\S]*window\.addEventListener\('wakusei:homepage-ready'/
+        );
+    });
+
+    it('resets the page scroller after swaps', () => {
+        expect(baseLayout).toContain("document.getElementById('pageScroller')");
+        expect(baseLayout).toContain('scrollTo({ top: 0 })');
     });
 
     it('styles the top navigation progress bar without blocking clicks', () => {

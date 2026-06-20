@@ -26,12 +26,7 @@ export const useThemeStore = defineStore('theme', () => {
     function toggle() {
         const newTheme = isDark.value ? 'light' : 'dark';
         isDark.value = newTheme === 'dark';
-        const doc = document as Document & { startViewTransition?: (callback: () => void) => unknown };
-        if (typeof doc.startViewTransition === 'function') {
-            doc.startViewTransition(() => applyTheme(newTheme));
-        } else {
-            applyTheme(newTheme);
-        }
+        applyTheme(newTheme);
     }
 
     return { isDark, init, toggle };

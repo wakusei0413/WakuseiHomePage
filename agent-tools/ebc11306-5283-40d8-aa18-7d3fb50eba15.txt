@@ -1,0 +1,596 @@
+
+> wakusei-homepage@2.0.0 lint
+> eslint "src/**/*.{ts,vue}" "tests/**/*.test.ts" astro.config.mjs
+
+
+C:\Users\wakusei\Desktop\WakuseiHomePage\src\components\Footer.vue
+  20:1   warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  21:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  22:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  23:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  24:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  25:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  26:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  27:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  27:47  warning  ':key' should be on a new line                         vue/max-attributes-per-line
+  28:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  29:1   warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  30:1   warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  31:1   warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  32:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  33:1   warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  34:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  35:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  36:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  37:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  39:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  40:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  41:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  42:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  43:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  44:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  45:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  46:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  47:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  48:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  49:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  50:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  51:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  52:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  53:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  54:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  54:48  warning  ':name' should be on a new line                        vue/max-attributes-per-line
+  54:66  warning  'size' should be on a new line                         vue/max-attributes-per-line
+  55:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  56:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  57:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  58:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  59:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  61:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  63:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  64:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  65:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  66:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  67:1   warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+
+C:\Users\wakusei\Desktop\WakuseiHomePage\src\components\HomepageApp.vue
+  2:1   warning  Expected indentation of 2 spaces but found 4 spaces                           vue/html-indent
+  2:39  warning  'aria-labelledby' should be on a new line                                     vue/max-attributes-per-line
+  3:1   warning  Expected indentation of 4 spaces but found 8 spaces                           vue/html-indent
+  4:1   warning  Expected indentation of 6 spaces but found 12 spaces                          vue/html-indent
+  4:45  warning  'class' should be on a new line                                               vue/max-attributes-per-line
+  4:76  warning  Expected 1 line break after opening tag (`<h2>`), but no line breaks found    vue/singleline-html-element-content-newline
+  4:80  warning  Expected 1 line break before closing tag (`</h2>`), but no line breaks found  vue/singleline-html-element-content-newline
+  5:1   warning  Expected indentation of 6 spaces but found 12 spaces                          vue/html-indent
+  5:46  warning  Expected 1 line break after opening tag (`<p>`), but no line breaks found     vue/singleline-html-element-content-newline
+  5:79  warning  Expected 1 line break before closing tag (`</p>`), but no line breaks found   vue/singleline-html-element-content-newline
+  6:1   warning  Expected indentation of 4 spaces but found 8 spaces                           vue/html-indent
+  7:1   warning  Expected indentation of 2 spaces but found 4 spaces                           vue/html-indent
+
+C:\Users\wakusei\Desktop\WakuseiHomePage\src\components\Icon.vue
+   80:9   warning  Prop 'title' requires default value to be set        vue/require-default-prop
+   93:1   warning  Expected indentation of 2 spaces but found 4 spaces  vue/html-indent
+   94:1   warning  Expected indentation of 4 spaces but found 8 spaces  vue/html-indent
+   95:1   warning  Expected indentation of 4 spaces but found 8 spaces  vue/html-indent
+   96:1   warning  Expected indentation of 4 spaces but found 8 spaces  vue/html-indent
+   97:1   warning  Expected indentation of 4 spaces but found 8 spaces  vue/html-indent
+   98:1   warning  Expected indentation of 4 spaces but found 8 spaces  vue/html-indent
+   99:1   warning  Expected indentation of 4 spaces but found 8 spaces  vue/html-indent
+  100:1   warning  Expected indentation of 4 spaces but found 8 spaces  vue/html-indent
+  101:1   warning  Expected indentation of 4 spaces but found 8 spaces  vue/html-indent
+  102:1   warning  Expected indentation of 2 spaces but found 4 spaces  vue/html-indent
+  103:1   warning  Expected indentation of 4 spaces but found 8 spaces  vue/html-indent
+  104:1   warning  Expected indentation of 4 spaces but found 8 spaces  vue/html-indent
+  104:35  warning  ':d' should be on a new line                         vue/max-attributes-per-line
+  105:1   warning  Expected indentation of 2 spaces but found 4 spaces  vue/html-indent
+
+C:\Users\wakusei\Desktop\WakuseiHomePage\src\components\SiteShell.vue
+  189:1   warning  Expected indentation of 2 spaces but found 4 spaces                                 vue/html-indent
+  191:1   warning  Expected indentation of 2 spaces but found 4 spaces                                 vue/html-indent
+  192:1   warning  Expected indentation of 4 spaces but found 8 spaces                                 vue/html-indent
+  192:35  warning  ':style' should be on a new line                                                    vue/max-attributes-per-line
+  193:1   warning  Expected indentation of 6 spaces but found 12 spaces                                vue/html-indent
+  193:38  warning  'class' should be on a new line                                                     vue/max-attributes-per-line
+  194:1   warning  Expected indentation of 8 spaces but found 16 spaces                                vue/html-indent
+  194:41  warning  'class' should be on a new line                                                     vue/max-attributes-per-line
+  196:1   warning  Expected indentation of 8 spaces but found 16 spaces                                vue/html-indent
+  197:1   warning  Expected indentation of 10 spaces but found 20 spaces                               vue/html-indent
+  197:59  warning  'mode' should be on a new line                                                      vue/max-attributes-per-line
+  198:1   warning  Expected indentation of 12 spaces but found 24 spaces                               vue/html-indent
+  198:66  warning  ':key' should be on a new line                                                      vue/max-attributes-per-line
+  198:96  warning  'class' should be on a new line                                                     vue/max-attributes-per-line
+  199:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  199:49  warning  'ref' should be on a new line                                                       vue/max-attributes-per-line
+  199:65  warning  'class' should be on a new line                                                     vue/max-attributes-per-line
+  199:84  warning  ':style' should be on a new line                                                    vue/max-attributes-per-line
+  200:1   warning  Expected indentation of 16 spaces but found 32 spaces                               vue/html-indent
+  201:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  202:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  203:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  204:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  205:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  206:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  207:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  208:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  209:1   warning  Expected indentation of 16 spaces but found 32 spaces                               vue/html-indent
+  209:33  warning  Disallow self-closing on HTML void elements (<img/>)                                vue/html-self-closing
+  210:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  212:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  212:46  warning  ':style' should be on a new line                                                    vue/max-attributes-per-line
+  213:1   warning  Expected indentation of 16 spaces but found 32 spaces                               vue/html-indent
+  213:91  warning  ':key' should be on a new line                                                      vue/max-attributes-per-line
+  214:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  214:63  warning  'class' should be on a new line                                                     vue/max-attributes-per-line
+  215:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  215:54  warning  Expected 1 line break after opening tag (`<template>`), but no line breaks found    vue/singleline-html-element-content-newline
+  215:69  warning  Expected 1 line break before closing tag (`</template>`), but no line breaks found  vue/singleline-html-element-content-newline
+  216:1   warning  Expected indentation of 16 spaces but found 32 spaces                               vue/html-indent
+  217:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  219:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  220:1   warning  Expected indentation of 16 spaces but found 32 spaces                               vue/html-indent
+  221:1   warning  Expected indentation of 16 spaces but found 32 spaces                               vue/html-indent
+  222:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  224:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  224:52  warning  'class' should be on a new line                                                     vue/max-attributes-per-line
+  225:1   warning  Expected indentation of 16 spaces but found 32 spaces                               vue/html-indent
+  226:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  227:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  228:1   warning  Expected indentation of 16 spaces but found 32 spaces                               vue/html-indent
+  229:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  231:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  232:1   warning  Expected indentation of 12 spaces but found 24 spaces                               vue/html-indent
+  234:1   warning  Expected indentation of 12 spaces but found 24 spaces                               vue/html-indent
+  235:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  236:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  237:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  238:1   warning  Expected indentation of 12 spaces but found 24 spaces                               vue/html-indent
+  239:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  239:46  warning  ':style' should be on a new line                                                    vue/max-attributes-per-line
+  240:1   warning  Expected indentation of 16 spaces but found 32 spaces                               vue/html-indent
+  240:91  warning  ':key' should be on a new line                                                      vue/max-attributes-per-line
+  241:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  241:63  warning  'class' should be on a new line                                                     vue/max-attributes-per-line
+  242:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  242:54  warning  Expected 1 line break after opening tag (`<template>`), but no line breaks found    vue/singleline-html-element-content-newline
+  242:69  warning  Expected 1 line break before closing tag (`</template>`), but no line breaks found  vue/singleline-html-element-content-newline
+  243:1   warning  Expected indentation of 16 spaces but found 32 spaces                               vue/html-indent
+  244:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  245:1   warning  Expected indentation of 12 spaces but found 24 spaces                               vue/html-indent
+  247:1   warning  Expected indentation of 12 spaces but found 24 spaces                               vue/html-indent
+  248:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  249:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  250:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  251:1   warning  Expected indentation of 12 spaces but found 24 spaces                               vue/html-indent
+  252:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  252:46  warning  ':style' should be on a new line                                                    vue/max-attributes-per-line
+  253:1   warning  Expected indentation of 16 spaces but found 32 spaces                               vue/html-indent
+  253:91  warning  ':key' should be on a new line                                                      vue/max-attributes-per-line
+  254:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  254:63  warning  'class' should be on a new line                                                     vue/max-attributes-per-line
+  255:1   warning  Expected indentation of 18 spaces but found 36 spaces                               vue/html-indent
+  255:54  warning  Expected 1 line break after opening tag (`<template>`), but no line breaks found    vue/singleline-html-element-content-newline
+  255:69  warning  Expected 1 line break before closing tag (`</template>`), but no line breaks found  vue/singleline-html-element-content-newline
+  256:1   warning  Expected indentation of 16 spaces but found 32 spaces                               vue/html-indent
+  257:1   warning  Expected indentation of 14 spaces but found 28 spaces                               vue/html-indent
+  258:1   warning  Expected indentation of 12 spaces but found 24 spaces                               vue/html-indent
+  260:1   warning  Expected indentation of 12 spaces but found 24 spaces                               vue/html-indent
+  261:1   warning  Expected indentation of 10 spaces but found 20 spaces                               vue/html-indent
+  262:1   warning  Expected indentation of 8 spaces but found 16 spaces                                vue/html-indent
+  263:1   warning  Expected indentation of 6 spaces but found 12 spaces                                vue/html-indent
+  264:1   warning  Expected indentation of 4 spaces but found 8 spaces                                 vue/html-indent
+  265:1   warning  Expected indentation of 2 spaces but found 4 spaces                                 vue/html-indent
+  267:1   warning  Expected indentation of 2 spaces but found 4 spaces                                 vue/html-indent
+  267:47  warning  ':initial-is-home-page' should be on a new line                                     vue/max-attributes-per-line
+
+C:\Users\wakusei\Desktop\WakuseiHomePage\src\components\SocialLinks.vue
+  163:1   warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  164:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  165:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  166:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  167:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  168:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  169:1   warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  170:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  171:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  172:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  173:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  174:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  175:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  176:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  177:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  178:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  179:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  180:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  181:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  182:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  183:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  184:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  185:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  186:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  187:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  188:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  189:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  190:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  191:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  192:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  193:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  194:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  195:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  195:40  warning  ':name' should be on a new line                        vue/max-attributes-per-line
+  195:58  warning  'class' should be on a new line                        vue/max-attributes-per-line
+  195:78  warning  'size' should be on a new line                         vue/max-attributes-per-line
+  196:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  197:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  198:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  199:1   warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  201:1   warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  201:17  warning  'id' should be on a new line                           vue/max-attributes-per-line
+  201:34  warning  'ref' should be on a new line                          vue/max-attributes-per-line
+  201:47  warning  'class' should be on a new line                        vue/max-attributes-per-line
+  201:76  warning  ':class' should be on a new line                       vue/max-attributes-per-line
+  202:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  203:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  204:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  205:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  206:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  207:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  208:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  209:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  210:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  211:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  212:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  213:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  214:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  215:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  216:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  217:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  218:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  219:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  220:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  221:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  222:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  223:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  224:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  225:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  226:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  227:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  228:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  229:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  230:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  231:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  232:1   warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  233:1   warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  234:1   warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  235:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  236:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  237:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  237:44  warning  ':name' should be on a new line                        vue/max-attributes-per-line
+  237:62  warning  'class' should be on a new line                        vue/max-attributes-per-line
+  237:82  warning  'size' should be on a new line                         vue/max-attributes-per-line
+  238:1   warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  239:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  240:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  242:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  243:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  244:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  245:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  246:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  247:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  248:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  250:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  250:36  warning  'class' should be on a new line                        vue/max-attributes-per-line
+  251:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  252:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  253:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  254:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  255:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  256:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  257:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  258:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  259:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  260:1   warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  261:1   warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  262:1   warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  263:1   warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+
+C:\Users\wakusei\Desktop\WakuseiHomePage\src\components\TopBar.vue
+   11:7    warning  'props' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  337:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  338:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  338:23   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  338:39   warning  'role' should be on a new line                         vue/max-attributes-per-line
+  338:54   warning  'aria-label' should be on a new line                   vue/max-attributes-per-line
+  338:82   warning  ':style' should be on a new line                       vue/max-attributes-per-line
+  339:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  340:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  341:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  342:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  343:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  344:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  345:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  346:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  346:41   warning  ':src' should be on a new line                         vue/max-attributes-per-line
+  346:74   warning  'alt' should be on a new line                          vue/max-attributes-per-line
+  346:81   warning  'width' should be on a new line                        vue/max-attributes-per-line
+  346:92   warning  'height' should be on a new line                       vue/max-attributes-per-line
+  346:104  warning  Disallow self-closing on HTML void elements (<img/>)   vue/html-self-closing
+  347:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  348:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  350:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  351:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  351:70   warning  ':key' should be on a new line                         vue/max-attributes-per-line
+  352:1    warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  352:53   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  354:1    warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  355:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  356:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  357:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  358:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  359:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  360:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  361:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  362:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  363:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  363:71   warning  ':name' should be on a new line                        vue/max-attributes-per-line
+  364:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  365:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  366:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  367:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  368:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  369:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  370:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  372:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  373:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  374:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  375:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  376:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  377:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  378:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  379:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  380:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  381:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  382:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  382:71   warning  ':name' should be on a new line                        vue/max-attributes-per-line
+  383:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  384:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  385:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  386:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  387:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  388:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  389:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  391:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  392:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  393:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  394:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  395:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  396:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  397:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  398:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  399:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  400:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  401:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  402:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  402:75   warning  ':name' should be on a new line                        vue/max-attributes-per-line
+  403:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  404:1    warning  Expected indentation of 16 spaces but found 32 spaces  vue/html-indent
+  405:1    warning  Expected indentation of 16 spaces but found 32 spaces  vue/html-indent
+  406:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  407:1    warning  Expected indentation of 16 spaces but found 32 spaces  vue/html-indent
+  408:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  409:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  410:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  411:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  412:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  413:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  414:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  415:1    warning  Expected indentation of 16 spaces but found 32 spaces  vue/html-indent
+  416:1    warning  Expected indentation of 16 spaces but found 32 spaces  vue/html-indent
+  417:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  418:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  419:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  420:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  421:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  422:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  422:75   warning  ':name' should be on a new line                        vue/max-attributes-per-line
+  423:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  424:1    warning  Expected indentation of 16 spaces but found 32 spaces  vue/html-indent
+  425:1    warning  Expected indentation of 16 spaces but found 32 spaces  vue/html-indent
+  426:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  427:1    warning  Expected indentation of 16 spaces but found 32 spaces  vue/html-indent
+  428:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  429:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  430:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  431:1    warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  432:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  433:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  434:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  436:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  437:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  437:25   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  437:56   warning  'role' should be on a new line                         vue/max-attributes-per-line
+  437:70   warning  'aria-label' should be on a new line                   vue/max-attributes-per-line
+  438:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  439:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  440:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  441:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  442:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  443:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  444:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  445:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  446:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  447:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  448:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  449:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  450:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  450:32   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  451:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  452:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  453:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  455:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  456:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  457:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  458:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  459:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  460:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  461:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  462:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  463:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  464:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  465:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  466:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  467:1    warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  468:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  469:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  470:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  471:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  472:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  473:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  474:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  475:1    warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  475:17   warning  Disallow self-closing on HTML void elements (<img/>)   vue/html-self-closing
+  476:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  477:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  478:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  480:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  482:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  482:66   warning  ':key' should be on a new line                         vue/max-attributes-per-line
+  483:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  483:49   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  485:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  486:1    warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  486:51   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  487:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  488:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  489:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  490:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  491:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  492:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  493:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  494:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  494:78   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  495:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  496:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  496:63   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  497:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  498:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  499:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  500:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  501:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  502:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  503:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  504:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  505:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  506:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  507:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  508:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  509:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  510:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  511:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  512:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  512:48   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  513:1    warning  Expected indentation of 14 spaces but found 28 spaces  vue/html-indent
+  514:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  515:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  516:1    warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  518:1    warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  519:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  520:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  521:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  522:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  523:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  524:1    warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  525:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  525:74   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  526:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  527:1    warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  529:1    warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  530:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  531:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  532:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  533:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  534:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  535:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  536:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  537:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  538:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  539:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  539:68   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  540:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  541:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  542:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  543:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  544:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  545:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  546:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  547:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  548:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  549:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  550:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  550:68   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  551:1    warning  Expected indentation of 12 spaces but found 24 spaces  vue/html-indent
+  552:1    warning  Expected indentation of 10 spaces but found 20 spaces  vue/html-indent
+  553:1    warning  Expected indentation of 8 spaces but found 16 spaces   vue/html-indent
+  554:1    warning  Expected indentation of 6 spaces but found 12 spaces   vue/html-indent
+  555:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  557:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  557:51   warning  'class' should be on a new line                        vue/max-attributes-per-line
+  558:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  560:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  561:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+  562:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  563:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  564:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  565:1    warning  Expected indentation of 4 spaces but found 8 spaces    vue/html-indent
+  566:1    warning  Expected indentation of 2 spaces but found 4 spaces    vue/html-indent
+
+C:\Users\wakusei\Desktop\WakuseiHomePage\src\components\TypewriterSlogan.vue
+  14:1  warning  Expected indentation of 2 spaces but found 4 spaces   vue/html-indent
+  15:1  warning  Expected indentation of 4 spaces but found 8 spaces   vue/html-indent
+  16:1  warning  Expected indentation of 4 spaces but found 8 spaces   vue/html-indent
+  17:1  warning  Expected indentation of 6 spaces but found 12 spaces  vue/html-indent
+  18:1  warning  Expected indentation of 6 spaces but found 12 spaces  vue/html-indent
+  19:1  warning  Expected indentation of 6 spaces but found 12 spaces  vue/html-indent
+  20:1  warning  Expected indentation of 4 spaces but found 8 spaces   vue/html-indent
+  21:1  warning  Expected indentation of 6 spaces but found 12 spaces  vue/html-indent
+  22:1  warning  Expected indentation of 4 spaces but found 8 spaces   vue/html-indent
+  23:1  warning  Expected indentation of 2 spaces but found 4 spaces   vue/html-indent
+
+✖ 538 problems (0 errors, 538 warnings)
+  0 errors and 517 warnings potentially fixable with the `--fix` option.
+
+
+> wakusei-homepage@2.0.0 check
+> astro check
+
+20:08:59 [types] Generated 47ms
+20:08:59 [check] Getting diagnostics for Astro files in C:\Users\wakusei\Desktop\WakuseiHomePage...
+Result (52 files): 
+- 0 errors
+- 0 warnings
+- 0 hints
+
+
+> wakusei-homepage@2.0.0 build
+> astro build
+
+20:09:04 [types] Generated 38ms
+20:09:04 [build] output: "static"
+20:09:04 [build] mode: "static"
+20:09:04 [build] directory: C:\Users\wakusei\Desktop\WakuseiHomePage\dist\
+20:09:04 [build] Collecting build info...
+20:09:04 [build] ✓ Completed in 83ms.
+20:09:04 [build] Building static entrypoints...
+20:09:05 [vite] ✓ built in 1.01s
+20:09:06 [vite] ✓ built in 570ms
+20:09:06 [build] Rearranging server assets...
+
+ generating static routes 
+20:09:06   ├─ /404.html (+21ms) 
+20:09:06   ├─ /posts/index.html (+5ms) 
+20:09:06   ├─ /posts/hello-world/index.html (+4ms) 
+20:09:06   ├─ /index.html (+4ms) 
+20:09:06 ✓ Completed in 106ms.
+
+20:09:06 [build] ✓ Completed in 1.74s.
+20:09:06 [build] 4 page(s) built in 1.83s
+20:09:06 [build] Complete!

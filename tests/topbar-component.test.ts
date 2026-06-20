@@ -44,20 +44,40 @@ describe('TopBar unified navigation component', () => {
         expect(topbarComponent).toMatch(/e\.preventDefault\(\)/);
     });
 
-    it('uses static styles without expansion animation', () => {
-        expect(topbarComponent).not.toMatch(/expansionProgress/);
-        expect(topbarComponent).toMatch(/const barStyle = computed\(\(\) =>/);
-        expect(topbarComponent).toMatch(/return 'opacity: 1; transform: translateX\(0\)';/);
+    it('uses expansion progress to drive bar expansion CSS variables', () => {
+        expect(topbarComponent).toMatch(/const expansionProgress = computed\(\(\) =>/);
+        expect(topbarComponent).toMatch(/--left-width/);
+        expect(topbarComponent).toMatch(/--bar-left/);
     });
 
-    it('dispatches custom event on mobile avatar click', () => {
-        expect(topbarComponent).toMatch(/wakusei:open-mobile-menu/);
-        expect(topbarComponent).toMatch(/new CustomEvent\('wakusei:open-mobile-menu'\)/);
+    it('does not use translateX for bar layout', () => {
+        expect(topbarComponent).not.toMatch(/barStyle/);
+        expect(topbarComponent).not.toMatch(/rightStyle/);
+        expect(topbarComponent).not.toMatch(/leftStyle/);
+        expect(topbarComponent).not.toMatch(/translateX\(calc\(var\(--left-panel-width/);
+    });
+
+    it('uses barExpandStyle to drive bar left offset', () => {
+        expect(topbarComponent).toMatch(/const barExpandStyle = computed/);
+        expect(topbarComponent).toMatch(/:style="barExpandStyle"/);
+    });
+
+    it('opens mobile sidebar on avatar click', () => {
+        expect(topbarComponent).toMatch(/openSidebar\(\)/);
     });
 
     it('uses anchor navigation for desktop home click to preserve transitions', () => {
         expect(topbarComponent).toMatch(/href="\/"/);
         expect(topbarComponent).not.toMatch(/window\.location\.href = '\/'/);
+        expect(topbarComponent).toMatch(/const isCurrentHome = window\.location\.pathname === '\/';/);
+        expect(topbarComponent).toMatch(/if \(isCurrentHome && s\) \{/);
+    });
+
+    it('scrolls the active page scroller for repeated same-route dock clicks', () => {
+        expect(topbarComponent).toMatch(/function scrollCurrentPageToTop\(\)/);
+        expect(topbarComponent).toMatch(/document\.querySelector\('\.page-scroller'\)/);
+        expect(topbarComponent).toMatch(/s\.scrollTo\(\{ top: 0, behavior: 'smooth' \}\)/);
+        expect(topbarComponent).toMatch(/window\.scrollTo\(\{ top: 0, behavior: 'smooth' \}\)/);
     });
 
     it('accepts initialIsHomePage prop for SSR snapshot', () => {
@@ -68,5 +88,23 @@ describe('TopBar unified navigation component', () => {
         expect(topbarComponent).toMatch(/outsideClickCleanup/);
         expect(topbarComponent).toMatch(/setupOutsideClick\(\)/);
         expect(topbarComponent).toMatch(/document\.addEventListener\('click', handler\)/);
+    });
+
+    it('renders mobile sidebar mode within the same component', () => {
+        expect(topbarComponent).toMatch(/class="top-bar-sidebar"/);
+        expect(topbarComponent).toMatch(/class="top-bar-sidebar-overlay"/);
+        expect(topbarComponent).toMatch(/isMobile/);
+    });
+
+    it('uses page shell store for scroll-driven expansion', () => {
+        expect(topbarComponent).toContain('usePageShellStore');
+        expect(topbarComponent).toContain('pageShell.scrollProgress');
+    });
+
+    it('keeps real bar expansion CSS variables', () => {
+        expect(topbarComponent).toMatch(/--bar-left/);
+        expect(topbarComponent).toMatch(/--left-width/);
+        expect(topbarComponent).not.toMatch(/rightStyle/);
+        expect(topbarComponent).not.toMatch(/translateX\(/);
     });
 });

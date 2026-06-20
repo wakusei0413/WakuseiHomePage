@@ -13,6 +13,12 @@ describe('logic guardrails', () => {
         expect(runtimeEffects).toMatch(/if \(isEditableTarget\(event\.target\)\) return;/);
     });
 
+    it('does not block mousedown on descendants inside links and buttons', () => {
+        expect(runtimeEffects).toMatch(/const isInteractiveTarget = \(target: EventTarget \| null\) =>/);
+        expect(runtimeEffects).toMatch(/element\.closest\('a, button, \[role="button"\], label'\)/);
+        expect(runtimeEffects).toMatch(/if \(isInteractiveTarget\(event\.target\)\) return;/);
+    });
+
     it('cleans up topbar magnify listeners and rebinds on viewport changes', () => {
         expect(topBarComponent).toMatch(/let magnifyCleanup: \(\(\) => void\) \| undefined;/);
         expect(topBarComponent).toMatch(/watch\(\[isMobile, barRef\]/);

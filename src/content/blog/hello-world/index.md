@@ -15,7 +15,7 @@ draft: false
 
 ## 技术栈
 
-本站使用 Astro 静态站点生成器 + SolidJS 构建。
+本站使用 Astro 静态站点生成器 + Vue 3 构建。
 
 ## 未来计划
 

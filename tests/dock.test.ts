@@ -1,5 +1,9 @@
 import { getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel } from '../src/lib/dock';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { DockItem } from '../src/types/site';
+
+const iconComponent = readFileSync(join(process.cwd(), 'src', 'components', 'Icon.vue'), 'utf-8');
 
 describe('dock helpers', () => {
     it('resolves translated labels before literal text', () => {
@@ -31,5 +35,9 @@ describe('dock helpers', () => {
     it('treats hash-only links as disabled placeholders', () => {
         expect(isDockLinkDisabled('#')).toBe(true);
         expect(isDockLinkDisabled('/settings')).toBe(false);
+    });
+
+    it('supports the configured blog dock icon', () => {
+        expect(iconComponent).toMatch(/newspaper:/);
     });
 });

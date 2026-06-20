@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import Icon from './Icon.vue';
 import type { SocialLink, SocialLinksConfig } from '../types/site';
 
@@ -10,13 +10,13 @@ const props = defineProps<{
     config: SocialLinksConfig;
 }>();
 
-const breathe = ref(true);
 const currentPage = ref(0);
 const transitionDirection = ref<'next' | 'prev' | null>(null);
 const animationKey = ref(0);
 const navRef = ref<HTMLElement>();
 let suppressNextClick = false;
 let suppressClickTimer: ReturnType<typeof setTimeout> | undefined;
+let mountedCleanup: (() => void) | undefined;
 
 const totalPages = computed(() => Math.ceil(props.config.links.length / ITEMS_PER_PAGE));
 const pages = computed(() => {
@@ -66,6 +66,12 @@ function clearHoveredStateOnNavigate(linkElement: HTMLAnchorElement) {
     linkElement.blur();
 }
 
+function isInteractiveTarget(target: EventTarget | null) {
+    const element = target as HTMLElement | null;
+    if (!element) return false;
+    return !!element.closest('a, button, [role="button"]');
+}
+
 function handleLinkClick(event: MouseEvent, linkElement: HTMLAnchorElement) {
     if (suppressNextClick) {
         event.preventDefault();
@@ -81,7 +87,6 @@ onMounted(() => {
     const wrapper = navRef.value;
     if (!wrapper || totalPages.value <= 1) return;
 
-    const breatheTimer = setTimeout(() => (breathe.value = false), 3200);
     window.addEventListener('pagehide', clearAllHoveredStates);
     window.addEventListener('pageshow', clearAllHoveredStates);
 
@@ -91,6 +96,7 @@ onMounted(() => {
     let wheelSettlingTimer: ReturnType<typeof setTimeout> | undefined;
 
     function handlePointerDown(e: PointerEvent) {
+        if (isInteractiveTarget(e.target)) return;
         isDown = true;
         suppressNextClick = false;
         startX = e.pageX - wrapper.offsetLeft;
@@ -99,11 +105,17 @@ onMounted(() => {
 
     function handlePointerMove(e: PointerEvent) {
         if (!isDown) return;
+        const dragX = e.pageX - wrapper.offsetLeft;
+        if (Math.abs(dragX - startX) < 6) return;
         e.preventDefault();
     }
 
     function handlePointerUp(e: PointerEvent) {
+        if (!isDown) return;
         isDown = false;
+        if (wrapper.hasPointerCapture(e.pointerId)) {
+            wrapper.releasePointerCapture(e.pointerId);
+        }
         const dragX = e.pageX - wrapper.offsetLeft;
         const dragDistance = dragX - startX;
         if (Math.abs(dragDistance) < 36) return;
@@ -140,8 +152,7 @@ onMounted(() => {
     wrapper.addEventListener('pointerup', handlePointerUp);
     wrapper.addEventListener('wheel', handleWheel, { passive: false });
 
-    return () => {
-        clearTimeout(breatheTimer);
+    mountedCleanup = () => {
         clearTimeout(wheelSettlingTimer);
         clearTimeout(suppressClickTimer);
         window.removeEventListener('pagehide', clearAllHoveredStates);
@@ -152,6 +163,10 @@ onMounted(() => {
         wrapper.removeEventListener('wheel', handleWheel);
     };
 });
+
+onUnmounted(() => {
+    mountedCleanup?.();
+});
 </script>
 
 <template>
@@ -160,7 +175,6 @@ onMounted(() => {
         id="socialLinks"
         ref="navRef"
         class="social-links"
-        :class="{ 'breathe-once': breathe }"
     >
         <div
             v-for="(link, index) in props.config.links"
@@ -193,7 +207,7 @@ onMounted(() => {
         </div>
     </nav>
 
-    <nav v-else id="socialLinks" ref="navRef" class="social-links-wrapper" :class="{ 'breathe-once': breathe }">
+    <nav v-else id="socialLinks" ref="navRef" class="social-links-wrapper">
         <div
             id="socialLinksPage"
             class="social-links-page"

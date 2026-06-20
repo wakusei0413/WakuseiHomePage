@@ -11,19 +11,21 @@ export function enableContentProtection(enabled: boolean) {
         if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tagName)) return true;
         return element.isContentEditable;
     };
+    const isInteractiveTarget = (target: EventTarget | null) => {
+        const element = target as HTMLElement | null;
+        if (!element) return false;
+        const tagName = element.tagName;
+        if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A', 'LABEL'].includes(tagName)) return true;
+        if (element.isContentEditable) return true;
+        return !!element.closest('a, button, [role="button"], label');
+    };
 
     const preventDefault = (event: Event) => {
         if (isEditableTarget(event.target)) return;
         event.preventDefault();
     };
     const mouseDownHandler = (event: Event) => {
-        const target = event.target as HTMLElement | null;
-        const tagName = target?.tagName;
-
-        if (tagName && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(tagName)) {
-            return;
-        }
-
+        if (isInteractiveTarget(event.target)) return;
         event.preventDefault();
     };
 
@@ -46,7 +48,7 @@ export function enableContentProtection(enabled: boolean) {
 }
 
 export function initScrollAnimations(delay: number, offset: number) {
-    const targets = document.querySelectorAll('.social-link, .info-panel, .avatar-box, .name, .status-bar');
+    const targets = document.querySelectorAll('.social-link, .avatar-box, .name, .status-bar');
 
     targets.forEach((target, index) => {
         const element = target as HTMLElement;

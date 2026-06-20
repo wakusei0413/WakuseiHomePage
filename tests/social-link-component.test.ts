@@ -90,4 +90,11 @@ describe('SocialLinks component interactions', () => {
         expect(socialLinksComponent).toMatch(/if \(suppressNextClick\)/);
         expect(socialLinksComponent).toMatch(/@click="\(event: MouseEvent\) => handleLinkClick/);
     });
+
+    it('keeps carousel drag handlers from capturing pointer events on links', () => {
+        expect(socialLinksComponent).toMatch(/function isInteractiveTarget/);
+        expect(socialLinksComponent).toMatch(/if \(isInteractiveTarget\(e\.target\)\) return;/);
+        expect(socialLinksComponent).toMatch(/Math\.abs\(dragX - startX\) < 6/);
+        expect(socialLinksComponent).toMatch(/wrapper\.releasePointerCapture\(e\.pointerId\)/);
+    });
 });

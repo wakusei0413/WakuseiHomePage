@@ -1,8 +1,9 @@
 ---
 import HomepageApp from '../components/HomepageApp.vue';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../data/site';
 ---
 
-<BaseLayout>
+<BaseLayout shellMode="home" shellTitle={siteConfig.profile.name}>
     <HomepageApp client:load />
 </BaseLayout>

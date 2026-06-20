@@ -5,6 +5,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     'zh-CN': {
         'dock.theme': '主题',
         'dock.language': '语言',
+        'dock.home': '主页',
         'dock.blog': '文章',
         'dock.settings': '设置',
         'dock.theme.light': '浅色',
@@ -39,6 +40,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     en: {
         'dock.theme': 'Theme',
         'dock.language': 'Language',
+        'dock.home': 'Home',
         'dock.blog': 'Blog',
         'dock.settings': 'Settings',
         'dock.theme.light': 'Light',
@@ -73,6 +75,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     ja: {
         'dock.theme': 'テーマ',
         'dock.language': '言語',
+        'dock.home': 'ホーム',
         'dock.blog': '記事',
         'dock.settings': '設定',
         'dock.theme.light': 'ライト',

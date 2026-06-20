@@ -9,15 +9,25 @@ import '../styles/topbar.css';
 import '../styles/footer.css';
 
 import { ClientRouter } from 'astro:transitions';
+import Footer from '../components/Footer.vue';
 import SiteShell from '../components/SiteShell.vue';
+import TopBar from '../components/TopBar.vue';
 import { siteConfig } from '../data/site';
 
 interface Props {
     title?: string;
     description?: string;
+    shellMode?: 'home' | 'blog' | 'article' | 'error';
+    shellTitle?: string;
 }
 
-const { title = siteConfig.title, description = siteConfig.description } = Astro.props;
+const {
+    title = siteConfig.title,
+    description = siteConfig.description,
+    shellMode = 'error',
+    shellTitle = title
+} = Astro.props;
+const isHomePage = shellMode === 'home';
 const DARK_THEME_BG = '#080808';
 const googleFontsUrl =
     'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap';
@@ -36,11 +46,10 @@ const siteUrl = Astro.site ?? new URL('https://www.wakusei.top');
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
 const ogImageUrl = new URL(siteConfig.profile.avatar, siteUrl).toString();
 const ogLocale = siteConfig.lang.replace('-', '_');
-const isHomePage = Astro.url.pathname === '/';
 ---
 
 <!doctype html>
-<html lang={siteConfig.lang} class:list={[isHomePage && 'is-home']}>
+<html lang={siteConfig.lang} class:list={[isHomePage && 'is-home']} transition:name="root" transition:animate="none">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -94,6 +103,9 @@ const isHomePage = Astro.url.pathname === '/';
         </script>
     </head>
     <body class:list={[isHomePage && 'is-home']}>
+        <div id="navigationProgress" class="navigation-progress" aria-hidden="true">
+            <div id="navigationProgressBar" class="navigation-progress__bar"></div>
+        </div>
         <div id="globalLoadingOverlay" class="loading-overlay">
             <div class="loading-panel">
                 <div class="loading-spinner"></div>
@@ -116,6 +128,7 @@ const isHomePage = Astro.url.pathname === '/';
                 var textIndex = 0;
                 var pageLoaded = false;
                 var homepageReady = false;
+                var shellReady = false;
                 var hidden = false;
                 var progressTimer;
                 var textTimer;
@@ -139,11 +152,18 @@ const isHomePage = Astro.url.pathname === '/';
                 }
 
                 function shouldWaitForHomepage() {
-                    return !!document.querySelector('.page-scroller') && !homepageReady;
+                    const isHomeRoute =
+                        document.documentElement.classList.contains('is-home') ||
+                        document.body.classList.contains('is-home');
+                    return isHomeRoute && !homepageReady;
+                }
+
+                function shouldWaitForShell() {
+                    return !shellReady;
                 }
 
                 function maybeHideOverlay() {
-                    if (!pageLoaded || shouldWaitForHomepage()) return;
+                    if (!pageLoaded || shouldWaitForShell() || shouldWaitForHomepage()) return;
                     hideOverlay();
                 }
 
@@ -157,6 +177,11 @@ const isHomePage = Astro.url.pathname === '/';
 
                 window.addEventListener('wakusei:homepage-ready', function () {
                     homepageReady = true;
+                    maybeHideOverlay();
+                });
+
+                window.addEventListener('wakusei:shell-ready', function () {
+                    shellReady = true;
                     maybeHideOverlay();
                 });
 
@@ -186,10 +211,30 @@ const isHomePage = Astro.url.pathname === '/';
                 }
             })();
         </script>
-        <slot />
-        <div transition:persist="site-shell">
-            <SiteShell client:load initialIsHomePage={isHomePage} />
+        <div id="pageScroller" class="page-scroller">
+            <div transition:name="site-shell" transition:persist>
+                <SiteShell client:load showTopBar={false} />
+            </div>
+            <div
+                id="pageTransitionSurface"
+                class="page-transition-surface"
+                data-shell-mode={shellMode}
+                data-page-title={shellTitle}
+                data-is-home={isHomePage ? 'true' : 'false'}
+                transition:name="page-content"
+            >
+                <slot />
+            </div>
+            <div class="page-footer" transition:name="site-footer" transition:persist>
+                <Footer
+                    client:load
+                    links={siteConfig.footer.links}
+                    socialLinks={siteConfig.socialLinks.links}
+                    copyrightText={siteConfig.footer.text}
+                />
+            </div>
         </div>
+        <TopBar client:load initialIsHomePage={isHomePage} />
         <noscript>
             <style>
                 .container {
@@ -201,26 +246,212 @@ const isHomePage = Astro.url.pathname === '/';
                 }
             </style>
         </noscript>
-        <script is:inline>
-            document.addEventListener('astro:before-swap', (event) => {
-                sessionStorage.setItem('__wakusei_skip_entry_loader', 'true');
-                const incomingOverlay = event.newDocument.querySelector('#globalLoadingOverlay');
-                if (incomingOverlay) incomingOverlay.classList.add('hidden');
-            });
+        <script is:inline define:vars={{ darkBg: DARK_THEME_BG, themeColor: siteConfig.themeColor }}>
+            if (!window.__wakuseiNavigationRuntimeInitialized) {
+                window.__wakuseiNavigationRuntimeInitialized = true;
 
-            document.addEventListener('astro:after-swap', () => {
-                sessionStorage.removeItem('__wakusei_skip_entry_loader');
-                const isHome = !!document.querySelector('.page-scroller');
-                const h = document.documentElement;
-                const b = document.body;
-                if (isHome) {
-                    h.classList.add('is-home');
-                    b.classList.add('is-home');
-                } else {
-                    h.classList.remove('is-home');
-                    b.classList.remove('is-home');
+                (function () {
+                    var showDelay = 120;
+                    var showTimer;
+                    var trickleTimer;
+                    var hideTimer;
+                    var resourceTimeout;
+                    var resourceProbeTimer;
+                    var pendingReadyHandler;
+                    var progressVisible = false;
+                    var value = 0;
+                    var navigationEpoch = 0;
+
+                    function getNavigationProgressElements() {
+                        const progress = document.getElementById('navigationProgress');
+                        const bar = document.getElementById('navigationProgressBar');
+                        return { progress, bar };
+                    }
+
+                    function setValue(nextValue) {
+                        var elements = getNavigationProgressElements();
+                        value = Math.max(value, Math.min(nextValue, 100));
+                        if (elements.bar) elements.bar.style.transform = 'scaleX(' + value / 100 + ')';
+                    }
+
+                    function clearPendingResourceWait() {
+                        if (resourceTimeout) {
+                            window.clearTimeout(resourceTimeout);
+                            resourceTimeout = undefined;
+                        }
+                        if (resourceProbeTimer) {
+                            window.clearTimeout(resourceProbeTimer);
+                            resourceProbeTimer = undefined;
+                        }
+                        if (pendingReadyHandler) {
+                            window.removeEventListener('wakusei:homepage-ready', pendingReadyHandler);
+                            window.removeEventListener('wakusei:shell-ready', pendingReadyHandler);
+                            pendingReadyHandler = undefined;
+                        }
+                    }
+
+                    function isIncomingHomeReady() {
+                        const carrier = document.getElementById('pageTransitionSurface');
+                        const isHome = carrier && carrier.dataset.isHome === 'true';
+                        if (!isHome) return false;
+                        return !!document.querySelector('.container.visible');
+                    }
+
+                    function reset() {
+                        var elements = getNavigationProgressElements();
+                        window.clearTimeout(showTimer);
+                        window.clearInterval(trickleTimer);
+                        window.clearTimeout(hideTimer);
+                        clearPendingResourceWait();
+                        progressVisible = false;
+                        value = 0;
+                        if (elements.bar) elements.bar.style.transform = 'scaleX(0)';
+                        if (elements.progress) {
+                            elements.progress.classList.remove('navigation-progress--visible');
+                            elements.progress.classList.remove('navigation-progress--done');
+                        }
+                    }
+
+                    function start() {
+                        navigationEpoch += 1;
+                        reset();
+                        progressVisible = true;
+                        showTimer = window.setTimeout(function () {
+                            var elements = getNavigationProgressElements();
+                            if (!elements.progress) return;
+                            elements.progress.classList.add('navigation-progress--visible');
+                            setValue(12);
+                            trickleTimer = window.setInterval(function () {
+                                setValue(value + Math.max(1, (88 - value) * 0.12));
+                            }, 180);
+                        }, showDelay);
+                    }
+
+                    function finish() {
+                        var elements = getNavigationProgressElements();
+                        window.clearTimeout(showTimer);
+                        window.clearInterval(trickleTimer);
+                        clearPendingResourceWait();
+                        if (!elements.progress) return;
+                        if (!progressVisible) {
+                            reset();
+                            return;
+                        }
+                        elements.progress.classList.add('navigation-progress--visible');
+                        setValue(100);
+                        elements.progress.classList.add('navigation-progress--done');
+                        hideTimer = window.setTimeout(reset, 260);
+                    }
+
+                    function waitForResources() {
+                        clearPendingResourceWait();
+                        const epoch = navigationEpoch;
+
+                        if (!incomingIsHomePage) {
+                            finish();
+                            return;
+                        }
+
+                        function settle() {
+                            if (epoch !== navigationEpoch) return;
+                            finish();
+                        }
+
+                        pendingReadyHandler = function () {
+                            settle();
+                        };
+
+                        window.addEventListener('wakusei:homepage-ready', pendingReadyHandler);
+                        window.addEventListener('wakusei:shell-ready', pendingReadyHandler);
+
+                        resourceTimeout = window.setTimeout(settle, 10000);
+
+                        resourceProbeTimer = window.setTimeout(function () {
+                            if (epoch !== navigationEpoch) return;
+                            if (isIncomingHomeReady()) {
+                                settle();
+                            }
+                        }, 0);
+                    }
+
+                    document.addEventListener('astro:before-preparation', function () {
+                        start();
+                    });
+                    document.addEventListener('astro:after-swap', function () {
+                        waitForResources();
+                    });
+                })();
+
+                function getActiveTheme() {
+                    const storedTheme = localStorage.getItem('theme');
+                    if (storedTheme === 'dark' || storedTheme === 'light') return storedTheme;
+                    const currentTheme = document.documentElement.getAttribute('data-theme');
+                    if (currentTheme === 'dark' || currentTheme === 'light') return currentTheme;
+                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+                    return 'light';
                 }
-            });
+
+                let incomingIsHomePage = document.documentElement.classList.contains('is-home');
+
+                function applyHomePageChromeState(isHome) {
+                    const h = document.documentElement;
+                    const b = document.body;
+                    if (isHome) {
+                        h.classList.add('is-home');
+                        b.classList.add('is-home');
+                    } else {
+                        h.classList.remove('is-home');
+                        b.classList.remove('is-home');
+                    }
+                }
+
+                function getShellStateFromDocument(doc) {
+                    const carrier = doc.getElementById('pageTransitionSurface');
+                    if (!carrier) {
+                        return { title: '', mode: 'error', isHomePage: false };
+                    }
+                    const mode =
+                        carrier.dataset.shellMode === 'home' ||
+                        carrier.dataset.shellMode === 'blog' ||
+                        carrier.dataset.shellMode === 'article' ||
+                        carrier.dataset.shellMode === 'error'
+                            ? carrier.dataset.shellMode
+                            : 'error';
+                    return {
+                        title: carrier.dataset.pageTitle || '',
+                        mode: mode,
+                        isHomePage: carrier.dataset.isHome === 'true'
+                    };
+                }
+
+                function dispatchShellState(nextState) {
+                    window.dispatchEvent(new CustomEvent('wakusei:shell-page-change', { detail: nextState }));
+                }
+
+                document.addEventListener('astro:before-swap', (event) => {
+                    sessionStorage.setItem('__wakusei_skip_entry_loader', 'true');
+                    const incomingOverlay = event.newDocument.querySelector('#globalLoadingOverlay');
+                    if (incomingOverlay) incomingOverlay.classList.add('hidden');
+
+                    incomingIsHomePage =
+                        event.newDocument.documentElement.classList.contains('is-home') ||
+                        event.newDocument.body.classList.contains('is-home');
+                    dispatchShellState(getShellStateFromDocument(event.newDocument));
+
+                    const theme = getActiveTheme();
+                    const nextThemeColor = theme === 'dark' ? darkBg : themeColor;
+                    event.newDocument.documentElement.setAttribute('data-theme', theme);
+                    const incomingThemeColor = event.newDocument.querySelector('meta[name="theme-color"]');
+                    if (incomingThemeColor) incomingThemeColor.setAttribute('content', nextThemeColor);
+                });
+
+                document.addEventListener('astro:after-swap', () => {
+                    applyHomePageChromeState(incomingIsHomePage);
+                    const scroller =
+                        document.getElementById('pageScroller') || document.querySelector('.page-scroller');
+                    if (scroller) scroller.scrollTo({ top: 0 });
+                });
+            }
         </script>
     </body>
 </html>

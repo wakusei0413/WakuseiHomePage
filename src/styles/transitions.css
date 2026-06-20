@@ -8,7 +8,6 @@
     height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
-    position: relative;
     background: var(--bg, #fffef7);
     scrollbar-width: none;
 }
@@ -76,6 +75,18 @@
 ::view-transition-old(site-shell),
 ::view-transition-new(site-shell) {
     animation: none;
+}
+
+::view-transition-old(top-bar),
+::view-transition-new(top-bar),
+::view-transition-old(top-bar-popup),
+::view-transition-new(top-bar-popup) {
+    animation: none;
+}
+
+::view-transition-group(top-bar),
+::view-transition-group(top-bar-popup) {
+    animation-duration: 0s;
 }
 
 /* ===== Top navigation progress ===== */

@@ -173,6 +173,15 @@ export const editableSiteConfig: SiteConfig = {
         items: [
             {
                 type: 'link',
+                href: '/',
+                display: {
+                    icon: 'fa-solid fa-house',
+                    i18nKey: 'dock.home',
+                    renderMode: 'text'
+                }
+            },
+            {
+                type: 'link',
                 href: '/posts',
                 display: {
                     icon: 'fa-solid fa-newspaper',
@@ -200,7 +209,7 @@ export const editableSiteConfig: SiteConfig = {
             },
             {
                 type: 'link',
-                href: '/settings',
+                href: '#',
                 display: {
                     icon: 'fa-solid fa-gear',
                     i18nKey: 'dock.settings'

@@ -1,24 +1,30 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.vue';
 ---
 
-<BaseLayout title="404 - 页面不存在 | Page Not Found" description="This page could not be found">
-    <main class="notfound-page">
+<BaseLayout
+    shellMode="error"
+    shellTitle="404"
+    title="404 - 页面不存在 | Page Not Found"
+    description="This page could not be found"
+>
+    <div class="notfound-page">
         <div class="notfound-card">
             <div class="notfound-icon">
-                <i class="fa-solid fa-triangle-exclamation"></i>
+                <Icon client:load name="fa-solid fa-triangle-exclamation" size="3.5rem" />
             </div>
-            <h1 class="notfound-title">404</h1>
+            <h2 class="notfound-title">404</h2>
             <p class="notfound-subtitle">页面不存在</p>
             <p class="notfound-subtitle-en">Page Not Found</p>
             <div class="notfound-divider"></div>
             <p class="notfound-text">你好像迷路了喵~</p>
             <p class="notfound-text-secondary">The page you are looking for does not exist or has been moved.</p>
             <a href="/" class="notfound-back">
-                <i class="fa-solid fa-arrow-left"></i> 返回主页 / Back to Home
+                <Icon client:load name="fa-solid fa-arrow-left" size="0.85rem" /> 返回主页 / Back to Home
             </a>
         </div>
-    </main>
+    </div>
 </BaseLayout>
 
 <style>
@@ -26,10 +32,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 100vh;
+        min-height: 50vh;
         padding: 24px;
-        background: var(--bg, #fffef7);
-        transition: background-color 0.3s ease;
     }
 
     .notfound-card {
@@ -164,10 +168,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         opacity: 1;
         background: var(--accent-yellow, #ffe600);
         box-shadow: 4px 4px 0 var(--fg, #0a0a0a);
-    }
-
-    .notfound-back i {
-        font-size: 0.85rem;
     }
 
     [data-theme='dark'] .notfound-back:hover {
