@@ -1,20 +1,17 @@
-# AGENTS
+# CLAUDE
 
 ## 项目结构
 
 - Astro 6 静态站点 + Vue 3 (Composition API + `<script setup>`) + TypeScript + Pinia。入口：`src/pages/index.astro` → `src/layouts/BaseLayout.astro` → `src/components/HomepageApp.vue`
 - 组件用 Vue 3 Composition API (`ref`/`computed`/`watch`/`onMounted`)，全部 `client:load` 客户端水合
-- `src/pages/_app.ts`：Vue app 入口，注册 Pinia（Astro Vue 集成约定文件）
 - `src/data/customize.ts` 导出 `editableSiteConfig`，日常改内容只改这里
 - `src/data/site.ts` 导入并 Zod 校验后导出 `siteConfig`，组件统一消费
 - `src/types/site.ts` 定义全部 TS 接口，与 `src/data/schema.ts` 必须同步
 - `src/data/i18n.ts` 导出翻译字符串（zh-CN/en/ja，各 37 个 key）和 `Locale` 类型
-- `src/lib/`：`logger.ts`、`time.ts`、`slogan-selector.ts`、`dock.ts`、`wallpaper-scroller.ts`、`runtime-effects.ts`（内容保护/滚动动画/移动端粘性头像，原 `useEffects` composable 迁移而来）、`i18n.ts`（主题/i18n 纯函数：`getStoredLang`/`getStoredTheme`/`applyTheme`/`persistLang`）、`page-shell-context.ts`（跨页面壳状态读取/派发，配合 `page-shell` store）
-- `src/composables/`：`useTheme.ts`、`useI18n.ts`、`useSlogan.ts`、`useTime.ts`（已删除 `useHomepage`/`useWallpaper`/`useLogger`/`useDock`/`useEffects`，逻辑并入 `lib/` 与 `SiteShell.vue`）
-- `src/stores/`（Pinia）：`theme.ts`、`i18n.ts`、`page-shell.ts`（跨页面壳状态：`title`/`mode`/`isHomePage`/`scrollProgress`，替代原 `homepage.ts`）
-- `src/scripts/`：`copy-code.ts`（文章页代码块复制按钮，监听 `astro:page-load` 重新装饰）
-- CSS 层叠顺序（`BaseLayout.astro` import 顺序）：`base.css` → `layout.css` → `transitions.css` → `components.css` → `responsive.css` → `dock.css` → `topbar.css` → `footer.css` → `article.css`
-- `base.css` 定义字体 token：`--font-serif`、`--font-ui`、`--font-mono`、`--font-display`（=serif）、`--font-sans`（=ui）；已移除 `--bg-card`/`--border-heavy`/`--shadow-offset`/`--shadow-offset-sm`，卡片统一用 `--panel-glass`/`--panel-border`/`--panel-shadow`/`--panel-blur`/`--glass-*`
+- `src/lib/`：`logger.ts`、`time.ts`、`slogan-selector.ts`、`dock.ts`、`wallpaper-scroller.ts`
+- `src/composables/`：`useTheme.ts`、`useI18n.ts`、`useHomepage.ts`、`useWallpaper.ts`、`useSlogan.ts`、`useTime.ts`、`useLogger.ts`、`useDock.ts`、`useEffects.ts`
+- `src/stores/`（Pinia）：`theme.ts`、`i18n.ts`、`homepage.ts`
+- CSS 层叠顺序：`src/styles/base.css` → `layout.css` → `components.css` → `responsive.css` → `dock.css` → `topbar.css` → `footer.css` → `transitions.css`（根目录 `css/` 为 shim，仅 `@import` 转发）
 - 路由：`/`（首页）、`/posts`（博客列表）、`/posts/[...slug]`（文章页）、`/404`
 - 博客内容在 `src/content/blog/`，用 `import.meta.glob` 加载 markdown，支持 draft 过滤
 
@@ -29,8 +26,7 @@
 
 - 纯静态输出到 `dist/`，Cloudflare Pages 部署，`dist/` 已 gitignore
 - Vue 组件打包为 ESM，Astro devToolbar 已禁用
-- 使用 Astro 内置 `ClientRouter`（`astro:transitions`）实现页面过渡（已移除 `@swup/astro` 依赖）
-- Markdown 用 Shiki 双主题高亮（`github-light`/`github-dark`），`rehype-slug` + `rehype-autolink-headings` 给标题加锚点
+- 使用 `@swup/astro` + 多个 swup 插件实现页面过渡
 
 ## 代码规范
 
@@ -46,15 +42,15 @@
 
 ## 组件一览
 
-- `HomepageApp.vue`：首页第二屏内容容器（静态占位结构，后续放最新文章/卡片/媒体）
-- `SiteShell.vue`：跨页面持久壳（`transition:persist`），渲染噪点叠层、hero 区（头像/名字/状态/打字机/社交链接，按 `page-shell` 的 `mode` 切换 home/blog/article 布局）、TopBar；内部驱动壁纸加载、滚动监听（写入 `scrollProgress`）、滚动动画、移动端粘性头像、内容保护
+- `HomepageApp.vue`：顶层容器，挂载壁纸滚动、3D 视差效果、内容保护、滚动动画、移动端头像粘性效果
+- `SiteShell.vue`：跨页面持久壳（`transition:persist`），渲染噪点叠层、TopBar、Footer、MobileDockSidebar
 - `TopBar.vue`：桌面顶部导航栏，滚动时从偏移位置展开为全宽，包含 Dock 图标（放大悬停效果）、主题切换、语言弹窗
+- `MobileDockSidebar.vue`：移动端侧边栏（窄屏点头像触发），镜像 Dock 功能 + 语言子菜单
 - `SocialLinks.vue`：社交按钮，分页（>6个时滑动切换），用 pointer 事件 + `.is-hovered` 类控制悬停
 - `TypewriterSlogan.vue`：打字机效果，`requestAnimationFrame` 驱动
+- `ClockPanel.vue`：右侧时间面板，locale 感知格式化
 - `Icon.vue`：内联 SVG 图标组件，映射 Font Awesome 类名到内置 SVG path
 - `Footer.vue`：页脚，双栏网格（链接 + 社交图标）
-
-（已删除：`MobileDockSidebar.vue`、`ClockPanel.vue` 及其相关 composable/store）
 
 ## 运行时注意
 

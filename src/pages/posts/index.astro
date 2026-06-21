@@ -68,9 +68,10 @@ const posts = Object.entries(allPosts)
         margin: 0 auto;
         padding: 0 24px;
         color: var(--fg, #0a0a0a);
-        font-family: 'Inter', 'Noto Sans SC', sans-serif;
+        font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
     }
     .blog-title {
+        font-family: var(--font-display, 'Times New Roman', serif);
         font-size: 2rem;
         margin-bottom: 24px;
         text-align: center;
@@ -84,16 +85,35 @@ const posts = Object.entries(allPosts)
         gap: 20px;
     }
     .post-item {
-        border: var(--border-width, 2px) solid var(--border-color, #0a0a0a);
-        background: var(--bg-card, #ffffff);
-        box-shadow: var(--shadow-offset-sm, 4px) var(--shadow-offset-sm, 4px) 0 var(--border-color, #0a0a0a);
+        border: 1px solid var(--panel-border);
+        background-color: var(--panel-glass);
+        backdrop-filter: var(--panel-blur);
+        border-radius: 4px;
+        box-shadow: var(--panel-shadow);
+        overflow: hidden;
         transition:
-            transform 0.15s ease,
-            box-shadow 0.15s ease;
+            transform 0.5s var(--curve-delicate),
+            box-shadow 0.8s var(--curve-delicate),
+            background-color 0.6s ease,
+            border-color 0.6s ease;
     }
     .post-item:hover {
-        transform: translate(-2px, -2px);
-        box-shadow: var(--shadow-offset, 8px) var(--shadow-offset, 8px) 0 var(--border-color, #0a0a0a);
+        transform: translateY(-4px);
+        box-shadow:
+            0 15px 35px rgba(0, 0, 0, 0.12),
+            0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+    :global([data-theme='dark']) .post-item {
+        border-color: var(--glass-border);
+        background-color: var(--glass-bg);
+        box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.08),
+            0 2px 12px rgba(0, 0, 0, 0.3);
+    }
+    :global([data-theme='dark']) .post-item:hover {
+        box-shadow:
+            0 15px 35px rgba(0, 0, 0, 0.45),
+            0 5px 15px rgba(0, 0, 0, 0.3);
     }
     .post-link {
         display: block;
@@ -109,7 +129,8 @@ const posts = Object.entries(allPosts)
         width: 120px;
         height: 80px;
         object-fit: cover;
-        border: 2px solid var(--border-color, #0a0a0a);
+        border: 1px solid var(--panel-border);
+        border-radius: 4px;
         flex-shrink: 0;
     }
     .post-info h3 {

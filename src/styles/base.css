@@ -5,7 +5,6 @@
 /* ===== CSS 变量 ===== */
 :root {
     --bg: var(--theme-color, #fffef7);
-    --bg-card: #ffffff;
     --fg: #0a0a0a;
     --muted: #666666;
 
@@ -20,12 +19,6 @@
     --accent-red: #ff3e3e;
     --accent-blue: #3e59ff;
 
-    /* 统一几何结构 - 全局保持一致 */
-    --border-width: 2px;
-    --border-heavy: 2px;
-    --shadow-offset: 0;
-    --shadow-offset-sm: 0;
-
     /* 抽象组件变量 - 默认白天 */
     --avatar-glow: #ffc107;
     --avatar-border: rgba(0, 0, 0, 0.2);
@@ -38,9 +31,6 @@
     --dock-border: rgba(255, 255, 255, 0.5);
 
     --border-width: 4px;
-    --border-heavy: 6px;
-    --shadow-offset: 10px;
-    --shadow-offset-sm: 6px;
 
     --interactive-card-bg: rgba(255, 254, 247, 0.9);
     --interactive-card-border-mix: 34%;
@@ -91,7 +81,6 @@
 /* ===== 暗色主题 ===== */
 [data-theme='dark'] {
     --bg: #080808;
-    --bg-card: rgba(255, 255, 255, 0.05);
     --fg: #ffffff;
     --muted: #8a8b91;
     --border-color: rgba(255, 255, 255, 0.08);
@@ -115,8 +104,6 @@
     --dock-bg: rgba(18, 18, 18, 0.8);
     --dock-border: rgba(255, 255, 255, 0.12);
 
-    --shadow-offset: 0;
-    --shadow-offset-sm: 0;
     --glass-bg: rgba(255, 255, 255, 0.04);
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);

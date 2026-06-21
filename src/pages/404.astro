@@ -41,25 +41,24 @@ import Icon from '../components/Icon.vue';
         padding: 48px 40px;
         max-width: 440px;
         width: 100%;
-        background: var(--bg-card, #ffffff);
-        border-radius: 24px;
-        border: var(--border-width, 4px) solid var(--border-color, #0a0a0a);
-        box-shadow:
-            10px 10px 0 var(--fg, #0a0a0a),
-            0 24px 80px rgba(0, 0, 0, 0.1);
+        background-color: var(--panel-glass);
+        backdrop-filter: var(--panel-blur);
+        border-radius: 4px;
+        border: 1px solid var(--panel-border);
+        box-shadow: var(--panel-shadow);
         animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         transition:
-            background-color 0.3s ease,
-            border-color 0.3s ease,
-            box-shadow 0.3s ease;
+            background-color 0.6s ease,
+            border-color 0.6s ease,
+            box-shadow 0.8s var(--curve-delicate);
     }
 
     [data-theme='dark'] .notfound-card {
-        background: rgba(18, 18, 18, 0.9);
-        border-color: rgba(255, 255, 255, 0.12);
+        background-color: var(--glass-bg);
+        border-color: var(--glass-border);
         box-shadow:
-            0 32px 100px rgba(0, 0, 0, 0.6),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            0 0 0 1px rgba(255, 255, 255, 0.08),
+            0 2px 12px rgba(0, 0, 0, 0.3);
     }
 
     @keyframes fadeInUp {
@@ -121,9 +120,8 @@ import Icon from '../components/Icon.vue';
 
     .notfound-divider {
         width: 48px;
-        height: 2px;
-        background: var(--border-color, #0a0a0a);
-        opacity: 0.2;
+        height: 1px;
+        background: var(--panel-border);
         margin: 0 auto 24px auto;
         border-radius: 1px;
     }
@@ -149,29 +147,42 @@ import Icon from '../components/Icon.vue';
         align-items: center;
         gap: 8px;
         color: var(--fg, #0a0a0a);
-        opacity: 0.7;
+        opacity: 0.8;
         text-decoration: none;
-        font-family: 'Space Grotesk', sans-serif;
+        font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
         font-size: 0.9rem;
         font-weight: 500;
         padding: 10px 24px;
-        border-radius: 12px;
-        border: var(--border-width, 2px) solid var(--border-color, #0a0a0a);
+        border-radius: 4px;
+        border: 1px solid var(--panel-border);
+        background-color: var(--panel-glass);
+        box-shadow: var(--panel-shadow);
         transition:
-            opacity 0.2s ease,
-            background-color 0.2s ease,
-            border-color 0.2s ease,
-            box-shadow 0.2s ease;
+            opacity 0.3s ease,
+            background-color 0.6s ease,
+            border-color 0.6s ease,
+            box-shadow 0.8s var(--curve-delicate),
+            transform 0.5s var(--curve-delicate);
     }
 
     .notfound-back:hover {
         opacity: 1;
-        background: var(--accent-yellow, #ffe600);
-        box-shadow: 4px 4px 0 var(--fg, #0a0a0a);
+        transform: translateY(-2px);
+        background-color: color-mix(in srgb, var(--accent-yellow, #ffe600) 25%, var(--panel-glass));
+        box-shadow:
+            0 10px 24px rgba(0, 0, 0, 0.1),
+            0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    [data-theme='dark'] .notfound-back {
+        background-color: var(--glass-bg);
+        border-color: var(--glass-border);
     }
 
     [data-theme='dark'] .notfound-back:hover {
-        background: rgba(79, 195, 247, 0.15);
-        box-shadow: none;
+        background-color: color-mix(in srgb, var(--accent-yellow, #ffe600) 15%, var(--glass-bg));
+        box-shadow:
+            0 10px 24px rgba(0, 0, 0, 0.35),
+            0 4px 12px rgba(0, 0, 0, 0.2);
     }
 </style>

@@ -29,7 +29,8 @@
     padding: var(--space-xl, 3rem);
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
+    justify-content: safe center;
     align-items: center;
     border-right: 1px solid var(--panel-border);
     background-color: var(--panel-bg);

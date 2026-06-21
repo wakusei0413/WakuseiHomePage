@@ -40,6 +40,7 @@
         border-bottom: 1px solid var(--panel-border);
         padding: var(--space-lg);
         overflow-y: visible;
+        justify-content: flex-start;
     }
 
     .page-transition-surface {
