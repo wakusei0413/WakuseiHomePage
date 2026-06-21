@@ -20,6 +20,6 @@ describe('theme transition behavior', () => {
 
     it('animates top bar colors when the theme changes', () => {
         expect(topbarCss).toContain('background-color var(--transition-normal)');
-        expect(topbarCss).toContain('[data-theme=\'dark\'] .top-bar');
+        expect(topbarCss).toContain("[data-theme='dark'] .top-bar");
     });
 });

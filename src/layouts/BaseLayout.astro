@@ -74,6 +74,31 @@ const ogLocale = siteConfig.lang.replace('-', '_');
         <meta name="twitter:image" content={ogImageUrl} />
         <link rel="icon" href="/res/img/logo.png" type="image/png" />
         <link rel="preload" href={siteConfig.profile.avatar} as="image" fetchpriority="high" />
+        <style is:inline>
+            :root {
+                --bg: #fffef7;
+            }
+            [data-theme='dark'] {
+                --bg: #080808;
+            }
+            .loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: var(--bg, #fffef7);
+                z-index: 9998;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .loading-overlay.hidden {
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+            }
+        </style>
 
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
@@ -148,6 +173,7 @@ const ogLocale = siteConfig.lang.replace('-', '_');
                         window.clearInterval(progressTimer);
                         window.clearInterval(textTimer);
                         sessionStorage.removeItem(storageKey);
+                        document.documentElement.classList.add('is-loaded');
                     }, 250);
                 }
 
@@ -172,6 +198,7 @@ const ogLocale = siteConfig.lang.replace('-', '_');
                 if (skipEntryLoader) {
                     overlay.classList.add('hidden');
                     sessionStorage.removeItem('__wakusei_skip_entry_loader');
+                    document.documentElement.classList.add('is-loaded');
                     return;
                 }
 
@@ -430,6 +457,7 @@ const ogLocale = siteConfig.lang.replace('-', '_');
 
                 document.addEventListener('astro:before-swap', (event) => {
                     sessionStorage.setItem('__wakusei_skip_entry_loader', 'true');
+                    event.newDocument.documentElement.classList.add('is-loaded');
                     const incomingOverlay = event.newDocument.querySelector('#globalLoadingOverlay');
                     if (incomingOverlay) incomingOverlay.classList.add('hidden');
 
@@ -446,6 +474,7 @@ const ogLocale = siteConfig.lang.replace('-', '_');
                 });
 
                 document.addEventListener('astro:after-swap', () => {
+                    sessionStorage.removeItem('__wakusei_skip_entry_loader');
                     applyHomePageChromeState(incomingIsHomePage);
                     const scroller =
                         document.getElementById('pageScroller') || document.querySelector('.page-scroller');

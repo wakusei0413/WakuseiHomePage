@@ -31,8 +31,8 @@ describe('loading overlay navigation behavior', () => {
         expect(baseLayout).toMatch(/sessionStorage\.setItem\('__wakusei_skip_entry_loader', 'true'\);/);
     });
 
-    it('lets the incoming loader script consume the internal-swap skip flag', () => {
-        expect(baseLayout).not.toMatch(
+    it('clears the internal-swap skip flag after Astro swaps so it never leaks into browser refreshes', () => {
+        expect(baseLayout).toMatch(
             /document\.addEventListener\('astro:after-swap', \(\) => \{\s*sessionStorage\.removeItem\('__wakusei_skip_entry_loader'\);/
         );
     });

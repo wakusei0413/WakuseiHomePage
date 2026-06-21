@@ -170,12 +170,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <nav
-        v-if="props.config.links.length <= ITEMS_PER_PAGE"
-        id="socialLinks"
-        ref="navRef"
-        class="social-links"
-    >
+    <nav v-if="props.config.links.length <= ITEMS_PER_PAGE" id="socialLinks" ref="navRef" class="social-links">
         <div
             v-for="(link, index) in props.config.links"
             :key="link.url + index"

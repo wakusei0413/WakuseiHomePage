@@ -21,6 +21,10 @@ const wallpaperRef = ref<HTMLDivElement>();
 const ready = ref(false);
 const isMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
 
+if (typeof document !== 'undefined') {
+    document.documentElement.classList.add('is-loaded');
+}
+
 let wallpaperController: WallpaperScrollerController | null = null;
 let watchStop: (() => void) | null = null;
 let shellCleanup: (() => void) | undefined;
@@ -111,10 +115,7 @@ function reinitStickyAvatar() {
     const container = containerRef.value;
     const avatar = avatarRef.value;
     if (container && avatar) {
-        stickyAvatarCleanup = initMobileStickyAvatar(
-            document.getElementById('pageScroller') || container,
-            avatar
-        );
+        stickyAvatarCleanup = initMobileStickyAvatar(document.getElementById('pageScroller') || container, avatar);
     }
 }
 
@@ -125,6 +126,7 @@ function reattachDomListeners() {
 }
 
 onMounted(() => {
+    document.documentElement.classList.add('is-loaded');
     pageShell.enterPage(getPageShellStateFromDocument());
     shellCleanup = subscribePageShellStateChange((next) => {
         pageShell.enterPage(next);

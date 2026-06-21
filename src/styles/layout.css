@@ -62,6 +62,9 @@
 .left-panel .hero {
     width: 100%;
     text-align: left;
+}
+
+html:not(.is-loaded) .left-panel .hero {
     animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
