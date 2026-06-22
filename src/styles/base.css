@@ -80,7 +80,7 @@
 
 /* ===== 暗色主题 ===== */
 [data-theme='dark'] {
-    --bg: #080808;
+    --bg: #1a1a1a;
     --fg: #ffffff;
     --muted: #8a8b91;
     --border-color: rgba(255, 255, 255, 0.08);
@@ -154,13 +154,17 @@ body {
         color var(--transition-normal);
 }
 
-*::-webkit-scrollbar {
-    display: none;
-}
-
-* {
+/* 仅对 html/body 及左侧 Hero 面板隐藏滚动条，保留正文内容区（pre/table）的可滚动指示 */
+html,
+body,
+.page-scroller,
+.left-panel {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+
+.left-panel::-webkit-scrollbar {
+    display: none;
 }
 
 /* 确保过渡不影响文本渲染 */
@@ -196,12 +200,6 @@ body {
     -ms-user-drag: none;
     user-drag: none;
     -webkit-touch-callout: none;
-}
-
-/* When loading overlay is visible, push noise behind it */
-.loading-overlay:not(.hidden) ~ .noise-overlay {
-    z-index: 9997;
-    opacity: 0.01;
 }
 
 /* Cursor idle calm */

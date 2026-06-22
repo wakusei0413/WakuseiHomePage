@@ -17,6 +17,7 @@ const { isDark, toggle: toggleTheme } = useTheme();
 const pageShell = usePageShellStore();
 
 const activePanel = ref<string | null>(null);
+const hydrateKey = ref(0);
 
 const barRef = ref<HTMLDivElement>();
 const popupRef = ref<HTMLDivElement>();
@@ -76,6 +77,7 @@ const cleanups: Array<() => void> = [];
 
 onMounted(() => {
     cleanups.push(setupViewportMediaSync());
+    hydrateKey.value = 1;
 });
 
 onUnmounted(() => {
@@ -341,7 +343,14 @@ function shouldRenderTrailingDivider() {
 
 <template>
     <!-- Desktop / Mobile bar -->
-    <div ref="barRef" class="top-bar" role="toolbar" aria-label="Top navigation" :style="barExpandStyle">
+    <div
+        ref="barRef"
+        :key="'bar-' + hydrateKey"
+        class="top-bar"
+        role="toolbar"
+        aria-label="Top navigation"
+        :style="barExpandStyle"
+    >
         <a
             class="top-bar-left"
             href="/"
@@ -440,7 +449,13 @@ function shouldRenderTrailingDivider() {
     </div>
 
     <!-- Desktop language popup -->
-    <div ref="popupRef" class="top-bar-language-popup" role="dialog" aria-label="Language selection">
+    <div
+        ref="popupRef"
+        :key="'popup-' + hydrateKey"
+        class="top-bar-language-popup"
+        role="dialog"
+        aria-label="Language selection"
+    >
         <div class="top-bar-popup-title">
             {{ t('dock.language') }}
         </div>

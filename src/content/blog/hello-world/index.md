@@ -1,10 +1,13 @@
 ---
 title: '第一篇博客'
 description: '这是我的第一篇博客文章，用来测试博客系统的基本功能。'
-cover: '/res/img/logo.png'
+cover: 'https://apod.nasa.gov/apod/image/2606/eagle_1024.jpg'
+coverLayout: overlay
 language: 'zh-CN'
 tags: ['测试', 'Astro']
+category: '生活'
 draft: false
+pubDate: '2026-06-20'
 ---
 
 欢迎来到我的新博客！这篇文章主要用于测试博客系统的基础渲染功能。

@@ -1,6 +1,6 @@
 # Wakusei HomePage 主题
 
-![Version](https://img.shields.io/badge/version-1.9.0-9a0a0a?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-2.0.0-9a0a0a?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-ffe600?style=for-the-badge)
 ![Astro](https://img.shields.io/badge/Astro-6-ff5d01?style=for-the-badge&logo=astro&logoColor=white)
 ![SolidJS](https://img.shields.io/badge/SolidJS-1.9-2c4f7c?style=for-the-badge&logo=solid&logoColor=white)
@@ -12,7 +12,7 @@
 
 
 ## 2.0.0 更新：
-
+### 所有内容均在预览中，敬请期待！
 ### 视觉
 
 ### 功能

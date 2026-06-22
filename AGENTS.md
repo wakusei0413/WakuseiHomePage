@@ -43,10 +43,12 @@
 - `customize.ts`(改这里) → `site.ts`(Zod 校验) → 组件消费
 - 新增配置字段：同步改 `types/site.ts`、`schema.ts`、`customize.ts`
 - 新增语言：改 `i18n.ts` 翻译、`customize.ts` 的 `locales` 数组、`types/site.ts` 的 `Locale` 类型
+- 博客文章 frontmatter 新增字段：同步改 `src/pages/posts/index.astro` 的 `MarkdownModule` 接口（无 Zod 校验）
 
 ## 组件一览
 
 - `HomepageApp.vue`：首页第二屏内容容器（静态占位结构，后续放最新文章/卡片/媒体）
+- `PostCard.vue`：博客列表卡片组件，支持 `coverLayout` 的 overlay/below 两种布局，内部管理滚动淡入动画
 - `SiteShell.vue`：跨页面持久壳（`transition:persist`），渲染噪点叠层、hero 区（头像/名字/状态/打字机/社交链接，按 `page-shell` 的 `mode` 切换 home/blog/article 布局）、TopBar；内部驱动壁纸加载、滚动监听（写入 `scrollProgress`）、滚动动画、移动端粘性头像、内容保护
 - `TopBar.vue`：桌面顶部导航栏，滚动时从偏移位置展开为全宽，包含 Dock 图标（放大悬停效果）、主题切换、语言弹窗
 - `SocialLinks.vue`：社交按钮，分页（>6个时滑动切换），用 pointer 事件 + `.is-hovered` 类控制悬停

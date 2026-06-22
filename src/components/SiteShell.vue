@@ -21,10 +21,6 @@ const wallpaperRef = ref<HTMLDivElement>();
 const ready = ref(false);
 const isMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
 
-if (typeof document !== 'undefined') {
-    document.documentElement.classList.add('is-loaded');
-}
-
 let wallpaperController: WallpaperScrollerController | null = null;
 let watchStop: (() => void) | null = null;
 let shellCleanup: (() => void) | undefined;
@@ -126,8 +122,8 @@ function reattachDomListeners() {
 }
 
 onMounted(() => {
-    document.documentElement.classList.add('is-loaded');
-    pageShell.enterPage(getPageShellStateFromDocument());
+    const initialState = getPageShellStateFromDocument();
+    pageShell.enterPage(initialState);
     shellCleanup = subscribePageShellStateChange((next) => {
         pageShell.enterPage(next);
         pageShell.resetScrollProgress();
@@ -236,7 +232,9 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                             <h1 class="name" :style="{ opacity: heroOpacity }">
                                 <template v-for="part in splitLatinText(pageShell.title)" :key="part.text">
                                     <span v-if="part.isLatin" class="name-latin">{{ part.text }}</span>
-                                    <template v-else>{{ part.text }}</template>
+                                    <template v-else>
+                                        {{ part.text }}
+                                    </template>
                                 </template>
                             </h1>
 
@@ -263,7 +261,9 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                             <h1 class="name" :style="{ opacity: heroOpacity }">
                                 <template v-for="part in splitLatinText(pageShell.title)" :key="part.text">
                                     <span v-if="part.isLatin" class="name-latin">{{ part.text }}</span>
-                                    <template v-else>{{ part.text }}</template>
+                                    <template v-else>
+                                        {{ part.text }}
+                                    </template>
                                 </template>
                             </h1>
                         </header>

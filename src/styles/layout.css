@@ -35,8 +35,7 @@
     border-right: 1px solid var(--panel-border);
     background-color: var(--panel-bg);
     backdrop-filter: var(--panel-blur);
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
     position: relative;
     z-index: var(--z-content, 50);
     contain: layout style;

@@ -1,19 +1,41 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.vue';
 
 interface MarkdownModule {
     frontmatter: {
         title: string;
         description: string;
-        cover: string;
+        cover?: string;
+        coverLayout?: 'overlay' | 'below';
         language?: string;
+        category?: string;
         tags?: string[];
         draft?: boolean;
+        pubDate?: string;
+        updatedDate?: string;
     };
     default: unknown;
+    rawContent: () => string;
 }
 
 const allPosts = import.meta.glob<MarkdownModule>('../../content/blog/**/index.md', { eager: true });
+
+const formatDate = (raw?: string) => {
+    if (!raw) return null;
+    const d = new Date(raw);
+    if (Number.isNaN(d.getTime())) return null;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+const countWords = (raw?: string) => {
+    if (!raw) return 0;
+    const text = raw.trim();
+    if (!text) return 0;
+    const cnCount = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+    const enCount = (text.match(/[a-zA-Z0-9_]+/g) || []).length;
+    return cnCount + enCount;
+};
 
 const posts = Object.entries(allPosts)
     .filter(([, mod]) => !mod.frontmatter.draft)
@@ -21,149 +43,34 @@ const posts = Object.entries(allPosts)
         const slug = filePath.replace('../../content/blog/', '').replace('/index.md', '');
         return {
             slug,
-            data: mod.frontmatter
+            data: mod.frontmatter,
+            dateLabel: formatDate(mod.frontmatter.pubDate),
+            wordCount: countWords(mod.rawContent())
         };
+    })
+    .sort((a, b) => {
+        const da = a.data.pubDate ? new Date(a.data.pubDate).getTime() : 0;
+        const db = b.data.pubDate ? new Date(b.data.pubDate).getTime() : 0;
+        return db - da;
     });
 ---
 
 <BaseLayout title="博客" shellMode="blog" shellTitle="博客">
     <div class="blog-container">
         <h2 class="blog-title">博客文章</h2>
-        <ul class="post-list">
+        <div class="post-list--masonry">
             {
                 posts.map((post) => (
-                    <li class="post-item">
-                        <a href={`/posts/${post.slug}`} class="post-link">
-                            <div class="post-card">
-                                {post.data.cover && (
-                                    <img
-                                        src={post.data.cover}
-                                        alt={post.data.title}
-                                        class="post-cover"
-                                        loading="lazy"
-                                    />
-                                )}
-                                <div class="post-info">
-                                    <h3>{post.data.title}</h3>
-                                    <p class="post-desc">{post.data.description}</p>
-                                    {post.data.tags && (
-                                        <div class="post-meta">
-                                            <span class="post-tags">{post.data.tags.join(', ')}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </a>
-                    </li>
+                    <PostCard
+                        client:load
+                        slug={post.slug}
+                        data={post.data}
+                        dateLabel={post.dateLabel}
+                        wordCount={post.wordCount}
+                    />
                 ))
             }
-        </ul>
+        </div>
         <a href="/" class="back-link">← 返回首页</a>
     </div>
 </BaseLayout>
-
-<style>
-    .blog-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 0 24px;
-        color: var(--fg, #0a0a0a);
-        font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
-    }
-    .blog-title {
-        font-family: var(--font-display, 'Times New Roman', serif);
-        font-size: 2rem;
-        margin-bottom: 24px;
-        text-align: center;
-    }
-    .post-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-    .post-item {
-        border: 1px solid var(--panel-border);
-        background-color: var(--panel-glass);
-        backdrop-filter: var(--panel-blur);
-        border-radius: 4px;
-        box-shadow: var(--panel-shadow);
-        overflow: hidden;
-        transition:
-            transform 0.5s var(--curve-delicate),
-            box-shadow 0.8s var(--curve-delicate),
-            background-color 0.6s ease,
-            border-color 0.6s ease;
-    }
-    .post-item:hover {
-        transform: translateY(-4px);
-        box-shadow:
-            0 15px 35px rgba(0, 0, 0, 0.12),
-            0 5px 15px rgba(0, 0, 0, 0.08);
-    }
-    :global([data-theme='dark']) .post-item {
-        border-color: var(--glass-border);
-        background-color: var(--glass-bg);
-        box-shadow:
-            0 0 0 1px rgba(255, 255, 255, 0.08),
-            0 2px 12px rgba(0, 0, 0, 0.3);
-    }
-    :global([data-theme='dark']) .post-item:hover {
-        box-shadow:
-            0 15px 35px rgba(0, 0, 0, 0.45),
-            0 5px 15px rgba(0, 0, 0, 0.3);
-    }
-    .post-link {
-        display: block;
-        text-decoration: none;
-        color: inherit;
-    }
-    .post-card {
-        display: flex;
-        gap: 16px;
-        padding: 16px;
-    }
-    .post-cover {
-        width: 120px;
-        height: 80px;
-        object-fit: cover;
-        border: 1px solid var(--panel-border);
-        border-radius: 4px;
-        flex-shrink: 0;
-    }
-    .post-info h3 {
-        font-size: 1.25rem;
-        margin: 0 0 4px;
-    }
-    .post-desc {
-        margin: 0 0 8px;
-        color: var(--muted, #666);
-        font-size: 0.9rem;
-        line-height: 1.4;
-    }
-    .post-meta {
-        font-size: 0.8rem;
-        color: var(--muted, #666);
-    }
-    .back-link {
-        display: inline-block;
-        margin-top: 32px;
-        text-decoration: none;
-        color: inherit;
-        font-weight: 600;
-    }
-    .back-link:hover {
-        text-decoration: underline;
-    }
-    @media (max-width: 600px) {
-        .post-card {
-            flex-direction: column;
-        }
-        .post-cover {
-            width: 100%;
-            height: 160px;
-        }
-    }
-</style>

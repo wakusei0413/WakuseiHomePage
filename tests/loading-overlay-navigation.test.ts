@@ -79,6 +79,25 @@ describe('loading overlay navigation behavior', () => {
         expect(baseLayout).not.toMatch(/return !!document\.querySelector\('\.page-scroller'\) && !homepageReady;/);
     });
 
+    it('shows the loading overlay on non-home refreshes instead of hiding it immediately', () => {
+        // Previously a non-home route early-return added `hidden` and returned before
+        // wiring up readiness listeners. That made the overlay never appear on refresh
+        // of blog/article/404 pages. Assert that path is gone.
+        expect(baseLayout).not.toMatch(/非首页（文章\/博客\/404）无需等待壁纸\/hero 就绪，直接隐藏 overlay/);
+        expect(baseLayout).not.toMatch(
+            /if \(!isHomeRoute\) \{\s*overlay\.classList\.add\('hidden'\);[\s\S]*?return;[\s\S]*?\}/
+        );
+    });
+
+    it('waits for shell readiness on every route so non-home pages stay loaded until the wallpaper is ready', () => {
+        // Unifies homepage and non-home behavior: the overlay must not dismiss before
+        // the shell (wallpaper) is ready, otherwise non-home pages flash an unloaded
+        // wallpaper. shouldWaitForShell must not be gated by isHomeRoute.
+        expect(baseLayout).toMatch(/function shouldWaitForShell\(\) \{\s*return !shellReady;\s*\}/);
+        expect(baseLayout).not.toMatch(/function shouldWaitForShell\(\) \{[\s\S]*const isHomeRoute =/);
+        expect(baseLayout).not.toMatch(/return isHomeRoute && !shellReady;/);
+    });
+
     it('does not keep the legacy homepage blur reveal after the global loader is skipped', () => {
         expect(layoutCss).not.toMatch(/filter:\s*blur\(30px\)/);
         expect(layoutCss).not.toMatch(/filter\s+0\.5s\s+ease-out/);

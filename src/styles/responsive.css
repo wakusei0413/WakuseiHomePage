@@ -47,6 +47,11 @@
         padding: 2.5rem 1rem;
     }
 
+    /* 移动端 TopBar 为 fixed，需要为内容区预留顶部空间避免遮挡文章 H1 */
+    .page-transition-surface[data-shell-mode='article'] {
+        padding-top: calc(72px + 1.5rem);
+    }
+
     .hero-sticky {
         min-height: auto;
     }

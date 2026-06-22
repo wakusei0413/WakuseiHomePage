@@ -138,7 +138,7 @@ export const editableSiteConfig: SiteConfig = {
 
     // Runtime interaction guards.
     contentProtection: {
-        preventCopyAndDrag: true
+        preventCopyAndDrag: false
     },
 
     debug: {

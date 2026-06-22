@@ -5,10 +5,12 @@ interface MarkdownModule {
     frontmatter: {
         title: string;
         description: string;
-        cover: string;
+        cover?: string;
         language?: string;
         tags?: string[];
         draft?: boolean;
+        pubDate?: string;
+        updatedDate?: string;
     };
     default: any;
 }
@@ -32,6 +34,19 @@ export async function getStaticPaths() {
 }
 
 const { frontmatter, Content } = Astro.props;
+
+const formatDate = (raw?: string) => {
+    if (!raw) return null;
+    const d = new Date(raw);
+    if (Number.isNaN(d.getTime())) return null;
+    const y = d.getFullYear();
+    const m = `${d.getMonth() + 1}`;
+    const day = `${d.getDate()}`;
+    return { iso: d.toISOString().slice(0, 10), label: `${y}年${m}月${day}日` };
+};
+
+const pub = formatDate(frontmatter.pubDate);
+const updated = formatDate(frontmatter.updatedDate);
 ---
 
 <BaseLayout
@@ -42,13 +57,34 @@ const { frontmatter, Content } = Astro.props;
 >
     <article class="post-container">
         <header class="post-header">
+            <h1 class="post-title">{frontmatter.title}</h1>
             <div class="post-meta">
-                {frontmatter.tags && <span class="tags">{frontmatter.tags.join(', ')}</span>}
+                {
+                    frontmatter.tags && frontmatter.tags.length > 0 && (
+                        <span class="post-tags">{frontmatter.tags.join(' · ')}</span>
+                    )
+                }
+                {
+                    pub && (
+                        <time class="post-date" datetime={pub.iso}>
+                            {pub.label}
+                        </time>
+                    )
+                }
+                {
+                    updated && pub && updated.iso !== pub.iso && (
+                        <time class="post-date post-date--updated" datetime={updated.iso}>
+                            更新于 {updated.label}
+                        </time>
+                    )
+                }
             </div>
         </header>
         {
             frontmatter.cover && (
-                <img src={frontmatter.cover} alt={frontmatter.title} class="post-hero-image" loading="eager" />
+                <div class="post-hero-image-wrapper">
+                    <img src={frontmatter.cover} alt={frontmatter.title} class="post-hero-image" loading="eager" />
+                </div>
             )
         }
         <div class="post-body">
