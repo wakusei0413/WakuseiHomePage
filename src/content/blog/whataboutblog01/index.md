@@ -1,7 +1,7 @@
 ---
 title: '我用 VideCoding 做了个神人主页，以及那些踩坑教训。'
 description: '首先介绍一下我这个项目。个人主页这种东西，很多人做过了，而且我相信很多人比我做得好。我这次把它开放出来，主要是想分享一下这个只花了一天时间就开发出来的结果。'
-cover: 'https://cdn3.ldstatic.com/original/4X/5/a/0/5a0e1cbcb3f3f19301e9494608cc82c2b135337e.jpeg'
+cover: './cover.webp'
 # coverLayout: overlay
 language: 'zh-CN'
 tags: ['测试', 'Vibecoding']

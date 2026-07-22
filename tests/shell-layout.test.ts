@@ -6,7 +6,6 @@ const siteShell = readFileSync('src/components/SiteShell.vue', 'utf8');
 const topBar = readFileSync('src/components/TopBar.vue', 'utf8');
 const homepageApp = readFileSync('src/components/HomepageApp.vue', 'utf8');
 const indexPage = readFileSync('src/pages/index.astro', 'utf8');
-const postsPage = readFileSync('src/pages/posts/index.astro', 'utf8');
 const postDetailPage = readFileSync('src/pages/posts/[...slug].astro', 'utf8');
 const notFoundPage = readFileSync('src/pages/404.astro', 'utf8');
 const transitionsCss = readFileSync('src/styles/transitions.css', 'utf8');
@@ -45,6 +44,11 @@ describe('persistent shell layout guardrails', () => {
         expect(footerIndex).toBeGreaterThan(surfaceIndex);
     });
 
+    it('keeps footer ownership out of SiteShell during BaseLayout shell ownership', () => {
+        expect(siteShell).not.toContain("import Footer from './Footer.vue';");
+        expect(siteShell).not.toContain('<Footer');
+    });
+
     it('uses the page-shell store for mode-driven rendering', () => {
         expect(siteShell).toContain('pageShell.mode');
         expect(siteShell).toContain('getPageShellStateFromDocument');
@@ -57,11 +61,6 @@ describe('persistent shell layout guardrails', () => {
         expect(baseLayout).toContain('data-is-home');
     });
 
-    it('keeps footer ownership out of SiteShell during BaseLayout shell ownership', () => {
-        expect(siteShell).not.toContain("import Footer from './Footer.vue';");
-        expect(siteShell).not.toContain('<Footer');
-    });
-
     it('moves shared hero ownership into SiteShell', () => {
         expect(siteShell).toContain('wallpaper-scroll-area');
         expect(siteShell).toContain('left-panel');
@@ -71,7 +70,6 @@ describe('persistent shell layout guardrails', () => {
     it('no page uses PageFrame', () => {
         expect(homepageApp).not.toContain('PageFrame');
         expect(indexPage).not.toContain('PageFrame');
-        expect(postsPage).not.toContain('PageFrame');
         expect(postDetailPage).not.toContain('PageFrame');
         expect(notFoundPage).not.toContain('PageFrame');
     });

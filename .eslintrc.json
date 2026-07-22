@@ -30,7 +30,10 @@
                 "no-inner-declarations": "off",
                 "prefer-const": "off",
                 "no-undef": "off",
-                "vue/multi-word-component-names": "off"
+                "vue/multi-word-component-names": "off",
+                "vue/html-indent": "off",
+                "vue/max-attributes-per-line": "off",
+                "vue/html-self-closing": "off"
             }
         }
     ],

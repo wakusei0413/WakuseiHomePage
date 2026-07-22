@@ -37,7 +37,9 @@ describe('component lifecycle cleanup', () => {
     });
 
     it('SiteShell dispatches readiness from live page-shell state instead of stale props', () => {
-        expect(siteShellComponent).not.toContain('initialIsHomePage');
+        // Initial shell-state props only seed the store for SSR/client hydration parity;
+        // readiness events must still read the live page-shell store state.
+        expect(siteShellComponent).toContain('pageShell.enterPage');
         expect(siteShellComponent).toContain('watch([ready, () => pageShell.isHomePage]');
         expect(siteShellComponent).toContain('dispatchShellReadyEvents');
         expect(siteShellComponent).toContain('readyEventTimer = setTimeout');

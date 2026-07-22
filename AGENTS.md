@@ -1,69 +1,87 @@
 # AGENTS
 
-## 项目结构
+Astro 6 static site + Vue 3 (`<script setup>`) + Pinia + TypeScript. Node `>=22.12.0`.
 
-- Astro 6 静态站点 + Vue 3 (Composition API + `<script setup>`) + TypeScript + Pinia。入口：`src/pages/index.astro` → `src/layouts/BaseLayout.astro` → `src/components/HomepageApp.vue`
-- 组件用 Vue 3 Composition API (`ref`/`computed`/`watch`/`onMounted`)，全部 `client:load` 客户端水合
-- `src/pages/_app.ts`：Vue app 入口，注册 Pinia（Astro Vue 集成约定文件）
-- `src/data/customize.ts` 导出 `editableSiteConfig`，日常改内容只改这里
-- `src/data/site.ts` 导入并 Zod 校验后导出 `siteConfig`，组件统一消费
-- `src/types/site.ts` 定义全部 TS 接口，与 `src/data/schema.ts` 必须同步
-- `src/data/i18n.ts` 导出翻译字符串（zh-CN/en/ja，各 37 个 key）和 `Locale` 类型
-- `src/lib/`：`logger.ts`、`time.ts`、`slogan-selector.ts`、`dock.ts`、`wallpaper-scroller.ts`、`runtime-effects.ts`（内容保护/滚动动画/移动端粘性头像，原 `useEffects` composable 迁移而来）、`i18n.ts`（主题/i18n 纯函数：`getStoredLang`/`getStoredTheme`/`applyTheme`/`persistLang`）、`page-shell-context.ts`（跨页面壳状态读取/派发，配合 `page-shell` store）
-- `src/composables/`：`useTheme.ts`、`useI18n.ts`、`useSlogan.ts`、`useTime.ts`（已删除 `useHomepage`/`useWallpaper`/`useLogger`/`useDock`/`useEffects`，逻辑并入 `lib/` 与 `SiteShell.vue`）
-- `src/stores/`（Pinia）：`theme.ts`、`i18n.ts`、`page-shell.ts`（跨页面壳状态：`title`/`mode`/`isHomePage`/`scrollProgress`，替代原 `homepage.ts`）
-- `src/scripts/`：`copy-code.ts`（文章页代码块复制按钮，监听 `astro:page-load` 重新装饰）
-- CSS 层叠顺序（`BaseLayout.astro` import 顺序）：`base.css` → `layout.css` → `transitions.css` → `components.css` → `responsive.css` → `dock.css` → `topbar.css` → `footer.css` → `article.css`
-- `base.css` 定义字体 token：`--font-serif`、`--font-ui`、`--font-mono`、`--font-display`（=serif）、`--font-sans`（=ui）；已移除 `--bg-card`/`--border-heavy`/`--shadow-offset`/`--shadow-offset-sm`，卡片统一用 `--panel-glass`/`--panel-border`/`--panel-shadow`/`--panel-blur`/`--glass-*`
-- 路由：`/`（首页）、`/posts`（博客列表）、`/posts/[...slug]`（文章页）、`/404`
-- 博客内容在 `src/content/blog/`，用 `import.meta.glob` 加载 markdown，支持 draft 过滤
+CLAUDE.md may still mention deleted SolidJS-era code — trust this file + `package.json` / `astro.config.mjs` / CI / README.
 
-## 命令
+## Commands
 
-- `npm run dev` 开发 / `npm run build` 构建到 `dist/` / `npm run serve` 预览
-- `npm run lint`  / `npm run lint:fix` / `npm run format:check` / `npm run format`
-- `npm run check` (astro check) / `npm test` (Vitest)
-- 验证链路：`lint → format:check → test → check → build`，CI 参考 `.github/workflows/ci.yml`
+```bash
+npm run dev          # localhost:4321
+npm run build        # → dist/
+npm run serve        # static preview of dist/
+npm run preview      # astro preview
+npm run lint
+npm run lint:fix
+npm run format
+npm run format:check
+npm run check        # astro check
+npm test             # vitest run (jsdom)
+npm test -- tests/foo.test.ts   # single file
+```
 
-## 构建 & 部署
+CI (`.github/workflows/ci.yml`, Node 22.12.0): **`lint → format:check → test → check → build`**. Run the same order before claiming done.
 
-- 纯静态输出到 `dist/`，Cloudflare Pages 部署，`dist/` 已 gitignore
-- Vue 组件打包为 ESM，Astro devToolbar 已禁用
-- 使用 Astro 内置 `ClientRouter`（`astro:transitions`）实现页面过渡（已移除 `@swup/astro` 依赖）
-- Markdown 用 Shiki 双主题高亮（`github-light`/`github-dark`），`rehype-slug` + `rehype-autolink-headings` 给标题加锚点
+Prettier: 4-space, single quotes, semicolons, `printWidth: 120`, `trailingComma: "none"`. ESLint: `no-var`, `eqeqeq`, forced semicolons, `plugin:vue/recommended`. Lint globs: `src/**/*.{ts,vue}`, `tests/**/*.test.ts`, `astro.config.mjs` (not `.astro` files).
 
-## 代码规范
+## Architecture (easy to miss)
 
-- ESLint：`no-var`、`eqeqeq`、`no-trailing-spaces`、强制分号、`@typescript-eslint/recommended`、`eslint-plugin-vue`
-- Prettier：4空格缩进、单引号、分号、`printWidth: 120`、`trailingComma: "none"`
-- Astro 文件用 `prettier-plugin-astro`，Vue 文件用 `@vue/eslint-config-prettier`
+- **Page entry** → `BaseLayout.astro` (CSS, SEO, theme FOUC script, `ClientRouter`) → slot content.
+- **Persistent shell**: `SiteShell` + `Footer` use `transition:persist` inside `#pageScroller`. Shell mode is **props-driven**, not pathname inference: pass `shellMode` + `shellTitle` into `BaseLayout` (`home` | `blog` | `article` | `error`).
+- **Pinia**: registered in `src/pages/_app.ts` (Astro Vue `appEntrypoint`). Stores: `theme`, `i18n`, `page-shell`, `search`.
+- **Cross-page shell state**: `page-shell` store + `src/lib/page-shell-context.ts` + `data-shell-mode` / `data-page-title` on `#pageTransitionSurface`. `navigation-runtime.ts` re-syncs after View Transitions.
+- Vue islands are mostly **`client:idle`**; search / article TOC use **`client:load`**. Prefer matching neighbors, not guessing.
+- In-app navigation: `navigate` from `astro:transitions/client` (not full reloads). Do not reintroduce `@swup/astro`.
+- Article-only DOM enhancers live in `src/scripts/` (copy code, TOC, lightbox, reading progress, etc.), often re-run on `astro:page-load`.
 
-## 配置链路
+## Config chain (content edits)
 
-- `customize.ts`(改这里) → `site.ts`(Zod 校验) → 组件消费
-- 新增配置字段：同步改 `types/site.ts`、`schema.ts`、`customize.ts`
-- 新增语言：改 `i18n.ts` 翻译、`customize.ts` 的 `locales` 数组、`types/site.ts` 的 `Locale` 类型
-- 博客文章 frontmatter 新增字段：同步改 `src/pages/posts/index.astro` 的 `MarkdownModule` 接口（无 Zod 校验）
+```
+src/data/customize.ts  →  site.ts (Zod via schema.ts)  →  siteConfig
+```
 
-## 组件一览
+- Day-to-day copy/links/colors/wallpaper/dock: **only** `customize.ts`.
+- New config field: `types/site.ts` + `schema.ts` + `customize.ts` together.
+- New locale: `data/i18n.ts` translations + `customize.ts` `i18n.locales` + `types/site.ts` `Locale` (and keep all translation keys in lockstep — tests enforce completeness).
+- Theme colors: `<html data-theme="light|dark">`; FOUC prevented by inline head script reading `localStorage.theme`.
+- Default wallpaper file: `public/res/img/wallpaper/default.webp` (`wallpaper.defaultImage`). Keep WebP; replace in place if changing the hero wallpaper.
 
-- `HomepageApp.vue`：首页第二屏内容容器（静态占位结构，后续放最新文章/卡片/媒体）
-- `PostCard.vue`：博客列表卡片组件，支持 `coverLayout` 的 overlay/below 两种布局，内部管理滚动淡入动画
-- `SiteShell.vue`：跨页面持久壳（`transition:persist`），渲染噪点叠层、hero 区（头像/名字/状态/打字机/社交链接，按 `page-shell` 的 `mode` 切换 home/blog/article 布局）、TopBar；内部驱动壁纸加载、滚动监听（写入 `scrollProgress`）、滚动动画、移动端粘性头像、内容保护
-- `TopBar.vue`：桌面顶部导航栏，滚动时从偏移位置展开为全宽，包含 Dock 图标（放大悬停效果）、主题切换、语言弹窗
-- `SocialLinks.vue`：社交按钮，分页（>6个时滑动切换），用 pointer 事件 + `.is-hovered` 类控制悬停
-- `TypewriterSlogan.vue`：打字机效果，`requestAnimationFrame` 驱动
-- `Icon.vue`：内联 SVG 图标组件，映射 Font Awesome 类名到内置 SVG path
-- `Footer.vue`：页脚，双栏网格（链接 + 社交图标）
+## Blog / content
 
-（已删除：`MobileDockSidebar.vue`、`ClockPanel.vue` 及其相关 composable/store）
+- Posts: `src/content/blog/<slug>/index.md` via **Content Collections** (`src/content.config.ts` + `getCollection` in `src/lib/posts.ts`).
+- Frontmatter Zod schema lives in `content.config.ts` (`astro/zod`). New fields: update schema + markdown + UI consumers.
+- Server loaders: `src/lib/posts.ts` (`getCollection` / `getImage` / `render`) — **never import from Vue islands** (build fails with `ServerOnlyModule` / `astro:content`).
+- Client-safe types/helpers: `src/lib/post-model.ts` (+ `archive.ts` / `search.ts`). Search modal fetches `/search-index.json` (built by `src/pages/search-index.json.ts`).
+- Serialized `PostFrontmatter`: `cover` = optimized URL string; dates = ISO strings.
+- Covers: put next to the post (`./cover.webp` or `./cover.jpg`) so `image()` + `getImage` can optimize. Do not use `public/` paths for covers.
+- Lists/feeds/home sort **newest `pubDate` first** (stable slug tie-break). Home grid is CSS **`columns` masonry** (fills left column top→bottom, then right) — do not switch to row-major Grid unless the user asks.
+- `draft: true` is filtered out of lists/feeds/search/static paths.
+- Useful fields: `title`, `description`, `cover`, `coverLayout` (`overlay` | `below`), `category`, `tags`, `pubDate`, `updatedDate`, `language`, `draft`.
 
-## 运行时注意
+## Routes
 
-- 组件服务端渲染为静态 HTML，交互在 JS 加载后激活
-- 壁纸依赖外部 API (`wallpaper.apis`)，多 API 竞速加载 + 指数退避重试，加载失败不影响核心功能
-- 图标改为 `Icon.vue` 内联 SVG，`public/fa/` 保留为遗留资源
-- Google Fonts 用 `rel="preload"` + `onload` 切换，`<noscript>` 兜底
-- 主题在内联 `<head>` 脚本中提前应用防闪烁，`<html data-theme>` 驱动所有颜色
-- `useTheme` composable + `theme` store 提供响应式主题状态，支持 View Transition API 切换
-- `useI18n` composable + `i18n` store 提供响应式 i18n（Pinia 驱动的 `t()` 函数）
+| Path | Notes |
+|------|--------|
+| `/` | home + post list (`#posts`) |
+| `/posts/[...slug]` | article (`shellMode="article"`) |
+| `/archives`, `/topics`, `/categories`, `/tags`, `/search` | blog-mode shell |
+| `/rss.xml`, `/atom.xml` | feeds |
+| `/search-index.json` | client search index (static at build) |
+| `/404` | `shellMode="error"` |
+
+Static assets: `public/res/`. Sitemap: `@astrojs/sitemap` in `astro.config.mjs` → build outputs `sitemap-index.xml` / `sitemap-0.xml`. `robots.txt` points at the index. Do not re-add a hand-written `public/sitemap.xml`.
+
+## CSS
+
+Import order is load order (do not reshuffle casually) in `BaseLayout.astro`:
+
+`base → layout → transitions → components → responsive → dock → topbar → footer → article → toc`
+
+Design tokens live in `base.css` / inline `:root`. Prefer existing `--panel-*` / `--glass-*` / font tokens (`--font-serif`, `--font-ui`, `--font-mono`, …) over inventing card shadows.
+
+## Runtime gotchas
+
+- Wallpaper: multi-API race + retries from `wallpaper.apis`; failure must not break the page. Prefetch uses `defaultImage` first.
+- Icons: `Icon.vue` maps FA class names to inline SVG; `public/fa/` is legacy.
+- `CLAUDE.md` lists deleted composables/stores (`useHomepage`, `homepage` store, ClockPanel, etc.) — **do not revive them**; current code uses `lib/` + `SiteShell` + `page-shell`.
+- Migrating old Hexo HTML → Markdown is lossy (bold/`**` glue, tags scraped from theme chrome). Prefer hand-fixing body markup after bulk import (`tmp/migrate-old-blog.mjs` is a one-off helper, not product code).

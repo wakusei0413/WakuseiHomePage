@@ -26,6 +26,9 @@ export const useI18nStore = defineStore('i18n', () => {
     function setLocale(newLocale: Locale) {
         locale.value = newLocale;
         persistLang(newLocale);
+        if (typeof document !== 'undefined') {
+            document.documentElement.lang = newLocale;
+        }
     }
 
     return { locale, t, setLocale };

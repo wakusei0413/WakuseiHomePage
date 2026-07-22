@@ -60,14 +60,8 @@ export interface SocialLinksConfig {
     links: SocialLink[];
 }
 
-export interface FooterLink {
-    name: string;
-    href: string;
-}
-
 export interface FooterConfig {
     text: string;
-    links: FooterLink[];
 }
 
 export interface SlogansConfig {
@@ -90,19 +84,18 @@ export interface LoadingConfig {
     textSwitchInterval: number;
 }
 
-export interface WallpaperInfiniteScrollConfig {
+export interface WallpaperRotationConfig {
     enabled: boolean;
-    speed: number;
-    batchSize: number;
-    maxImages: number;
+    interval: number;
 }
 
 export interface WallpaperConfig {
+    /** Local image shown instantly on first paint while the external rotation API loads. */
+    defaultImage?: string;
     apis: string[];
     raceTimeout: number;
     maxRetries: number;
-    preloadCount: number;
-    infiniteScroll: WallpaperInfiniteScrollConfig;
+    rotation: WallpaperRotationConfig;
 }
 
 export interface AnimationConfig {

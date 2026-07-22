@@ -1,0 +1,14 @@
+---
+import TaxonomyPage from '../../components/TaxonomyPage.vue';
+import { siteConfig } from '../../data/site';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { loadTaxonomyTerms } from '../../lib/posts';
+
+const terms = await loadTaxonomyTerms('category');
+const title = '分类';
+const description = `按栏目浏览 ${terms.length} 个分类下的文章。`;
+---
+
+<BaseLayout shellMode="blog" shellTitle={title} title={`${title} | ${siteConfig.title}`} description={description}>
+    <TaxonomyPage client:idle variant="categories" title={title} description={description} terms={terms} />
+</BaseLayout>

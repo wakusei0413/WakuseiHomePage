@@ -20,3 +20,11 @@ Thumbs.db
 
 # Backups
 backups/
+
+# Local temp / tool output
+output/
+tmp/
+terminals/
+.playwright-cli/
+.codex/*.log
+*.tsbuildinfo

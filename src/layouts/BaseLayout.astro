@@ -8,6 +8,7 @@ import '../styles/dock.css';
 import '../styles/topbar.css';
 import '../styles/footer.css';
 import '../styles/article.css';
+import '../styles/toc.css';
 
 import { ClientRouter } from 'astro:transitions';
 import Footer from '../components/Footer.vue';
@@ -20,18 +21,18 @@ interface Props {
     description?: string;
     shellMode?: 'home' | 'blog' | 'article' | 'error';
     shellTitle?: string;
+    ogImage?: string;
 }
 
 const {
     title = siteConfig.title,
     description = siteConfig.description,
     shellMode = 'error',
-    shellTitle = title
+    shellTitle = title,
+    ogImage
 } = Astro.props;
 const isHomePage = shellMode === 'home';
 const DARK_THEME_BG = '#080808';
-const googleFontsUrl =
-    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap';
 const wallpaperOrigins = Array.from(
     new Set(
         siteConfig.wallpaper.apis.flatMap((api) => {
@@ -45,12 +46,23 @@ const wallpaperOrigins = Array.from(
 );
 const siteUrl = Astro.site ?? new URL('https://www.wakusei.top');
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
-const ogImageUrl = new URL(siteConfig.profile.avatar, siteUrl).toString();
+const ogImageUrl = ogImage
+    ? ogImage.startsWith('http')
+        ? ogImage
+        : new URL(ogImage, siteUrl).toString()
+    : new URL(siteConfig.profile.avatar, siteUrl).toString();
 const ogLocale = siteConfig.lang.replace('-', '_');
+const googleFontsUrl =
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap';
 ---
 
 <!doctype html>
-<html lang={siteConfig.lang} class:list={[isHomePage && 'is-home']} transition:name="root" transition:animate="none">
+<html
+    lang={siteConfig.lang}
+    class:list={[isHomePage && 'is-home', 'is-loaded', 'is-entering']}
+    transition:name="root"
+    transition:animate="none"
+>
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -61,6 +73,9 @@ const ogLocale = siteConfig.lang.replace('-', '_');
         <meta name="theme-color" content={siteConfig.themeColor} />
         <style is:inline set:html={`:root{--theme-color:${siteConfig.themeColor}}`}></style>
         <link rel="canonical" href={canonicalUrl} />
+        <link rel="sitemap" href="/sitemap-index.xml" />
+        <link rel="alternate" type="application/rss+xml" title={`${siteConfig.title} RSS`} href="/rss.xml" />
+        <link rel="alternate" type="application/atom+xml" title={`${siteConfig.title} Atom`} href="/atom.xml" />
         <meta property="og:site_name" content={siteConfig.title} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
@@ -96,117 +111,45 @@ const ogLocale = siteConfig.lang.replace('-', '_');
                 --panel-shadow: 4px 4px 0 0 var(--fg);
                 --muted: #999999;
             }
-            .loading-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: var(--bg, #fffef7);
-                z-index: 9998;
-                z-index: var(--z-loading, 9998);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition:
-                    opacity 0.4s ease,
-                    visibility 0.4s ease;
-            }
-            .loading-overlay.hidden {
-                opacity: 0;
-                visibility: hidden;
-                pointer-events: none;
-            }
-            .loading-panel {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 1.5rem;
-                padding: 3rem;
-                border: var(--border-width) solid var(--panel-border, #0a0a0a);
-                background: var(--bg, #fffef7);
-                box-shadow: var(--panel-shadow, 4px 4px 0 0 #0a0a0a);
-                border-radius: 4px;
-                animation: loading-fade-in 0.8s cubic-bezier(0.1, 0.9, 0.2, 1);
-            }
-            @keyframes loading-fade-in {
-                from {
-                    opacity: 0;
-                    transform: translateY(10px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-            .loading-spinner {
-                width: 40px;
-                height: 40px;
-                border: 4px solid var(--fg, #0a0a0a);
-                background: var(--bg, #fffef7);
-                animation:
-                    loading-rotate 1s linear infinite,
-                    loading-pulse 0.8s ease-in-out infinite;
-            }
-            @keyframes loading-rotate {
-                from {
-                    transform: rotate(0deg);
-                }
-                to {
-                    transform: rotate(360deg);
-                }
-            }
-            @keyframes loading-pulse {
-                0%,
-                100% {
-                    opacity: 1;
-                }
-                50% {
-                    opacity: 0.4;
-                }
-            }
-            .loading-text {
-                font-family: var(--font-display, 'Times New Roman', serif);
-                font-size: 1.25rem;
-                font-weight: 400;
-                letter-spacing: 0.04em;
-                color: var(--fg, #0a0a0a);
-                min-height: 1.5em;
-            }
-            .loading-progress {
-                width: 200px;
-                height: 12px;
-                border: 3px solid var(--fg, #0a0a0a);
-                background: var(--bg, #fffef7);
-                position: relative;
-                overflow: hidden;
-            }
-            .loading-bar {
-                height: 100%;
-                background: var(--fg, #0a0a0a);
-                width: 0%;
-                transition: width 0.3s ease-out;
-                position: relative;
-                overflow: hidden;
-            }
-            .loading-percent {
-                font-family: var(--font-mono, monospace);
-                font-size: 0.875rem;
-                color: var(--muted, #666666);
-            }
-            /* Push noise overlay behind loading overlay when it's visible */
-            html:not(.is-loaded) .noise-overlay {
-                z-index: 9997 !important;
-                opacity: 0.01 !important;
-            }
         </style>
 
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        {wallpaperOrigins.map((origin) => <link rel="dns-prefetch" href={origin} />)}
+        {wallpaperOrigins.map((origin) => <link rel="dns-prefetch" href={origin} media="(min-width: 901px)" />)}
         {wallpaperOrigins.map((origin) => <link rel="preconnect" href={origin} media="(min-width: 901px)" />)}
+        <script
+            is:inline
+            define:vars={{
+                wallpaperDefault: siteConfig.wallpaper.defaultImage ?? '',
+                wallpaperApi: siteConfig.wallpaper.apis[0] ?? ''
+            }}
+        >
+            (function () {
+                if (window.__wallpaperPrefetch) return;
+                if (document.querySelector('.wallpaper-image')) return;
+                if (!window.matchMedia || !window.matchMedia('(min-width: 901px)').matches) return;
+                try {
+                    var img = new Image();
+                    img.decoding = 'async';
+                    // Low priority: the wallpaper is decorative, so it must never
+                    // compete with the avatar/hero text (the LCP element) or the web
+                    // fonts during the critical first paint. It is a tiny self-hosted
+                    // file, so low priority still lands well before the user notices.
+                    if ('fetchPriority' in img) img.fetchPriority = 'low';
+                    // Prefer the local default image for the first frame: it is a small
+                    // self-hosted WebP that paints instantly, so the hero is never blank
+                    // while the external rotation API (wallpaperApi) responds. The
+                    // controller still rotates to the external API for variety.
+                    var src = wallpaperDefault || wallpaperApi;
+                    if (!src) return;
+                    if (/^https?:\/\//i.test(src)) img.crossOrigin = 'anonymous';
+                    img.src = src;
+                    window.__wallpaperPrefetch = { img: img };
+                } catch (e) {}
+            })();
+        </script>
         <link href={googleFontsUrl} rel="preload" as="style" onload={"this.onload=null;this.rel='stylesheet'"} />
         <noscript>
             <link href={googleFontsUrl} rel="stylesheet" />
@@ -229,122 +172,34 @@ const ogLocale = siteConfig.lang.replace('-', '_');
         </script>
     </head>
     <body class:list={[isHomePage && 'is-home']}>
-        <div id="navigationProgress" class="navigation-progress" aria-hidden="true">
-            <div id="navigationProgressBar" class="navigation-progress__bar"></div>
-        </div>
-        <div id="globalLoadingOverlay" class="loading-overlay">
-            <div class="loading-panel">
-                <div class="loading-spinner"></div>
-                <div id="globalLoadingText" class="loading-text">{siteConfig.loading.texts[0]}</div>
-                <div class="loading-progress">
-                    <div id="globalLoadingBar" class="loading-bar" style="width: 0%"></div>
-                </div>
-                <div id="globalLoadingPercent" class="loading-percent">0%</div>
-            </div>
-        </div>
-        <script is:inline define:vars={{ loadingTexts: siteConfig.loading.texts }}>
+        <script is:inline>
             (function () {
-                var storageKey = '__wakusei_skip_entry_loader';
-                var overlay = document.getElementById('globalLoadingOverlay');
-                var text = document.getElementById('globalLoadingText');
-                var bar = document.getElementById('globalLoadingBar');
-                var percentLabel = document.getElementById('globalLoadingPercent');
-                var skipEntryLoader = sessionStorage.getItem('__wakusei_skip_entry_loader') === 'true';
-                var progress = 0;
-                var textIndex = 0;
-                var pageLoaded = false;
-                var homepageReady = false;
-                var shellReady = false;
-                var hidden = false;
-                var progressTimer;
-                var textTimer;
-
-                function setProgress(value) {
-                    progress = Math.max(progress, Math.min(100, Math.round(value)));
-                    if (bar) bar.style.width = progress + '%';
-                    if (percentLabel) percentLabel.textContent = progress + '%';
+                function reveal() {
+                    requestAnimationFrame(function () {
+                        requestAnimationFrame(function () {
+                            document.documentElement.classList.remove('is-entering');
+                        });
+                    });
                 }
-
-                function hideOverlay() {
-                    if (hidden) return;
-                    hidden = true;
-                    setProgress(100);
-                    window.setTimeout(function () {
-                        if (overlay) overlay.classList.add('hidden');
-                        window.clearInterval(progressTimer);
-                        window.clearInterval(textTimer);
-                        sessionStorage.removeItem(storageKey);
-                        document.documentElement.classList.add('is-loaded');
-                    }, 250);
-                }
-
-                function shouldWaitForHomepage() {
-                    const isHomeRoute =
-                        document.documentElement.classList.contains('is-home') ||
-                        document.body.classList.contains('is-home');
-                    return isHomeRoute && !homepageReady;
-                }
-
-                // 所有页面统一等待 shell（壁纸）就绪后再隐藏 overlay，
-                // 避免非首页因 pageLoad 先于壁纸就绪而出现壁纸未加载完成的闪动。
-                // 壁纸加载失败时 loadInitialImages 仍会 allSettled 并触发 onReady，overlay 不会卡死。
-                function shouldWaitForShell() {
-                    return !shellReady;
-                }
-
-                function maybeHideOverlay() {
-                    if (!pageLoaded || shouldWaitForShell() || shouldWaitForHomepage()) return;
-                    hideOverlay();
-                }
-
-                if (!overlay) return;
-
-                if (skipEntryLoader) {
-                    overlay.classList.add('hidden');
-                    sessionStorage.removeItem('__wakusei_skip_entry_loader');
-                    document.documentElement.classList.add('is-loaded');
-                    return;
-                }
-
-                window.addEventListener('wakusei:homepage-ready', function () {
-                    homepageReady = true;
-                    maybeHideOverlay();
-                });
-
-                window.addEventListener('wakusei:shell-ready', function () {
-                    shellReady = true;
-                    maybeHideOverlay();
-                });
-
-                progressTimer = window.setInterval(function () {
-                    if (progress < 90) setProgress(progress + 3);
-                }, 100);
-
-                if (loadingTexts.length > 1 && text) {
-                    textTimer = window.setInterval(function () {
-                        textIndex = (textIndex + 1) % loadingTexts.length;
-                        text.textContent = loadingTexts[textIndex];
-                    }, 900);
-                }
-
-                if (document.readyState === 'complete') {
-                    pageLoaded = true;
-                    maybeHideOverlay();
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', reveal);
                 } else {
-                    window.addEventListener(
-                        'load',
-                        function () {
-                            pageLoaded = true;
-                            maybeHideOverlay();
-                        },
-                        { once: true }
-                    );
+                    reveal();
                 }
             })();
         </script>
+        <div id="navigationProgress" class="navigation-progress" aria-hidden="true">
+            <div id="navigationProgressBar" class="navigation-progress__bar"></div>
+        </div>
         <div id="pageScroller" class="page-scroller">
             <div transition:name="site-shell" transition:persist>
-                <SiteShell client:load showTopBar={false} />
+                <SiteShell
+                    client:idle
+                    showTopBar={false}
+                    initialMode={shellMode}
+                    initialTitle={shellTitle}
+                    initialIsHomePage={isHomePage}
+                />
             </div>
             <div
                 id="pageTransitionSurface"
@@ -357,15 +212,10 @@ const ogLocale = siteConfig.lang.replace('-', '_');
                 <slot />
             </div>
             <div class="page-footer" transition:name="site-footer" transition:persist>
-                <Footer
-                    client:load
-                    links={siteConfig.footer.links}
-                    socialLinks={siteConfig.socialLinks.links}
-                    copyrightText={siteConfig.footer.text}
-                />
+                <Footer client:idle copyrightText={siteConfig.footer.text} />
             </div>
         </div>
-        <TopBar client:load initialIsHomePage={isHomePage} />
+        <TopBar client:idle initialIsHomePage={isHomePage} />
         <noscript>
             <style>
                 .container {
@@ -375,216 +225,24 @@ const ogLocale = siteConfig.lang.replace('-', '_');
                 .loading-overlay {
                     display: none;
                 }
+                .left-panel .hero.hero-entering > .avatar-box,
+                .left-panel .hero.hero-entering > .name,
+                .left-panel .hero.hero-entering > .status-bar,
+                .left-panel .hero.hero-entering > .bio-container,
+                .left-panel .hero.hero-entering > .social-links,
+                .left-panel .hero.hero-entering > .social-links-wrapper {
+                    opacity: 1;
+                    transform: none;
+                }
+                html.is-entering .left-panel,
+                html.is-entering .top-bar {
+                    opacity: 1;
+                    transform: none;
+                }
             </style>
         </noscript>
-        <script is:inline define:vars={{ darkBg: DARK_THEME_BG, themeColor: siteConfig.themeColor }}>
-            if (!window.__wakuseiNavigationRuntimeInitialized) {
-                window.__wakuseiNavigationRuntimeInitialized = true;
-
-                (function () {
-                    var showDelay = 120;
-                    var showTimer;
-                    var trickleTimer;
-                    var hideTimer;
-                    var resourceTimeout;
-                    var resourceProbeTimer;
-                    var pendingReadyHandler;
-                    var progressVisible = false;
-                    var value = 0;
-                    var navigationEpoch = 0;
-
-                    function getNavigationProgressElements() {
-                        const progress = document.getElementById('navigationProgress');
-                        const bar = document.getElementById('navigationProgressBar');
-                        return { progress, bar };
-                    }
-
-                    function setValue(nextValue) {
-                        var elements = getNavigationProgressElements();
-                        value = Math.max(value, Math.min(nextValue, 100));
-                        if (elements.bar) elements.bar.style.transform = 'scaleX(' + value / 100 + ')';
-                    }
-
-                    function clearPendingResourceWait() {
-                        if (resourceTimeout) {
-                            window.clearTimeout(resourceTimeout);
-                            resourceTimeout = undefined;
-                        }
-                        if (resourceProbeTimer) {
-                            window.clearTimeout(resourceProbeTimer);
-                            resourceProbeTimer = undefined;
-                        }
-                        if (pendingReadyHandler) {
-                            window.removeEventListener('wakusei:homepage-ready', pendingReadyHandler);
-                            window.removeEventListener('wakusei:shell-ready', pendingReadyHandler);
-                            pendingReadyHandler = undefined;
-                        }
-                    }
-
-                    function isIncomingHomeReady() {
-                        const carrier = document.getElementById('pageTransitionSurface');
-                        const isHome = carrier && carrier.dataset.isHome === 'true';
-                        if (!isHome) return false;
-                        return !!document.querySelector('.container.visible');
-                    }
-
-                    function reset() {
-                        var elements = getNavigationProgressElements();
-                        window.clearTimeout(showTimer);
-                        window.clearInterval(trickleTimer);
-                        window.clearTimeout(hideTimer);
-                        clearPendingResourceWait();
-                        progressVisible = false;
-                        value = 0;
-                        if (elements.bar) elements.bar.style.transform = 'scaleX(0)';
-                        if (elements.progress) {
-                            elements.progress.classList.remove('navigation-progress--visible');
-                            elements.progress.classList.remove('navigation-progress--done');
-                        }
-                    }
-
-                    function start() {
-                        navigationEpoch += 1;
-                        reset();
-                        progressVisible = true;
-                        showTimer = window.setTimeout(function () {
-                            var elements = getNavigationProgressElements();
-                            if (!elements.progress) return;
-                            elements.progress.classList.add('navigation-progress--visible');
-                            setValue(12);
-                            trickleTimer = window.setInterval(function () {
-                                setValue(value + Math.max(1, (88 - value) * 0.12));
-                            }, 180);
-                        }, showDelay);
-                    }
-
-                    function finish() {
-                        var elements = getNavigationProgressElements();
-                        window.clearTimeout(showTimer);
-                        window.clearInterval(trickleTimer);
-                        clearPendingResourceWait();
-                        if (!elements.progress) return;
-                        if (!progressVisible) {
-                            reset();
-                            return;
-                        }
-                        elements.progress.classList.add('navigation-progress--visible');
-                        setValue(100);
-                        elements.progress.classList.add('navigation-progress--done');
-                        hideTimer = window.setTimeout(reset, 260);
-                    }
-
-                    function waitForResources() {
-                        clearPendingResourceWait();
-                        const epoch = navigationEpoch;
-
-                        if (!incomingIsHomePage) {
-                            finish();
-                            return;
-                        }
-
-                        function settle() {
-                            if (epoch !== navigationEpoch) return;
-                            finish();
-                        }
-
-                        pendingReadyHandler = function () {
-                            settle();
-                        };
-
-                        window.addEventListener('wakusei:homepage-ready', pendingReadyHandler);
-                        window.addEventListener('wakusei:shell-ready', pendingReadyHandler);
-
-                        resourceTimeout = window.setTimeout(settle, 10000);
-
-                        resourceProbeTimer = window.setTimeout(function () {
-                            if (epoch !== navigationEpoch) return;
-                            if (isIncomingHomeReady()) {
-                                settle();
-                            }
-                        }, 0);
-                    }
-
-                    document.addEventListener('astro:before-preparation', function () {
-                        start();
-                    });
-                    document.addEventListener('astro:after-swap', function () {
-                        waitForResources();
-                    });
-                })();
-
-                function getActiveTheme() {
-                    const storedTheme = localStorage.getItem('theme');
-                    if (storedTheme === 'dark' || storedTheme === 'light') return storedTheme;
-                    const currentTheme = document.documentElement.getAttribute('data-theme');
-                    if (currentTheme === 'dark' || currentTheme === 'light') return currentTheme;
-                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
-                    return 'light';
-                }
-
-                let incomingIsHomePage = document.documentElement.classList.contains('is-home');
-
-                function applyHomePageChromeState(isHome) {
-                    const h = document.documentElement;
-                    const b = document.body;
-                    if (isHome) {
-                        h.classList.add('is-home');
-                        b.classList.add('is-home');
-                    } else {
-                        h.classList.remove('is-home');
-                        b.classList.remove('is-home');
-                    }
-                }
-
-                function getShellStateFromDocument(doc) {
-                    const carrier = doc.getElementById('pageTransitionSurface');
-                    if (!carrier) {
-                        return { title: '', mode: 'error', isHomePage: false };
-                    }
-                    const mode =
-                        carrier.dataset.shellMode === 'home' ||
-                        carrier.dataset.shellMode === 'blog' ||
-                        carrier.dataset.shellMode === 'article' ||
-                        carrier.dataset.shellMode === 'error'
-                            ? carrier.dataset.shellMode
-                            : 'error';
-                    return {
-                        title: carrier.dataset.pageTitle || '',
-                        mode: mode,
-                        isHomePage: carrier.dataset.isHome === 'true'
-                    };
-                }
-
-                function dispatchShellState(nextState) {
-                    window.dispatchEvent(new CustomEvent('wakusei:shell-page-change', { detail: nextState }));
-                }
-
-                document.addEventListener('astro:before-swap', (event) => {
-                    sessionStorage.setItem('__wakusei_skip_entry_loader', 'true');
-                    event.newDocument.documentElement.classList.add('is-loaded');
-                    const incomingOverlay = event.newDocument.querySelector('#globalLoadingOverlay');
-                    if (incomingOverlay) incomingOverlay.classList.add('hidden');
-
-                    incomingIsHomePage =
-                        event.newDocument.documentElement.classList.contains('is-home') ||
-                        event.newDocument.body.classList.contains('is-home');
-                    dispatchShellState(getShellStateFromDocument(event.newDocument));
-
-                    const theme = getActiveTheme();
-                    const nextThemeColor = theme === 'dark' ? darkBg : themeColor;
-                    event.newDocument.documentElement.setAttribute('data-theme', theme);
-                    const incomingThemeColor = event.newDocument.querySelector('meta[name="theme-color"]');
-                    if (incomingThemeColor) incomingThemeColor.setAttribute('content', nextThemeColor);
-                });
-
-                document.addEventListener('astro:after-swap', () => {
-                    sessionStorage.removeItem('__wakusei_skip_entry_loader');
-                    applyHomePageChromeState(incomingIsHomePage);
-                    const scroller =
-                        document.getElementById('pageScroller') || document.querySelector('.page-scroller');
-                    if (scroller) scroller.scrollTo({ top: 0 });
-                });
-            }
+        <script>
+            import '../scripts/navigation-runtime';
         </script>
     </body>
 </html>

@@ -1,20 +1,22 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { navigate } from 'astro:transitions/client';
 import Icon from './Icon.vue';
 import type { Locale } from '../data/i18n';
 import { getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel } from '../lib/dock';
+import { isHashSectionHref, navigateToHashSection } from '../lib/section-nav';
 import { useI18n } from '../composables/useI18n';
 import { useTheme } from '../composables/useTheme';
 import { usePageShellStore } from '../stores/page-shell';
+import { useSearchStore } from '../stores/search';
 import { siteConfig } from '../data/site';
 
-const props = defineProps<{
-    initialIsHomePage: boolean;
-}>();
+defineProps<{ initialIsHomePage: boolean }>();
 
 const { t, setLocale, locale } = useI18n();
 const { isDark, toggle: toggleTheme } = useTheme();
 const pageShell = usePageShellStore();
+const searchStore = useSearchStore();
 
 const activePanel = ref<string | null>(null);
 const hydrateKey = ref(0);
@@ -26,7 +28,9 @@ let outsideClickCleanup: (() => void) | undefined;
 let outsideClickTimer: ReturnType<typeof setTimeout> | undefined;
 let magnifyCleanup: (() => void) | undefined;
 
-const isMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
+// SSR renders the desktop layout; the real viewport state is applied after
+// hydration in onMounted to avoid mismatches. setupViewportMediaSync syncs on resize.
+const isMobile = ref(false);
 
 const sidebarOpen = ref(false);
 const sidebarRef = ref<HTMLDivElement>();
@@ -63,6 +67,14 @@ const barExpandStyle = computed(() => {
     return `--bar-left: calc(var(--left-panel-width, 500px) * ${1 - p}); --left-width: calc(${p} * var(--left-panel-width, 500px))`;
 });
 
+const navTranslateY = computed(() => {
+    const sp = pageShell.scrollProgress;
+    const dir = pageShell.scrollDirection;
+    if (sp < 0.45) return '0';
+    if (dir === 'down') return '-100%';
+    return '0';
+});
+
 function setupViewportMediaSync() {
     const mql = window.matchMedia('(max-width: 900px)');
     const handleMediaChange = (event: MediaQueryListEvent) => {
@@ -76,6 +88,7 @@ function setupViewportMediaSync() {
 const cleanups: Array<() => void> = [];
 
 onMounted(() => {
+    isMobile.value = window.matchMedia('(max-width: 900px)').matches;
     cleanups.push(setupViewportMediaSync());
     hydrateKey.value = 1;
 });
@@ -109,6 +122,10 @@ function handleAction(action: string) {
     switch (action) {
         case 'toggleTheme':
             toggleTheme();
+            break;
+        case 'openSearch':
+            searchStore.open();
+            closeSidebar();
             break;
         default:
             console.warn(`[TopBar] Unsupported action: "${action}".`);
@@ -279,14 +296,30 @@ function getMode(display: { renderMode?: string }) {
     return display.renderMode ?? 'icon';
 }
 
-function scrollCurrentPageToTop() {
+function scrollCurrentPageToTop(): Promise<void> {
     const s = document.getElementById('pageScroller') ?? document.querySelector('.page-scroller');
     if (s) {
         s.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
+        return new Promise((resolve) => {
+            const fallback = window.setTimeout(resolve, 1200);
+            const onScrollEnd = () => {
+                if (s.scrollTop <= 0) {
+                    s.removeEventListener('scroll', onScrollEnd);
+                    clearTimeout(fallback);
+                    resolve();
+                }
+            };
+            s.addEventListener('scroll', onScrollEnd, { passive: true });
+            if (s.scrollTop <= 0) {
+                s.removeEventListener('scroll', onScrollEnd);
+                clearTimeout(fallback);
+                resolve();
+            }
+        });
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    return Promise.resolve();
 }
 
 function handleLeftClick(e: MouseEvent) {
@@ -301,7 +334,21 @@ function handleLeftClick(e: MouseEvent) {
     if (isCurrentHome && s) {
         e.preventDefault();
         s.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (!isCurrentHome) {
+        e.preventDefault();
+        scrollCurrentPageToTop().then(() => navigate('/'));
     }
+}
+
+function shouldHandleNavigationClick(event: MouseEvent): boolean {
+    return (
+        event.button === 0 &&
+        !event.defaultPrevented &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.shiftKey &&
+        !event.altKey
+    );
 }
 
 function handleDockLinkClick(e: MouseEvent, href: string) {
@@ -309,11 +356,20 @@ function handleDockLinkClick(e: MouseEvent, href: string) {
         e.preventDefault();
         return;
     }
+    if (!shouldHandleNavigationClick(e)) return;
+    if (isHashSectionHref(href)) {
+        e.preventDefault();
+        navigateToHashSection(href);
+        return;
+    }
     const currentPath = window.location.pathname;
     const targetPath = href;
     if (currentPath === targetPath || currentPath === targetPath + '/') {
         e.preventDefault();
         scrollCurrentPageToTop();
+    } else {
+        e.preventDefault();
+        scrollCurrentPageToTop().then(() => navigate(href));
     }
 }
 
@@ -323,6 +379,16 @@ function handleSidebarDockLinkClick(e: MouseEvent, href: string) {
         closeSidebar();
         return;
     }
+    if (!shouldHandleNavigationClick(e)) {
+        closeSidebar();
+        return;
+    }
+    if (isHashSectionHref(href)) {
+        e.preventDefault();
+        closeSidebar();
+        navigateToHashSection(href);
+        return;
+    }
     const currentPath = window.location.pathname;
     const targetPath = href;
     if (currentPath === targetPath || currentPath === targetPath + '/') {
@@ -330,7 +396,9 @@ function handleSidebarDockLinkClick(e: MouseEvent, href: string) {
         closeSidebar();
         scrollCurrentPageToTop();
     } else {
+        e.preventDefault();
         closeSidebar();
+        scrollCurrentPageToTop().then(() => navigate(href));
     }
 }
 
@@ -349,15 +417,9 @@ function shouldRenderTrailingDivider() {
         class="top-bar"
         role="toolbar"
         aria-label="Top navigation"
-        :style="barExpandStyle"
+        :style="`${barExpandStyle}; --nav-translate-y: ${navTranslateY}`"
     >
-        <a
-            class="top-bar-left"
-            href="/"
-            :role="isMobile ? 'button' : undefined"
-            :aria-label="isMobile ? 'Open menu' : undefined"
-            @click="handleLeftClick"
-        >
+        <a class="top-bar-left" href="/" @click="handleLeftClick">
             <img class="top-bar-avatar" :src="siteConfig.profile.avatar" alt="" width="40" height="40" />
             <span class="top-bar-name">{{ siteConfig.profile.name }}</span>
         </a>
@@ -422,14 +484,28 @@ function shouldRenderTrailingDivider() {
                                 {{ getLabel(item.display) }}
                             </span>
                         </a>
+                        <button
+                            v-else-if="isDockLinkDisabled(item.href)"
+                            type="button"
+                            class="top-bar-dock-item disabled"
+                            :class="{ 'has-text': getMode(item.display) !== 'icon' }"
+                            :title="getLabel(item.display)"
+                            :aria-label="getLabel(item.display)"
+                            @click="(e: MouseEvent) => handleDockLinkClick(e, item.href)"
+                        >
+                            <Icon v-if="getMode(item.display) !== 'text'" :name="getIcon(item.display, false)" />
+                            <span
+                                v-if="getMode(item.display) === 'text' || getMode(item.display) === 'both'"
+                                class="top-bar-dock-label"
+                            >
+                                {{ getLabel(item.display) }}
+                            </span>
+                        </button>
                         <a
                             v-else
-                            :href="isDockLinkDisabled(item.href) ? undefined : item.href"
+                            :href="item.href"
                             class="top-bar-dock-item"
-                            :class="{
-                                disabled: isDockLinkDisabled(item.href),
-                                'has-text': getMode(item.display) !== 'icon'
-                            }"
+                            :class="{ 'has-text': getMode(item.display) !== 'icon' }"
                             :title="getLabel(item.display)"
                             :aria-label="getLabel(item.display)"
                             @click="(e: MouseEvent) => handleDockLinkClick(e, item.href)"
@@ -459,17 +535,19 @@ function shouldRenderTrailingDivider() {
         <div class="top-bar-popup-title">
             {{ t('dock.language') }}
         </div>
-        <div
-            v-for="lang in siteConfig.i18n.locales"
-            :key="lang"
-            class="top-bar-popup-option"
-            :class="{ selected: locale === lang }"
-            role="option"
-            :aria-selected="locale === lang"
-            @click="selectLanguage(lang)"
-        >
-            <Icon name="check" class="check-icon" />
-            <span>{{ t(`dock.lang.${lang}`) }}</span>
+        <div role="listbox" aria-label="Language" class="top-bar-popup-list">
+            <div
+                v-for="lang in siteConfig.i18n.locales"
+                :key="lang"
+                class="top-bar-popup-option"
+                :class="{ selected: locale === lang }"
+                role="option"
+                :aria-selected="locale === lang"
+                @click="selectLanguage(lang)"
+            >
+                <Icon name="check" class="check-icon" />
+                <span>{{ t(`dock.lang.${lang}`) }}</span>
+            </div>
         </div>
     </div>
 
@@ -520,6 +598,8 @@ function shouldRenderTrailingDivider() {
                         v-if="item.panel === 'language'"
                         class="sidebar-submenu"
                         :class="{ expanded: activePanel === item.panel }"
+                        role="listbox"
+                        aria-label="Language"
                     >
                         <div
                             v-for="lang in siteConfig.i18n.locales"
@@ -560,11 +640,20 @@ function shouldRenderTrailingDivider() {
                         <Icon :name="getIcon(item.display, false)" class="sidebar-menu-icon" />
                         <span>{{ getLabel(item.display) }}</span>
                     </a>
+                    <button
+                        v-else-if="isDockLinkDisabled(item.href)"
+                        type="button"
+                        class="sidebar-menu-item disabled"
+                        :aria-label="getLabel(item.display)"
+                        @click="(e: MouseEvent) => handleSidebarDockLinkClick(e, item.href)"
+                    >
+                        <Icon :name="getIcon(item.display, false)" class="sidebar-menu-icon" />
+                        <span>{{ getLabel(item.display) }}</span>
+                    </button>
                     <a
                         v-else
-                        :href="isDockLinkDisabled(item.href) ? undefined : item.href"
+                        :href="item.href"
                         class="sidebar-menu-item"
-                        :class="{ disabled: isDockLinkDisabled(item.href) }"
                         :aria-label="getLabel(item.display)"
                         @click="(e: MouseEvent) => handleSidebarDockLinkClick(e, item.href)"
                     >

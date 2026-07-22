@@ -4,6 +4,12 @@ export function enableContentProtection(enabled: boolean) {
     }
 
     document.body.classList.add('no-copy');
+
+    const reapplyNoCopy = () => {
+        document.body.classList.add('no-copy');
+    };
+    document.addEventListener('astro:after-swap', reapplyNoCopy);
+
     const isEditableTarget = (target: EventTarget | null) => {
         const element = target as HTMLElement | null;
         if (!element) return false;
@@ -38,6 +44,7 @@ export function enableContentProtection(enabled: boolean) {
 
     return () => {
         document.body.classList.remove('no-copy');
+        document.removeEventListener('astro:after-swap', reapplyNoCopy);
         document.removeEventListener('selectstart', preventDefault);
         document.removeEventListener('contextmenu', preventDefault);
         document.removeEventListener('copy', preventDefault);

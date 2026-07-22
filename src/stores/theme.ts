@@ -17,7 +17,7 @@ export const useThemeStore = defineStore('theme', () => {
                 if (!getStoredTheme()) {
                     const newTheme = e.matches ? 'dark' : 'light';
                     isDark.value = newTheme === 'dark';
-                    applyTheme(newTheme);
+                    applyTheme(newTheme, false);
                 }
             });
         }

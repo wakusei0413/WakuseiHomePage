@@ -51,11 +51,6 @@ const dockSchema = z.object({
     items: z.array(dockItemSchema)
 });
 
-const footerLinkSchema = z.object({
-    name: z.string().min(1),
-    href: z.string().min(1)
-});
-
 const i18nSchema = z.object({
     defaultLocale: z.enum(['zh-CN', 'en', 'ja']),
     locales: z.array(z.enum(['zh-CN', 'en', 'ja'])).min(1)
@@ -77,8 +72,7 @@ export const siteConfigSchema = z.object({
         links: z.array(socialLinkSchema).min(1)
     }),
     footer: z.object({
-        text: z.string().min(1),
-        links: z.array(footerLinkSchema)
+        text: z.string().min(1)
     }),
     slogans: z.object({
         list: z.array(z.string().min(1)).min(1),
@@ -98,15 +92,13 @@ export const siteConfigSchema = z.object({
         textSwitchInterval: z.number().positive()
     }),
     wallpaper: z.object({
+        defaultImage: z.string().optional(),
         apis: z.array(z.string().min(1)).min(1),
         raceTimeout: z.number().positive(),
         maxRetries: z.number().positive(),
-        preloadCount: z.number().positive(),
-        infiniteScroll: z.object({
+        rotation: z.object({
             enabled: z.boolean(),
-            speed: z.number().positive(),
-            batchSize: z.number().positive(),
-            maxImages: z.number().positive()
+            interval: z.number().positive()
         })
     }),
     animation: z.object({

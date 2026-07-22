@@ -130,23 +130,18 @@
     .navigation-progress__bar {
         transition: none;
     }
+
+    html.is-entering .left-panel,
+    html.is-entering .top-bar {
+        opacity: 1;
+        transform: none;
+    }
 }
 
 .left-panel-content-leave-active {
     transition:
-        filter 0.15s ease,
-        opacity 0.25s ease 0.15s;
-}
-
-.left-panel-content-enter-active {
-    transition:
-        opacity 0.25s ease,
-        filter 0.2s ease 0.25s;
-}
-
-.left-panel-content-enter-from {
-    opacity: 0;
-    filter: blur(8px);
+        filter 0.18s ease,
+        opacity 0.18s ease;
 }
 
 .left-panel-content-leave-to {
@@ -154,6 +149,15 @@
     filter: blur(8px);
 }
 
+/* The entrance itself is driven by the .hero-revealed child stagger defined in
+   layout.css, so the Vue Transition keeps its enter phase a no-op to avoid
+   double-animating opacity over the stagger. The leave phase still fades the
+   outgoing header out cleanly. */
+.left-panel-content-enter-active {
+    transition: none;
+}
+
+/* Cancel the legacy .left-panel .hero slideIn so it never fights the stagger. */
 .left-panel .left-panel-content-enter-active,
 .left-panel .left-panel-content-leave-active {
     animation: none;
@@ -162,14 +166,32 @@
 @media (prefers-reduced-motion: reduce) {
     .left-panel-content-enter-active,
     .left-panel-content-leave-active {
-        transition: opacity 0.12s ease;
+        transition: none;
         filter: none;
         transform: none;
     }
 
-    .left-panel-content-enter-from,
     .left-panel-content-leave-to {
         transform: none;
         filter: none;
+    }
+
+    .left-panel .hero.hero-entering > .avatar-box,
+    .left-panel .hero.hero-entering > .name,
+    .left-panel .hero.hero-entering > .status-bar,
+    .left-panel .hero.hero-entering > .bio-container,
+    .left-panel .hero.hero-entering > .social-links,
+    .left-panel .hero.hero-entering > .social-links-wrapper {
+        opacity: 1;
+        transform: none;
+    }
+
+    .left-panel .hero.hero-revealed > .avatar-box,
+    .left-panel .hero.hero-revealed > .name,
+    .left-panel .hero.hero-revealed > .status-bar,
+    .left-panel .hero.hero-revealed > .bio-container,
+    .left-panel .hero.hero-revealed > .social-links,
+    .left-panel .hero.hero-revealed > .social-links-wrapper {
+        animation: none;
     }
 }

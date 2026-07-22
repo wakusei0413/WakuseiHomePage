@@ -3,25 +3,45 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { siteConfig } from '../data/site';
 import { createLogger } from '../lib/logger';
 import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations } from '../lib/runtime-effects';
-import { WallpaperScrollerController } from '../lib/wallpaper-scroller';
+import { WallpaperController } from '../lib/wallpaper-scroller';
 import { getPageShellStateFromDocument, subscribePageShellStateChange } from '../lib/page-shell-context';
+import { initHashSectionScrollOnLoad } from '../lib/section-nav';
 import { usePageShellStore } from '../stores/page-shell';
+import { useSearchStore } from '../stores/search';
+import SearchModal from './SearchModal.vue';
 import SocialLinks from './SocialLinks.vue';
 import TopBar from './TopBar.vue';
 import TypewriterSlogan from './TypewriterSlogan.vue';
 
-const props = defineProps<{ showTopBar?: boolean }>();
+const props = defineProps<{
+    showTopBar?: boolean;
+    initialMode?: 'home' | 'blog' | 'article' | 'error';
+    initialTitle?: string;
+    initialIsHomePage?: boolean;
+}>();
 
 const pageShell = usePageShellStore();
+const searchStore = useSearchStore();
+
+// Seed the shell store synchronously so SSR markup matches the first client render
+// (the store defaults to the home page; without this, blog/article pages hydrate
+// from the home hero into their real mode and emit a hydration mismatch).
+pageShell.enterPage({
+    title: props.initialTitle ?? siteConfig.profile.name,
+    mode: props.initialMode ?? 'home',
+    isHomePage: props.initialIsHomePage ?? true
+});
 const logger = createLogger(siteConfig.debug.consoleLog);
 
 const containerRef = ref<HTMLElement>();
 const avatarRef = ref<HTMLDivElement>();
 const wallpaperRef = ref<HTMLDivElement>();
 const ready = ref(false);
+const heroEntering = ref(true);
+const heroRevealed = ref(false);
 const isMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
 
-let wallpaperController: WallpaperScrollerController | null = null;
+let wallpaperController: WallpaperController | null = null;
 let watchStop: (() => void) | null = null;
 let shellCleanup: (() => void) | undefined;
 let scrollCleanup: (() => void) | undefined;
@@ -38,6 +58,9 @@ const heroOpacity = computed(() => {
 
 const heroStyle = computed(() => {
     const sp = pageShell.scrollProgress;
+    // Avoid forcing a composited layer (transform/filter/opacity) before the user
+    // scrolls so the hero paints in normal flow and the LCP element renders at FCP.
+    if (sp <= 0) return '';
     return (
         'transform: ' +
         `translateZ(${-600 * sp}px) ` +
@@ -56,7 +79,7 @@ function startWallpaperLoading() {
         return;
     }
 
-    wallpaperController = new WallpaperScrollerController(siteConfig.wallpaper, siteConfig.loading, {
+    wallpaperController = new WallpaperController(siteConfig.wallpaper, {
         onReady: () => {
             ready.value = true;
         }
@@ -65,6 +88,10 @@ function startWallpaperLoading() {
     wallpaperController.attach(wref);
     wallpaperController.init();
 }
+
+// Wallpaper loading starts immediately on mount (desktop only). The first image is
+// also prefetched from the <head> (see BaseLayout.astro) so it is fetched in parallel
+// with the page instead of waiting for hydration + a user interaction.
 
 function teardownWallpaper() {
     if (wallpaperController) {
@@ -85,8 +112,16 @@ function attachScrollListener() {
     scrollCleanup = undefined;
     const scroller = document.getElementById('pageScroller');
     if (!scroller) return;
+    let lastScrollY = scroller.scrollTop;
     const handleScroll = () => {
-        pageShell.setScrollProgress(Math.min(scroller.scrollTop / window.innerHeight, 1));
+        const currentScrollTop = scroller.scrollTop;
+        pageShell.setScrollProgress(Math.min(currentScrollTop / window.innerHeight, 1));
+        if (currentScrollTop > lastScrollY) {
+            pageShell.setScrollDirection('down');
+        } else if (currentScrollTop < lastScrollY) {
+            pageShell.setScrollDirection('up');
+        }
+        lastScrollY = currentScrollTop;
     };
     scroller.addEventListener('scroll', handleScroll, { passive: true });
     scrollCleanup = () => {
@@ -117,8 +152,20 @@ function reinitStickyAvatar() {
 
 function reattachDomListeners() {
     attachScrollListener();
-    reinitScrollAnimations();
     reinitStickyAvatar();
+}
+
+// Re-read the shell state from the document after an Astro client-side swap.
+// The primary update path is the `wakusei:shell-page-change` event dispatched
+// in `astro:before-swap`, but that can be missed when the Vue reactivity flush
+// is deferred (e.g. client:idle hydration timing). Reading the data attributes
+// directly from the new `#pageTransitionSurface` guarantees the hero mode and
+// title are always correct after navigation.
+function resyncShellStateAfterSwap() {
+    reattachDomListeners();
+    const nextState = getPageShellStateFromDocument();
+    pageShell.enterPage(nextState);
+    pageShell.resetScrollProgress();
 }
 
 onMounted(() => {
@@ -130,6 +177,14 @@ onMounted(() => {
     });
 
     reattachDomListeners();
+    reinitScrollAnimations();
+
+    // Scroll to "/#posts" when the page is entered directly via a hash URL
+    // (bookmark/share/back-forward). No-op unless the URL is "/" with a hash.
+    initHashSectionScrollOnLoad();
+    const onHashSectionPageLoad = () => initHashSectionScrollOnLoad();
+    document.addEventListener('astro:page-load', onHashSectionPageLoad);
+    pageCleanups.push(() => document.removeEventListener('astro:page-load', onHashSectionPageLoad));
 
     if (siteConfig.contentProtection.preventCopyAndDrag) {
         pageCleanups.push(enableContentProtection(true));
@@ -141,6 +196,16 @@ onMounted(() => {
     };
     mql.addEventListener('change', handleMediaChange);
     pageCleanups.push(() => mql.removeEventListener('change', handleMediaChange));
+
+    // Global search shortcut (Cmd/Ctrl + K)
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            searchStore.toggle();
+        }
+    };
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    pageCleanups.push(() => document.removeEventListener('keydown', handleGlobalKeyDown));
 
     watchStop = watch(
         isMobile,
@@ -156,8 +221,16 @@ onMounted(() => {
         { immediate: true }
     );
 
-    document.addEventListener('astro:after-swap', reattachDomListeners);
-    pageCleanups.push(() => document.removeEventListener('astro:after-swap', reattachDomListeners));
+    // Reveal the left-panel hero with a staggered entrance once hydrated. The
+    // children are pre-hidden via the .hero-entering class (rendered in SSR) so the
+    // first paint is already hidden and the entrance never flickers.
+    requestAnimationFrame(() => {
+        heroEntering.value = false;
+        heroRevealed.value = true;
+    });
+
+    document.addEventListener('astro:after-swap', resyncShellStateAfterSwap);
+    pageCleanups.push(() => document.removeEventListener('astro:after-swap', resyncShellStateAfterSwap));
 });
 
 onUnmounted(() => {
@@ -215,8 +288,14 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
 
                 <section class="left-panel">
                     <Transition name="left-panel-content" mode="out-in">
-                        <header v-if="pageShell.mode === 'home'" :key="pageShell.leftPanelKey" class="hero">
-                            <div id="avatarBox" ref="avatarRef" class="avatar-box" :style="{ opacity: heroOpacity }">
+                        <header
+                            v-if="pageShell.mode === 'home'"
+                            :key="pageShell.leftPanelKey"
+                            class="hero"
+                            :class="{ 'hero-entering': heroEntering, 'hero-revealed': heroRevealed }"
+                            :style="{ '--hero-opacity': heroOpacity }"
+                        >
+                            <div id="avatarBox" ref="avatarRef" class="avatar-box">
                                 <img
                                     :src="siteConfig.profile.avatar"
                                     alt="Avatar"
@@ -229,8 +308,8 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                                 />
                             </div>
 
-                            <h1 class="name" :style="{ opacity: heroOpacity }">
-                                <template v-for="part in splitLatinText(pageShell.title)" :key="part.text">
+                            <h1 class="name">
+                                <template v-for="(part, index) in splitLatinText(pageShell.title)" :key="`${part.text}-${index}`">
                                     <span v-if="part.isLatin" class="name-latin">{{ part.text }}</span>
                                     <template v-else>
                                         {{ part.text }}
@@ -257,9 +336,11 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                             v-else-if="pageShell.mode === 'blog'"
                             :key="pageShell.leftPanelKey"
                             class="hero hero-minimal"
+                            :class="{ 'hero-entering': heroEntering, 'hero-revealed': heroRevealed }"
+                            :style="{ '--hero-opacity': heroOpacity }"
                         >
-                            <h1 class="name" :style="{ opacity: heroOpacity }">
-                                <template v-for="part in splitLatinText(pageShell.title)" :key="part.text">
+                            <h1 class="name">
+                                <template v-for="(part, index) in splitLatinText(pageShell.title)" :key="`${part.text}-${index}`">
                                     <span v-if="part.isLatin" class="name-latin">{{ part.text }}</span>
                                     <template v-else>
                                         {{ part.text }}
@@ -272,11 +353,15 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                             v-else-if="pageShell.mode === 'article'"
                             :key="pageShell.leftPanelKey"
                             class="hero hero-minimal"
+                            :class="{ 'hero-entering': heroEntering, 'hero-revealed': heroRevealed }"
+                            :style="{ '--hero-opacity': heroOpacity }"
                         >
-                            <h1 class="name" :style="{ opacity: heroOpacity }">
-                                <template v-for="part in splitLatinText(pageShell.title)" :key="part.text">
+                            <h1 class="name">
+                                <template v-for="(part, index) in splitLatinText(pageShell.title)" :key="`${part.text}-${index}`">
                                     <span v-if="part.isLatin" class="name-latin">{{ part.text }}</span>
-                                    <template v-else>{{ part.text }}</template>
+                                    <template v-else>
+                                        {{ part.text }}
+                                    </template>
                                 </template>
                             </h1>
                         </header>
@@ -289,4 +374,6 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
     </div>
 
     <TopBar v-if="props.showTopBar !== false" :initial-is-home-page="pageShell.isHomePage" />
+
+    <SearchModal v-if="searchStore.isOpen" />
 </template>

@@ -37,7 +37,7 @@ export function getCurrentTheme(): Theme {
     return getStoredTheme() ?? getSystemTheme();
 }
 
-export function applyTheme(theme: Theme) {
+export function applyTheme(theme: Theme, persist = true) {
     if (typeof document !== 'undefined') {
         document.documentElement.setAttribute('data-theme', theme);
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
@@ -46,7 +46,7 @@ export function applyTheme(theme: Theme) {
             if (bg) metaThemeColor.setAttribute('content', bg);
         }
     }
-    if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY_THEME, theme);
+    if (persist && typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY_THEME, theme);
     if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: { theme } }));
     }

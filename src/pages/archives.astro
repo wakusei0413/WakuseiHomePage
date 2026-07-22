@@ -1,0 +1,16 @@
+---
+import ArchivesPage from '../components/ArchivesPage.vue';
+import { siteConfig } from '../data/site';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { loadArchiveGroups, loadTaxonomyTerms } from '../lib/posts';
+
+const archive = await loadArchiveGroups();
+const categories = await loadTaxonomyTerms('category');
+const tags = await loadTaxonomyTerms('tag');
+const title = '归档';
+const description = `按时间、${categories.length} 个分类和 ${tags.length} 个标签浏览 ${archive.totalPosts} 篇文章。`;
+---
+
+<BaseLayout shellMode="blog" shellTitle={title} title={`${title} | ${siteConfig.title}`} description={description}>
+    <ArchivesPage client:idle archive={archive} categories={categories} tags={tags} />
+</BaseLayout>

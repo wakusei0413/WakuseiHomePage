@@ -1,69 +1,19 @@
 import {
     decorateWallpaperImage,
     prepareWallpaperImageForDisplay,
-    WallpaperScrollerController
+    WallpaperController
 } from '../src/lib/wallpaper-scroller';
 
-function createPlaceholder(index: number) {
-    return {
-        dataset: {
-            index: String(index),
-            loaded: 'true',
-            loading: 'true'
-        },
-        removed: false,
-        remove() {
-            this.removed = true;
-        }
-    };
-}
+const baseConfig = {
+    apis: ['https://example.com/wallpaper'],
+    raceTimeout: 1000,
+    maxRetries: 4,
+    rotation: { enabled: true, interval: 60000 }
+};
 
-describe('WallpaperScrollerController internals', () => {
-    it('cleans up the oldest placeholders when maxImages is exceeded', () => {
-        const controller = new WallpaperScrollerController({
-            apis: ['https://example.com/wallpaper'],
-            raceTimeout: 1000,
-            maxRetries: 2,
-            preloadCount: 2,
-            infiniteScroll: {
-                enabled: true,
-                speed: 1,
-                batchSize: 2,
-                maxImages: 2
-            }
-        });
-
-        const placeholders = [createPlaceholder(0), createPlaceholder(1), createPlaceholder(2), createPlaceholder(3)];
-        const unobserved: unknown[] = [];
-
-        controller.images = placeholders.slice() as unknown as HTMLElement[];
-        controller.observer = {
-            unobserve(target: unknown) {
-                unobserved.push(target);
-            }
-        } as IntersectionObserver;
-
-        controller.cleanupOverflowImages();
-
-        expect(controller.images).toEqual(placeholders.slice(2));
-        expect(unobserved).toEqual(placeholders.slice(0, 2));
-        expect(placeholders[0].removed).toBe(true);
-        expect(placeholders[1].removed).toBe(true);
-    });
-
+describe('WallpaperController internals', () => {
     it('retries loading until raceLoadImage succeeds', async () => {
-        const controller = new WallpaperScrollerController({
-            apis: ['https://example.com/wallpaper'],
-            raceTimeout: 1000,
-            maxRetries: 4,
-            preloadCount: 2,
-            infiniteScroll: {
-                enabled: true,
-                speed: 1,
-                batchSize: 2,
-                maxImages: 10
-            }
-        });
+        const controller = new WallpaperController({ ...baseConfig });
 
         let attempts = 0;
         controller.raceLoadImage = async () => {
@@ -77,7 +27,7 @@ describe('WallpaperScrollerController internals', () => {
         };
         controller.waitForRetry = async () => undefined;
 
-        const result = await controller.loadWithRetry('7');
+        const result = await controller.loadWithRetry(7);
 
         expect(result.src).toBe('ok');
         expect(attempts).toBe(3);
@@ -127,5 +77,24 @@ describe('WallpaperScrollerController internals', () => {
 
         expect(image.loading).toBe('lazy');
         expect(image.decoding).toBe('async');
+    });
+
+    it('syncs ken-burns duration to the rotation interval on attach', () => {
+        const props: Record<string, string> = {};
+        const container = {
+            style: {
+                setProperty(name: string, value: string) {
+                    props[name] = value;
+                }
+            }
+        };
+
+        const controller = new WallpaperController({
+            ...baseConfig,
+            rotation: { enabled: true, interval: 45000 }
+        });
+        controller.attach(container as unknown as HTMLElement);
+
+        expect(props['--wallpaper-zoom-ms']).toBe('45000ms');
     });
 });

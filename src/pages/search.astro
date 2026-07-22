@@ -1,0 +1,14 @@
+---
+import SearchPage from '../components/SearchPage.vue';
+import { siteConfig } from '../data/site';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { loadSearchIndex } from '../lib/posts';
+
+const entries = await loadSearchIndex();
+const title = '搜索';
+const description = `搜索 ${entries.length} 篇文章的标题、摘要与正文。`;
+---
+
+<BaseLayout shellMode="blog" shellTitle={title} title={`${title} | ${siteConfig.title}`} description={description}>
+    <SearchPage client:load entries={entries} />
+</BaseLayout>

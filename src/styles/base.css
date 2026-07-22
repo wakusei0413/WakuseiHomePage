@@ -133,6 +133,7 @@ html {
     -ms-overflow-style: none;
     scrollbar-width: none;
     height: 100%;
+    scroll-behavior: smooth;
     transition: none;
 }
 

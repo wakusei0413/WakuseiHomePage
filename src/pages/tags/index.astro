@@ -1,0 +1,14 @@
+---
+import TaxonomyPage from '../../components/TaxonomyPage.vue';
+import { siteConfig } from '../../data/site';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { loadTaxonomyTerms } from '../../lib/posts';
+
+const terms = await loadTaxonomyTerms('tag');
+const title = '标签';
+const description = `从 ${terms.length} 个标签进入相关文章。`;
+---
+
+<BaseLayout shellMode="blog" shellTitle={title} title={`${title} | ${siteConfig.title}`} description={description}>
+    <TaxonomyPage client:idle variant="tags" title={title} description={description} terms={terms} />
+</BaseLayout>

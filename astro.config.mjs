@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import vue from '@astrojs/vue';
+import sitemap from '@astrojs/sitemap';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 
@@ -9,6 +10,9 @@ export default defineConfig({
         vue({
             appEntrypoint: '/src/pages/_app',
             devtools: false
+        }),
+        sitemap({
+            filter: (page) => !page.includes('/404')
         })
     ],
     output: 'static',

@@ -12,7 +12,7 @@
 - `src/composables/`：`useTheme.ts`、`useI18n.ts`、`useHomepage.ts`、`useWallpaper.ts`、`useSlogan.ts`、`useTime.ts`、`useLogger.ts`、`useDock.ts`、`useEffects.ts`
 - `src/stores/`（Pinia）：`theme.ts`、`i18n.ts`、`homepage.ts`
 - CSS 层叠顺序：`src/styles/base.css` → `layout.css` → `components.css` → `responsive.css` → `dock.css` → `topbar.css` → `footer.css` → `transitions.css`（根目录 `css/` 为 shim，仅 `@import` 转发）
-- 路由：`/`（首页）、`/posts`（博客列表）、`/posts/[...slug]`（文章页）、`/404`
+- 路由：`/`（首页，下方含文章列表）、`/posts/[...slug]`（文章页）、`/404`
 - 博客内容在 `src/content/blog/`，用 `import.meta.glob` 加载 markdown，支持 draft 过滤
 
 ## 命令
@@ -43,14 +43,13 @@
 ## 组件一览
 
 - `HomepageApp.vue`：顶层容器，挂载壁纸滚动、3D 视差效果、内容保护、滚动动画、移动端头像粘性效果
-- `SiteShell.vue`：跨页面持久壳（`transition:persist`），渲染噪点叠层、TopBar、Footer、MobileDockSidebar
+- `SiteShell.vue`：跨页面持久壳（`transition:persist`），渲染噪点叠层、TopBar
 - `TopBar.vue`：桌面顶部导航栏，滚动时从偏移位置展开为全宽，包含 Dock 图标（放大悬停效果）、主题切换、语言弹窗
-- `MobileDockSidebar.vue`：移动端侧边栏（窄屏点头像触发），镜像 Dock 功能 + 语言子菜单
 - `SocialLinks.vue`：社交按钮，分页（>6个时滑动切换），用 pointer 事件 + `.is-hovered` 类控制悬停
 - `TypewriterSlogan.vue`：打字机效果，`requestAnimationFrame` 驱动
-- `ClockPanel.vue`：右侧时间面板，locale 感知格式化
 - `Icon.vue`：内联 SVG 图标组件，映射 Font Awesome 类名到内置 SVG path
-- `Footer.vue`：页脚，双栏网格（链接 + 社交图标）
+- `Footer.vue`：紧凑页脚版权栏
+（已删除：`MobileDockSidebar.vue`、`ClockPanel.vue`）
 
 ## 运行时注意
 

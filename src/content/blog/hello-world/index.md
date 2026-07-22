@@ -1,7 +1,7 @@
 ---
 title: '第一篇博客'
 description: '这是我的第一篇博客文章，用来测试博客系统的基本功能。'
-cover: 'https://apod.nasa.gov/apod/image/2606/eagle_1024.jpg'
+cover: './cover.webp'
 coverLayout: overlay
 language: 'zh-CN'
 tags: ['测试', 'Astro']

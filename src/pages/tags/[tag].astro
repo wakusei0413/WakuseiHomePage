@@ -1,0 +1,24 @@
+---
+import TaxonomyPage from '../../components/TaxonomyPage.vue';
+import { siteConfig } from '../../data/site';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getTagStaticPaths, type TaxonomyPageProps } from '../../lib/posts';
+
+export { getTagStaticPaths as getStaticPaths };
+
+const { term, terms, posts } = Astro.props as TaxonomyPageProps;
+const title = `标签：${term.name}`;
+const description = `收录 ${term.count} 篇带有「${term.name}」标签的文章。`;
+---
+
+<BaseLayout shellMode="blog" shellTitle={title} title={`${title} | ${siteConfig.title}`} description={description}>
+    <TaxonomyPage
+        client:idle
+        variant="tags"
+        title={title}
+        description={description}
+        terms={terms}
+        activeTerm={term}
+        posts={posts}
+    />
+</BaseLayout>

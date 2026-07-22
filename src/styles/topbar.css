@@ -37,13 +37,25 @@ body {
     padding: 0 24px;
     box-sizing: border-box;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(var(--nav-translate-y, 0));
     transition:
         left 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.4s var(--curve-delicate, cubic-bezier(0.1, 0.9, 0.2, 1)),
         background-color var(--transition-normal),
         border-bottom-color var(--transition-normal),
         color var(--transition-normal),
         box-shadow var(--transition-normal);
     view-transition-name: top-bar;
+}
+
+/* Fresh-load entrance: the bar slides/fades down from the top once the page
+   paints. The transform offset rides on top of the existing --nav-translate-y
+   transform (which is 0 at the top, so there is no conflict during the brief
+   entrance), and reverts to it once html.is-entering is dropped. */
+html.is-entering .top-bar {
+    opacity: 0;
+    transform: translateY(-24px);
 }
 
 [data-theme='dark'] .top-bar {

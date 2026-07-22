@@ -32,4 +32,14 @@ describe('wallpaper full-bleed layout', () => {
         expect(layoutCss).toContain('.homepage-section-title');
         expect(layoutCss).toContain('.homepage-section-lead');
     });
+
+    it('applies a slow non-linear zoom while each wallpaper is active', () => {
+        expect(layoutCss).toMatch(/@keyframes\s+wallpaper-ken-burns/);
+        expect(layoutCss).toMatch(
+            /\.wallpaper-image\.active\s*\{[\s\S]*?animation:\s*wallpaper-ken-burns/
+        );
+        expect(layoutCss).toMatch(
+            /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)[\s\S]*?\.wallpaper-image\.active[\s\S]*?animation:\s*none/
+        );
+    });
 });

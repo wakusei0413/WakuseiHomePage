@@ -15,6 +15,7 @@ export const usePageShellStore = defineStore('page-shell', () => {
     const mode = ref<ShellMode>('home');
     const isHomePage = ref(true);
     const scrollProgress = ref(0);
+    const scrollDirection = ref<'up' | 'down'>('up');
 
     const leftPanelKey = computed(() => `${mode.value}:${title.value}`);
 
@@ -37,5 +38,20 @@ export const usePageShellStore = defineStore('page-shell', () => {
         scrollProgress.value = 0;
     }
 
-    return { title, mode, isHomePage, scrollProgress, leftPanelKey, enterPage, setScrollProgress, resetScrollProgress };
+    function setScrollDirection(value: 'up' | 'down') {
+        scrollDirection.value = value;
+    }
+
+    return {
+        title,
+        mode,
+        isHomePage,
+        scrollProgress,
+        scrollDirection,
+        leftPanelKey,
+        enterPage,
+        setScrollProgress,
+        setScrollDirection,
+        resetScrollProgress
+    };
 });

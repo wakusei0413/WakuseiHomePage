@@ -59,7 +59,7 @@ describe('TopBar unified navigation component', () => {
 
     it('uses barExpandStyle to drive bar left offset', () => {
         expect(topbarComponent).toMatch(/const barExpandStyle = computed/);
-        expect(topbarComponent).toMatch(/:style="barExpandStyle"/);
+        expect(topbarComponent).toMatch(/barExpandStyle.*--nav-translate-y/);
     });
 
     it('opens mobile sidebar on avatar click', () => {

@@ -1,8 +1,32 @@
+<script setup lang="ts">
+import PostCard from './PostCard.vue';
+import { useI18n } from '../composables/useI18n';
+import type { PostListItem } from '../lib/post-model';
+
+defineProps<{ posts: PostListItem[] }>();
+
+const { t } = useI18n();
+</script>
+
 <template>
-    <section class="homepage-content" aria-labelledby="homepage-content-title">
+    <section id="posts" class="homepage-content" aria-labelledby="homepage-posts-title">
         <div class="homepage-content-inner">
-            <h2 id="homepage-content-title" class="homepage-section-title">最新动态</h2>
-            <p class="homepage-section-lead">这里是首页第二屏内容区域，后续可以放最新文章、介绍卡片或媒体模块。</p>
+            <h2 id="homepage-posts-title" class="blog-title">
+                {{ t('home.posts.title') }}
+            </h2>
+            <div v-if="posts.length" class="post-list--masonry">
+                <PostCard
+                    v-for="post in posts"
+                    :key="post.slug"
+                    :slug="post.slug"
+                    :data="post.data"
+                    :date-label="post.dateLabel"
+                    :word-count="post.wordCount"
+                />
+            </div>
+            <p v-else class="homepage-section-lead">
+                {{ t('home.posts.empty') }}
+            </p>
         </div>
     </section>
 </template>

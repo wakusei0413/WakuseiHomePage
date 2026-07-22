@@ -2,8 +2,11 @@
 import HomepageApp from '../components/HomepageApp.vue';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { siteConfig } from '../data/site';
+import { loadPublishedPosts } from '../lib/posts';
+
+const posts = await loadPublishedPosts();
 ---
 
 <BaseLayout shellMode="home" shellTitle={siteConfig.profile.name}>
-    <HomepageApp client:load />
+    <HomepageApp client:idle posts={posts} />
 </BaseLayout>

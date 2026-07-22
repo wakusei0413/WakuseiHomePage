@@ -230,3 +230,44 @@
         transform: translate(2px, 2px);
     }
 }
+
+/* ===== 短视口高度适配：避免 hero 内容被左面板裁切 ===== */
+/* 笔记本（约 768px 可视高度）下 hero 内容会超出左面板并被 overflow:hidden 切掉底部社交链接，
+   这里仅在矮视口收紧间距/缩小头像，标准高度（>=880px）完全不受影响。 */
+@media (max-height: 880px) {
+    .avatar-box {
+        margin-bottom: var(--space-md, 1.5rem);
+    }
+    .bio-container {
+        margin-bottom: var(--space-lg, 2rem);
+        padding: var(--space-sm, 1rem);
+    }
+    .social-links-page {
+        gap: var(--space-xs, 0.75rem);
+    }
+    .social-links-page .social-link {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+@media (max-height: 760px) {
+    .left-panel {
+        padding-top: var(--space-md, 1.5rem);
+        padding-bottom: var(--space-md, 1.5rem);
+    }
+    .avatar-box {
+        width: clamp(84px, 10vw, 112px);
+        height: clamp(84px, 10vw, 112px);
+        margin-bottom: var(--space-sm, 1rem);
+    }
+    .name {
+        margin-bottom: var(--space-xs, 0.75rem);
+    }
+    .bio-container {
+        min-height: 64px;
+        padding: 0.75rem;
+    }
+    .social-links-page .social-link {
+        padding: 0.5rem 0.25rem;
+    }
+}

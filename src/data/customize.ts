@@ -68,13 +68,7 @@ export const editableSiteConfig: SiteConfig = {
     },
 
     footer: {
-        text: '© 2026 遊星 Wakusei',
-        links: [
-            { name: '博客', href: '/posts' },
-            { name: 'Status', href: 'https://status.wakusei.top/' },
-            { name: 'Testing', href: 'https://testing.wakusei.top/' },
-            { name: 'GitHub', href: 'https://github.com/wakusei0413' }
-        ]
+        text: '© 2026 遊星 Wakusei'
     },
 
     // Typewriter text block.
@@ -119,15 +113,17 @@ export const editableSiteConfig: SiteConfig = {
 
     // Wallpaper sources and scrolling behavior.
     wallpaper: {
-        apis: ['https://www.loliapi.com/bg/', 'https://www.dmoe.cc/random.php'],
+        // Local image shown instantly on first paint (desktop) so the hero is
+        // never blank while the external rotation API responds.
+        defaultImage: '/res/img/wallpaper/default.webp',
+        // Single full-bleed image; crossfades to a fresh image every interval ms.
+        // Only one request is in flight at a time, so this is light on bandwidth.
+        apis: ['https://www.loliapi.com/bg/'],
         raceTimeout: 10000,
         maxRetries: 5,
-        preloadCount: 3,
-        infiniteScroll: {
+        rotation: {
             enabled: true,
-            speed: 2,
-            batchSize: 5,
-            maxImages: 50
+            interval: 60000
         }
     },
 
@@ -182,10 +178,19 @@ export const editableSiteConfig: SiteConfig = {
             },
             {
                 type: 'link',
-                href: '/posts',
+                href: '/#posts',
                 display: {
                     icon: 'fa-solid fa-newspaper',
                     i18nKey: 'dock.blog',
+                    renderMode: 'text'
+                }
+            },
+            {
+                type: 'link',
+                href: '/archives',
+                display: {
+                    icon: 'fa-solid fa-layer-group',
+                    i18nKey: 'dock.topics',
                     renderMode: 'text'
                 }
             },
@@ -205,6 +210,14 @@ export const editableSiteConfig: SiteConfig = {
                 display: {
                     icon: 'fa-solid fa-globe',
                     i18nKey: 'dock.language'
+                }
+            },
+            {
+                type: 'action',
+                action: 'openSearch',
+                display: {
+                    icon: 'fa-solid fa-magnifying-glass',
+                    i18nKey: 'dock.search'
                 }
             },
             {
