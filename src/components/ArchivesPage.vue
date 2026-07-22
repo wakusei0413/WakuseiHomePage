@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useI18n } from '../composables/useI18n';
+import { siteConfig } from '../data/site';
 import { filterArchiveGroups, type ArchiveGroups } from '../lib/archive';
 import { estimateReadingTime, type TaxonomyTerm } from '../lib/post-model';
+import { usePageShellStore } from '../stores/page-shell';
 
 const props = defineProps<{
     archive: ArchiveGroups;
@@ -9,8 +12,26 @@ const props = defineProps<{
     tags: TaxonomyTerm[];
 }>();
 
+const { t, locale } = useI18n();
+const pageShell = usePageShellStore();
+
 const COLLAPSED_CATEGORY_LIMIT = 6;
 const COLLAPSED_TAG_LIMIT = 10;
+
+const MONTH_KEYS = [
+    'time.month.jan',
+    'time.month.feb',
+    'time.month.mar',
+    'time.month.apr',
+    'time.month.may',
+    'time.month.jun',
+    'time.month.jul',
+    'time.month.aug',
+    'time.month.sep',
+    'time.month.oct',
+    'time.month.nov',
+    'time.month.dec'
+] as const;
 
 const archivesRoot = ref<HTMLElement | null>(null);
 const activeCategory = ref<string | null>(null);
@@ -41,25 +62,32 @@ const displayedTags = computed(() =>
 );
 
 const yearRange = computed(() => {
-    if (props.archive.years.length === 0) return '日期待补';
+    if (props.archive.years.length === 0) return t('archives.date.pending');
     const newest = props.archive.years[0].year;
     const oldest = props.archive.years[props.archive.years.length - 1].year;
     return newest === oldest ? String(newest) : `${oldest}—${newest}`;
 });
 
-const archiveSummary = computed(
-    () => `共 ${props.archive.totalPosts} 篇文章 · ${yearRange.value} · 跨 ${props.archive.totalMonths} 个月`
+const archiveSummary = computed(() =>
+    t('archives.summary')
+        .replace('{count}', String(props.archive.totalPosts))
+        .replace('{years}', yearRange.value)
+        .replace('{months}', String(props.archive.totalMonths))
 );
 
 const statsCards = computed(() => [
-    { value: String(props.archive.totalPosts), label: '篇文章' },
-    { value: yearRange.value, label: '年份跨度' },
-    { value: String(props.categories.length), label: '个分类' }
+    { value: String(props.archive.totalPosts), label: t('archives.stat.posts') },
+    { value: yearRange.value, label: t('archives.stat.years') },
+    { value: String(props.categories.length), label: t('archives.stat.categories') }
 ]);
 
 const resultSummary = computed(() => {
-    if (!hasFilters.value) return `正在浏览全部 ${props.archive.totalPosts} 篇文章`;
-    return `当前显示 ${filteredArchive.value.totalPosts} / ${props.archive.totalPosts} 篇文章`;
+    if (!hasFilters.value) {
+        return t('archives.filter.result.all').replace('{count}', String(props.archive.totalPosts));
+    }
+    return t('archives.filter.result.filtered')
+        .replace('{shown}', String(filteredArchive.value.totalPosts))
+        .replace('{total}', String(props.archive.totalPosts));
 });
 
 function postHref(slug: string) {
@@ -67,7 +95,16 @@ function postHref(slug: string) {
 }
 
 function readingLabel(wordCount: number) {
-    return `${estimateReadingTime(wordCount)} 分钟阅读`;
+    return t('post.reading').replace('{minutes}', String(estimateReadingTime(wordCount)));
+}
+
+function monthLabel(month: number) {
+    const key = MONTH_KEYS[month - 1];
+    return key ? t(key) : String(month);
+}
+
+function countPostsLabel(count: number) {
+    return t('archives.count.posts').replace('{count}', String(count));
 }
 
 function toggleCategory(category: string) {
@@ -114,6 +151,20 @@ function scrollToYear(year: number) {
     }
 
     el.scrollIntoView({ behavior, block: 'start' });
+}
+
+function syncShellTitle() {
+    const title = t('dock.topics');
+    pageShell.enterPage({
+        title,
+        mode: 'blog',
+        isHomePage: false
+    });
+
+    const surface = document.getElementById('pageTransitionSurface');
+    if (surface) surface.dataset.pageTitle = title;
+
+    document.title = `${title} | ${siteConfig.title}`;
 }
 
 let isMounted = false;
@@ -165,6 +216,10 @@ watch(
     { flush: 'post' }
 );
 
+watch(locale, () => {
+    if (isMounted) syncShellTitle();
+});
+
 let scrollAnimObserver: IntersectionObserver | null = null;
 
 function setupScrollAnimations() {
@@ -215,6 +270,7 @@ onMounted(() => {
 
     isMounted = true;
     syncFilterQuery();
+    syncShellTitle();
     setupYearObserver();
     nextTick(() => setupScrollAnimations());
 });
@@ -234,8 +290,8 @@ onUnmounted(() => {
     <section ref="archivesRoot" class="archives-page" aria-labelledby="archives-index-title">
         <div class="archives-page__inner">
             <header class="archives-index-header">
-                <p class="archives-index-header__eyebrow">Archive index</p>
-                <h2 id="archives-index-title">写作索引</h2>
+                <p class="archives-index-header__eyebrow">{{ t('archives.kicker') }}</p>
+                <h2 id="archives-index-title">{{ t('archives.title') }}</h2>
                 <p class="archives-index-header__summary">{{ archiveSummary }}</p>
                 <div class="archives-stats-row">
                     <div v-for="(stat, idx) in statsCards" :key="idx" class="archives-stat-card">
@@ -248,18 +304,18 @@ onUnmounted(() => {
             <section v-if="categories.length || tags.length" class="archives-topics" aria-labelledby="topics-title">
                 <div class="archives-section-heading">
                     <div>
-                        <p>Browse by subject</p>
-                        <h3 id="topics-title">按主题浏览</h3>
+                        <p>{{ t('archives.topics.kicker') }}</p>
+                        <h3 id="topics-title">{{ t('archives.topics.title') }}</h3>
                     </div>
-                    <span>分类与标签可以组合筛选</span>
+                    <span>{{ t('archives.topics.hint') }}</span>
                 </div>
 
                 <div v-if="categories.length" class="archives-topic-group">
                     <div class="archives-topic-group__heading">
-                        <h4>分类</h4>
-                        <a href="/categories">全部分类 ↗</a>
+                        <h4>{{ t('archives.categories') }}</h4>
+                        <a href="/categories">{{ t('archives.categories.all') }}</a>
                     </div>
-                    <div class="archives-category-grid" aria-label="按分类筛选">
+                    <div class="archives-category-grid" :aria-label="t('archives.categories.filter')">
                         <button
                             v-for="(term, idx) in displayedCategories"
                             :key="term.name"
@@ -283,10 +339,10 @@ onUnmounted(() => {
 
                 <div v-if="tags.length" class="archives-topic-group archives-topic-group--tags">
                     <div class="archives-topic-group__heading">
-                        <h4>标签</h4>
-                        <a href="/tags">全部标签 ↗</a>
+                        <h4>{{ t('archives.tags') }}</h4>
+                        <a href="/tags">{{ t('archives.tags.all') }}</a>
                     </div>
-                    <div class="archives-tag-index" aria-label="按标签筛选">
+                    <div class="archives-tag-index" :aria-label="t('archives.tags.filter')">
                         <button
                             v-for="term in displayedTags"
                             :key="term.name"
@@ -309,34 +365,44 @@ onUnmounted(() => {
                     :aria-expanded="isTaxonomyExpanded"
                     @click="isTaxonomyExpanded = !isTaxonomyExpanded"
                 >
-                    {{ isTaxonomyExpanded ? '收起主题' : '展开全部主题' }}
+                    {{ isTaxonomyExpanded ? t('archives.topics.collapse') : t('archives.topics.expand') }}
                 </button>
             </section>
 
-            <div v-if="hasFilters" class="archives-filter-bar" aria-label="当前筛选条件">
+            <div v-if="hasFilters" class="archives-filter-bar" :aria-label="t('archives.filter.bar')">
                 <div class="archives-filter-bar__summary" aria-live="polite">{{ resultSummary }}</div>
                 <div class="archives-filter-bar__items">
                     <div v-if="selectedCategoryTerm" class="archives-active-filter">
-                        <button type="button" aria-label="清除分类筛选" @click="activeCategory = null">
-                            分类：{{ selectedCategoryTerm.name }}
+                        <button
+                            type="button"
+                            :aria-label="t('archives.filter.clear.category')"
+                            @click="activeCategory = null"
+                        >
+                            {{ t('archives.filter.category').replace('{name}', selectedCategoryTerm.name) }}
                             <span aria-hidden="true">×</span>
                         </button>
-                        <a :href="selectedCategoryTerm.href">查看专题 ↗</a>
+                        <a :href="selectedCategoryTerm.href">{{ t('archives.filter.view.topic') }}</a>
                     </div>
                     <div v-if="selectedTagTerm" class="archives-active-filter">
-                        <button type="button" aria-label="清除标签筛选" @click="activeTag = null">
-                            标签：#{{ selectedTagTerm.name }}
+                        <button type="button" :aria-label="t('archives.filter.clear.tag')" @click="activeTag = null">
+                            {{ t('archives.filter.tag').replace('{name}', selectedTagTerm.name) }}
                             <span aria-hidden="true">×</span>
                         </button>
-                        <a :href="selectedTagTerm.href">查看专题 ↗</a>
+                        <a :href="selectedTagTerm.href">{{ t('archives.filter.view.topic') }}</a>
                     </div>
-                    <button type="button" class="archives-filter-reset" @click="resetFilters">清除全部</button>
+                    <button type="button" class="archives-filter-reset" @click="resetFilters">
+                        {{ t('archives.filter.clear.all') }}
+                    </button>
                 </div>
             </div>
             <p v-else class="archives-result-summary" aria-live="polite">{{ resultSummary }}</p>
 
-            <nav v-if="filteredArchive.years.length > 1" class="archives-year-index" aria-label="年份快速跳转">
-                <span>年份</span>
+            <nav
+                v-if="filteredArchive.years.length > 1"
+                class="archives-year-index"
+                :aria-label="t('archives.years.jump')"
+            >
+                <span>{{ t('archives.years') }}</span>
                 <button
                     v-for="year in filteredArchive.years"
                     :key="year.year"
@@ -359,7 +425,7 @@ onUnmounted(() => {
                 >
                     <header class="archives-year__marker">
                         <span>{{ year.year }}</span>
-                        <small>{{ year.count }} 篇</small>
+                        <small>{{ countPostsLabel(year.count) }}</small>
                     </header>
 
                     <div class="archives-year__months">
@@ -369,8 +435,8 @@ onUnmounted(() => {
                             class="archives-month"
                         >
                             <header class="archives-month__header">
-                                <h3>{{ month.label }}</h3>
-                                <span>{{ month.count }} 篇</span>
+                                <h3>{{ monthLabel(month.month) }}</h3>
+                                <span>{{ countPostsLabel(month.count) }}</span>
                             </header>
 
                             <div class="archives-month__posts">
@@ -398,7 +464,7 @@ onUnmounted(() => {
                                         <div
                                             v-if="post.data.tags?.length"
                                             class="archives-post__tags"
-                                            aria-label="文章标签"
+                                            :aria-label="t('archives.post.tags')"
                                         >
                                             <span v-for="tag in post.data.tags" :key="tag">#{{ tag }}</span>
                                         </div>
@@ -425,15 +491,15 @@ onUnmounted(() => {
 
                 <section v-if="filteredArchive.undated.length" class="archives-year archives-year--undated">
                     <header class="archives-year__marker">
-                        <span>日期待补</span>
-                        <small>{{ filteredArchive.undated.length }} 篇</small>
+                        <span>{{ t('archives.date.pending') }}</span>
+                        <small>{{ countPostsLabel(filteredArchive.undated.length) }}</small>
                     </header>
 
                     <div class="archives-year__months">
                         <section class="archives-month">
                             <header class="archives-month__header">
-                                <h3>未注明日期</h3>
-                                <span>{{ filteredArchive.undated.length }} 篇</span>
+                                <h3>{{ t('archives.undated') }}</h3>
+                                <span>{{ countPostsLabel(filteredArchive.undated.length) }}</span>
                             </header>
 
                             <div class="archives-month__posts">
@@ -456,7 +522,7 @@ onUnmounted(() => {
                                         <div
                                             v-if="post.data.tags?.length"
                                             class="archives-post__tags"
-                                            aria-label="文章标签"
+                                            :aria-label="t('archives.post.tags')"
                                         >
                                             <span v-for="tag in post.data.tags" :key="tag">#{{ tag }}</span>
                                         </div>
@@ -483,11 +549,11 @@ onUnmounted(() => {
             </div>
 
             <div v-else-if="hasArchivePosts" class="archives-empty archives-empty--filtered" role="status">
-                <p>没有同时匹配这些主题的文章。</p>
-                <button type="button" @click="resetFilters">清除筛选，查看全部文章</button>
+                <p>{{ t('archives.empty.filtered') }}</p>
+                <button type="button" @click="resetFilters">{{ t('archives.empty.filtered.action') }}</button>
             </div>
 
-            <p v-else class="archives-empty">这里暂时还没有文章。</p>
+            <p v-else class="archives-empty">{{ t('archives.empty') }}</p>
         </div>
     </section>
 </template>

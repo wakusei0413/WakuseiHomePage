@@ -83,6 +83,16 @@ describe('SocialLinks component interactions', () => {
         expect(socialLinksComponent).toMatch(/aria-controls="socialLinksPage"/);
     });
 
+    it('always uses the paged grid layout and shows dots even for a single page', () => {
+        expect(socialLinksComponent).toMatch(/class="social-links-wrapper"/);
+        expect(socialLinksComponent).toMatch(/class="social-links-dots"/);
+        expect(socialLinksComponent).not.toMatch(/v-if="totalPages > 1"/);
+        expect(socialLinksComponent).not.toMatch(/props\.config\.links\.length <= ITEMS_PER_PAGE/);
+        expect(socialLinksComponent).toMatch(
+            /totalPages = computed\(\(\) => Math\.max\(1, Math\.ceil\(props\.config\.links\.length \/ ITEMS_PER_PAGE\)\)\)/
+        );
+    });
+
     it('suppresses link activation after drag pagination', () => {
         expect(socialLinksComponent).toMatch(/let suppressNextClick = false;/);
         expect(socialLinksComponent).toMatch(/suppressNextClick = true;/);

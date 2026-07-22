@@ -47,13 +47,27 @@
         padding: 2.5rem 1rem;
     }
 
-    /* 移动端 TopBar 为 fixed，需要为内容区预留顶部空间避免遮挡文章 H1 */
+    /* 移动端为左侧胶囊预留顶部空间，避免遮挡文章 H1 */
     .page-transition-surface[data-shell-mode='article'] {
-        padding-top: calc(72px + 1.5rem);
+        padding-top: calc(56px + 1.5rem + env(safe-area-inset-top, 0px));
+    }
+
+    .page-transition-surface[data-shell-mode='blog'],
+    .page-transition-surface[data-shell-mode='error'] {
+        padding-top: calc(56px + 1rem + env(safe-area-inset-top, 0px));
     }
 
     .hero-sticky {
         min-height: auto;
+    }
+
+    /* Mobile non-home: skip first-screen left panel; content starts immediately */
+    .hero-sticky:not([data-is-home]) {
+        display: none;
+        height: 0;
+        min-height: 0;
+        overflow: hidden;
+        pointer-events: none;
     }
 
     .hero {

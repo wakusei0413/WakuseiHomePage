@@ -25,6 +25,7 @@ backups/
 output/
 tmp/
 terminals/
+agent-tools/
 .playwright-cli/
 .codex/*.log
 *.tsbuildinfo

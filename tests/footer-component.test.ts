@@ -12,7 +12,8 @@ describe('Footer component behavior', () => {
         expect(footerComponent).not.toMatch(/footer-main/);
         expect(footerComponent).not.toMatch(/footer-links/);
         expect(footerComponent).not.toMatch(/footer-socials/);
-        expect(footerComponent).not.toMatch(/useI18n/);
+        expect(footerComponent).toMatch(/footer\.tagline/);
+        expect(footerComponent).toMatch(/useI18n/);
     });
 
     it('does not use full-viewport footer layout', () => {

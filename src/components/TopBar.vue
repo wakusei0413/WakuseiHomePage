@@ -38,6 +38,7 @@ let sidebarOutsideClickCleanup: (() => void) | undefined;
 let sidebarOutsideClickTimer: ReturnType<typeof setTimeout> | undefined;
 
 function openSidebar() {
+    if (!isMobile.value) return;
     sidebarOpen.value = true;
     setupSidebarOutsideClick();
 }
@@ -52,6 +53,18 @@ function closeSidebar() {
         sidebarOutsideClickCleanup = undefined;
     }
 }
+
+function dismissOpenMenus() {
+    if (sidebarOpen.value) closeSidebar();
+    if (isPopupOpen()) setOpen(false);
+}
+
+// Mobile capsule: hidden on the home first screen; visible after scroll or on other pages.
+const showMobileCapsule = computed(() => {
+    if (!isMobile.value) return true;
+    if (!pageShell.isHomePage) return true;
+    return pageShell.scrollProgress > 0.35;
+});
 
 const expansionProgress = computed(() => {
     if (isMobile.value) return 1;
@@ -68,6 +81,7 @@ const barExpandStyle = computed(() => {
 });
 
 const navTranslateY = computed(() => {
+    if (isMobile.value) return '0';
     const sp = pageShell.scrollProgress;
     const dir = pageShell.scrollDirection;
     if (sp < 0.45) return '0';
@@ -87,10 +101,35 @@ function setupViewportMediaSync() {
 
 const cleanups: Array<() => void> = [];
 
+let dismissOnScrollCleanup: (() => void) | undefined;
+
+function setupDismissMenusOnScroll() {
+    dismissOnScrollCleanup?.();
+    dismissOnScrollCleanup = undefined;
+    const scroller = document.getElementById('pageScroller') ?? document.querySelector('.page-scroller');
+    if (!scroller) return;
+    const onScroll = () => dismissOpenMenus();
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+    dismissOnScrollCleanup = () => scroller.removeEventListener('scroll', onScroll);
+}
+
 onMounted(() => {
     isMobile.value = window.matchMedia('(max-width: 900px)').matches;
     cleanups.push(setupViewportMediaSync());
+    setupDismissMenusOnScroll();
+    cleanups.push(() => {
+        dismissOnScrollCleanup?.();
+        dismissOnScrollCleanup = undefined;
+    });
     hydrateKey.value = 1;
+
+    const onOpenSidebar = () => openSidebar();
+    window.addEventListener('wakusei:open-sidebar', onOpenSidebar);
+    cleanups.push(() => window.removeEventListener('wakusei:open-sidebar', onOpenSidebar));
+
+    const onPageLoad = () => setupDismissMenusOnScroll();
+    document.addEventListener('astro:page-load', onPageLoad);
+    cleanups.push(() => document.removeEventListener('astro:page-load', onPageLoad));
 });
 
 onUnmounted(() => {
@@ -186,7 +225,7 @@ function updatePopupPosition() {
     if (!languageBtnRef.value || !popupRef.value) return;
     const rect = languageBtnRef.value.getBoundingClientRect();
     popupRef.value.style.left = `${rect.left + rect.width / 2}px`;
-    popupRef.value.style.top = `${rect.bottom + 8}px`;
+    popupRef.value.style.top = `${rect.bottom + 18}px`;
 }
 
 function selectLanguage(lang: Locale) {
@@ -223,7 +262,8 @@ function setupSidebarOutsideClick() {
         sidebarOutsideClickTimer = undefined;
         const handler = (e: MouseEvent) => {
             const target = e.target as Node;
-            if (!sidebarRef.value?.contains(target)) closeSidebar();
+            if (sidebarRef.value?.contains(target) || barRef.value?.contains(target)) return;
+            closeSidebar();
         };
         document.addEventListener('click', handler);
         sidebarOutsideClickCleanup = () => document.removeEventListener('click', handler);
@@ -233,7 +273,7 @@ function setupSidebarOutsideClick() {
 function setupIconMagnifyHover() {
     const el = barRef.value;
     if (!el) return;
-    const items = el.querySelectorAll('.top-bar-dock-item') as NodeListOf<HTMLElement>;
+    const items = el.querySelectorAll('.top-bar-left-content, .top-bar-dock-item') as NodeListOf<HTMLElement>;
     if (items.length === 0) return;
     let frameId: number | null = null;
     let latestMouseX = 0;
@@ -242,12 +282,20 @@ function setupIconMagnifyHover() {
             frameId = null;
             return;
         }
+        // Measure unscaled layout so wide left content does not feed back into centers.
+        items.forEach((item) => {
+            item.style.transform = '';
+        });
         const rect = el.getBoundingClientRect();
         items.forEach((item) => {
             const itemRect = item.getBoundingClientRect();
             const itemCenter = itemRect.left - rect.left + itemRect.width / 2;
             const distance = Math.abs(latestMouseX - itemCenter);
-            item.style.transform = `scale(${1 + 0.12 * Math.exp(-(distance * distance) / (2 * 30 * 30))})`;
+            const isLeft = item.classList.contains('top-bar-left-content');
+            // Dock icons: sigma=30, max +12%. Left brand: broader falloff, milder scale.
+            const sigma = isLeft ? Math.max(30, itemRect.width * 0.45) : 30;
+            const maxBoost = isLeft ? 0.035 : 0.12;
+            item.style.transform = `scale(${1 + maxBoost * Math.exp(-(distance * distance) / (2 * sigma * sigma))})`;
         });
         frameId = null;
     };
@@ -296,30 +344,13 @@ function getMode(display: { renderMode?: string }) {
     return display.renderMode ?? 'icon';
 }
 
-function scrollCurrentPageToTop(): Promise<void> {
+function scrollCurrentPageToTop(): void {
     const s = document.getElementById('pageScroller') ?? document.querySelector('.page-scroller');
     if (s) {
         s.scrollTo({ top: 0, behavior: 'smooth' });
-        return new Promise((resolve) => {
-            const fallback = window.setTimeout(resolve, 1200);
-            const onScrollEnd = () => {
-                if (s.scrollTop <= 0) {
-                    s.removeEventListener('scroll', onScrollEnd);
-                    clearTimeout(fallback);
-                    resolve();
-                }
-            };
-            s.addEventListener('scroll', onScrollEnd, { passive: true });
-            if (s.scrollTop <= 0) {
-                s.removeEventListener('scroll', onScrollEnd);
-                clearTimeout(fallback);
-                resolve();
-            }
-        });
+        return;
     }
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    return Promise.resolve();
 }
 
 function handleLeftClick(e: MouseEvent) {
@@ -330,13 +361,12 @@ function handleLeftClick(e: MouseEvent) {
     }
 
     const isCurrentHome = window.location.pathname === '/';
-    const s = document.getElementById('pageScroller') ?? document.querySelector('.page-scroller');
-    if (isCurrentHome && s) {
+    if (isCurrentHome) {
         e.preventDefault();
-        s.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (!isCurrentHome) {
+        scrollCurrentPageToTop();
+    } else {
         e.preventDefault();
-        scrollCurrentPageToTop().then(() => navigate('/'));
+        navigate('/');
     }
 }
 
@@ -369,7 +399,7 @@ function handleDockLinkClick(e: MouseEvent, href: string) {
         scrollCurrentPageToTop();
     } else {
         e.preventDefault();
-        scrollCurrentPageToTop().then(() => navigate(href));
+        navigate(href);
     }
 }
 
@@ -398,7 +428,7 @@ function handleSidebarDockLinkClick(e: MouseEvent, href: string) {
     } else {
         e.preventDefault();
         closeSidebar();
-        scrollCurrentPageToTop().then(() => navigate(href));
+        navigate(href);
     }
 }
 
@@ -406,6 +436,13 @@ function shouldRenderTrailingDivider() {
     const items = siteConfig.dock.items;
     const lastItem = items[items.length - 1];
     return items.length > 0 && lastItem?.type !== 'divider';
+}
+
+function splitLatinText(text: string) {
+    return text
+        .split(/([A-Za-z][A-Za-z0-9'.-]*)/g)
+        .filter(Boolean)
+        .map((part) => ({ text: part, isLatin: /^[A-Za-z]/.test(part) }));
 }
 </script>
 
@@ -417,11 +454,29 @@ function shouldRenderTrailingDivider() {
         class="top-bar"
         role="toolbar"
         aria-label="Top navigation"
+        :data-mobile-capsule="isMobile ? '' : undefined"
+        :data-capsule-hidden="isMobile && !showMobileCapsule ? '' : undefined"
         :style="`${barExpandStyle}; --nav-translate-y: ${navTranslateY}`"
     >
-        <a class="top-bar-left" href="/" @click="handleLeftClick">
-            <img class="top-bar-avatar" :src="siteConfig.profile.avatar" alt="" width="40" height="40" />
-            <span class="top-bar-name">{{ siteConfig.profile.name }}</span>
+        <a
+            class="top-bar-left"
+            href="/"
+            :aria-expanded="isMobile ? sidebarOpen : undefined"
+            :aria-controls="isMobile ? 'top-bar-sidebar' : undefined"
+            @click="handleLeftClick"
+        >
+            <span class="top-bar-left-content">
+                <img class="top-bar-avatar" :src="siteConfig.profile.avatar" alt="" width="40" height="40" />
+                <span class="top-bar-name">
+                    <template
+                        v-for="(part, index) in splitLatinText(siteConfig.profile.name)"
+                        :key="`${part.text}-${index}`"
+                    >
+                        <span v-if="part.isLatin" class="name-latin">{{ part.text }}</span>
+                        <template v-else>{{ part.text }}</template>
+                    </template>
+                </span>
+            </span>
         </a>
 
         <div class="top-bar-right">
@@ -554,6 +609,7 @@ function shouldRenderTrailingDivider() {
     <!-- Mobile sidebar -->
     <div
         v-if="isMobile"
+        id="top-bar-sidebar"
         ref="sidebarRef"
         class="top-bar-sidebar"
         :class="{ 'theme-light': !isDark, 'theme-dark': isDark }"

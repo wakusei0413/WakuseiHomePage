@@ -11,6 +11,7 @@ const notFoundPage = readFileSync('src/pages/404.astro', 'utf8');
 const transitionsCss = readFileSync('src/styles/transitions.css', 'utf8');
 const topbarCss = readFileSync('src/styles/topbar.css', 'utf8');
 const baseCss = readFileSync('src/styles/base.css', 'utf8');
+const responsiveCss = readFileSync('src/styles/responsive.css', 'utf8');
 
 describe('persistent shell layout guardrails', () => {
     it('keeps SiteShell, page content, and footer in one page scroller', () => {
@@ -87,6 +88,12 @@ describe('persistent shell layout guardrails', () => {
         expect(siteShell).toContain("pageShell.mode === 'home'");
         expect(siteShell).toContain("pageShell.mode === 'blog'");
         expect(siteShell).toContain("pageShell.mode === 'article'");
+    });
+
+    it('marks home hero-sticky so mobile can hide non-home first screens', () => {
+        expect(siteShell).toContain('data-is-home');
+        expect(siteShell).toContain('data-shell-mode');
+        expect(responsiveCss).toMatch(/\.hero-sticky:not\(\[data-is-home\]\)/);
     });
 
     it('has transition surface with z-index and background', () => {

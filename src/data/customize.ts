@@ -47,12 +47,6 @@ export const editableSiteConfig: SiteConfig = {
                 color: '#ff7676'
             },
             {
-                name: 'Blog',
-                url: 'https://blog.wakusei.top/',
-                icon: 'fa-solid fa-blog',
-                color: '#ff8800'
-            },
-            {
                 name: 'Status',
                 url: 'https://status.wakusei.top/',
                 icon: 'fa-solid fa-arrow-up-right-dots',
@@ -123,7 +117,7 @@ export const editableSiteConfig: SiteConfig = {
         maxRetries: 5,
         rotation: {
             enabled: true,
-            interval: 60000
+            interval: 8000
         }
     },
 

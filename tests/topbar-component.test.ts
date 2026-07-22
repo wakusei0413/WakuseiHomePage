@@ -22,6 +22,13 @@ describe('TopBar unified navigation component', () => {
         expect(topbarComponent).toMatch(/case 'language'/);
         expect(topbarComponent).toMatch(/toggleLanguagePanel\(\)/);
         expect(topbarComponent).toMatch(/class="top-bar-language-popup"/);
+        expect(topbarComponent).toMatch(/rect\.bottom \+ 18/);
+    });
+
+    it('dismisses open menus when the page scroller moves', () => {
+        expect(topbarComponent).toMatch(/function dismissOpenMenus\(\)/);
+        expect(topbarComponent).toMatch(/setupDismissMenusOnScroll/);
+        expect(topbarComponent).toMatch(/addEventListener\('scroll', onScroll/);
     });
 
     it('uses dock lib helpers for item rendering', () => {
@@ -66,18 +73,27 @@ describe('TopBar unified navigation component', () => {
         expect(topbarComponent).toMatch(/openSidebar\(\)/);
     });
 
+    it('hides mobile capsule on home first screen and listens for open-sidebar event', () => {
+        expect(topbarComponent).toMatch(/showMobileCapsule/);
+        expect(topbarComponent).toMatch(/data-capsule-hidden/);
+        expect(topbarComponent).toMatch(/data-mobile-capsule/);
+        expect(topbarComponent).toMatch(/wakusei:open-sidebar/);
+    });
+
     it('uses anchor navigation for desktop home click to preserve transitions', () => {
         expect(topbarComponent).toMatch(/href="\/"/);
         expect(topbarComponent).not.toMatch(/window\.location\.href = '\/'/);
         expect(topbarComponent).toMatch(/const isCurrentHome = window\.location\.pathname === '\/';/);
-        expect(topbarComponent).toMatch(/if \(isCurrentHome && s\) \{/);
+        expect(topbarComponent).toMatch(/if \(isCurrentHome\) \{/);
+        expect(topbarComponent).toMatch(/navigate\('\/'\)/);
     });
 
-    it('scrolls the active page scroller for repeated same-route dock clicks', () => {
+    it('scrolls the active page scroller only for repeated same-route dock clicks', () => {
         expect(topbarComponent).toMatch(/function scrollCurrentPageToTop\(\)/);
         expect(topbarComponent).toMatch(/document\.querySelector\('\.page-scroller'\)/);
         expect(topbarComponent).toMatch(/s\.scrollTo\(\{ top: 0, behavior: 'smooth' \}\)/);
         expect(topbarComponent).toMatch(/window\.scrollTo\(\{ top: 0, behavior: 'smooth' \}\)/);
+        expect(topbarComponent).not.toMatch(/scrollCurrentPageToTop\(\)\.then/);
     });
 
     it('accepts initialIsHomePage prop for SSR snapshot', () => {

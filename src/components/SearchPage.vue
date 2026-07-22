@@ -1,21 +1,27 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import Icon from './Icon.vue';
 import PostCard from './PostCard.vue';
-import { searchPosts, type SearchIndexEntry, type SearchMatchSnippet } from '../lib/search';
 import { useI18n } from '../composables/useI18n';
+import { useMasonryOrder } from '../composables/useMasonryOrder';
+import { siteConfig } from '../data/site';
+import { searchPosts, type SearchIndexEntry, type SearchMatchSnippet } from '../lib/search';
+import { usePageShellStore } from '../stores/page-shell';
 
 const props = defineProps<{
     entries: SearchIndexEntry[];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const pageShell = usePageShellStore();
 
 const query = ref('');
 const searchInput = ref<HTMLInputElement | null>(null);
+let isMounted = false;
 
 const trimmedQuery = computed(() => query.value.trim());
 const results = computed(() => searchPosts(props.entries, query.value));
+const { orderedItems: displayResults } = useMasonryOrder(results);
 const hasQuery = computed(() => trimmedQuery.value.length > 0);
 const totalPosts = computed(() => props.entries.length);
 
@@ -35,8 +41,32 @@ function snippetLabel(snippet: SearchMatchSnippet) {
     return snippet.field === 'description' ? t('search.snippet.description') : t('search.snippet.body');
 }
 
+function syncShellTitle() {
+    const title = t('dock.search');
+    pageShell.enterPage({
+        title,
+        mode: 'blog',
+        isHomePage: false
+    });
+
+    const surface = document.getElementById('pageTransitionSurface');
+    if (surface) surface.dataset.pageTitle = title;
+
+    document.title = `${title} | ${siteConfig.title}`;
+}
+
+watch(locale, () => {
+    if (isMounted) syncShellTitle();
+});
+
 onMounted(() => {
+    isMounted = true;
+    syncShellTitle();
     window.requestAnimationFrame(() => searchInput.value?.focus());
+});
+
+onUnmounted(() => {
+    isMounted = false;
 });
 </script>
 
@@ -79,8 +109,8 @@ onMounted(() => {
                 <span v-if="hasQuery">“{{ trimmedQuery }}”</span>
             </div>
 
-            <div v-if="results.length" class="post-list--masonry search-results">
-                <article v-for="result in results" :key="result.slug" class="search-result">
+            <div v-if="displayResults.length" class="post-list--masonry search-results">
+                <article v-for="result in displayResults" :key="result.slug" class="search-result">
                     <PostCard
                         :slug="result.slug"
                         :data="result.data"

@@ -5,7 +5,7 @@ import { createLogger } from '../lib/logger';
 import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations } from '../lib/runtime-effects';
 import { WallpaperController } from '../lib/wallpaper-scroller';
 import { getPageShellStateFromDocument, subscribePageShellStateChange } from '../lib/page-shell-context';
-import { initHashSectionScrollOnLoad } from '../lib/section-nav';
+import { initHashSectionScrollOnLoad, navigateToHashSection } from '../lib/section-nav';
 import { usePageShellStore } from '../stores/page-shell';
 import { useSearchStore } from '../stores/search';
 import SearchModal from './SearchModal.vue';
@@ -105,6 +105,14 @@ function splitLatinText(text: string) {
         .split(/([A-Za-z][A-Za-z0-9'.-]*)/g)
         .filter(Boolean)
         .map((part) => ({ text: part, isLatin: /^[A-Za-z]/.test(part) }));
+}
+
+function handleHeroAvatarActivate() {
+    if (isMobile.value) {
+        window.dispatchEvent(new CustomEvent('wakusei:open-sidebar'));
+        return;
+    }
+    navigateToHashSection('/#posts');
 }
 
 function attachScrollListener() {
@@ -281,7 +289,8 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
 <template>
     <div class="noise-overlay" />
 
-    <div class="hero-sticky">
+    <!-- Desktop: left panel for all modes. Mobile: first-screen only on home (CSS). -->
+    <div class="hero-sticky" :data-shell-mode="pageShell.mode" :data-is-home="pageShell.isHomePage ? '' : undefined">
         <div class="hero-content" :style="heroStyle">
             <main ref="containerRef" class="container">
                 <div ref="wallpaperRef" class="wallpaper-scroll-area" />
@@ -295,7 +304,17 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                             :class="{ 'hero-entering': heroEntering, 'hero-revealed': heroRevealed }"
                             :style="{ '--hero-opacity': heroOpacity }"
                         >
-                            <div id="avatarBox" ref="avatarRef" class="avatar-box">
+                            <div
+                                id="avatarBox"
+                                ref="avatarRef"
+                                class="avatar-box"
+                                role="button"
+                                tabindex="0"
+                                :aria-label="siteConfig.profile.name"
+                                @click="handleHeroAvatarActivate"
+                                @keydown.enter.prevent="handleHeroAvatarActivate"
+                                @keydown.space.prevent="handleHeroAvatarActivate"
+                            >
                                 <img
                                     :src="siteConfig.profile.avatar"
                                     alt="Avatar"
@@ -309,7 +328,10 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                             </div>
 
                             <h1 class="name">
-                                <template v-for="(part, index) in splitLatinText(pageShell.title)" :key="`${part.text}-${index}`">
+                                <template
+                                    v-for="(part, index) in splitLatinText(pageShell.title)"
+                                    :key="`${part.text}-${index}`"
+                                >
                                     <span v-if="part.isLatin" class="name-latin">{{ part.text }}</span>
                                     <template v-else>
                                         {{ part.text }}
@@ -340,7 +362,10 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                             :style="{ '--hero-opacity': heroOpacity }"
                         >
                             <h1 class="name">
-                                <template v-for="(part, index) in splitLatinText(pageShell.title)" :key="`${part.text}-${index}`">
+                                <template
+                                    v-for="(part, index) in splitLatinText(pageShell.title)"
+                                    :key="`${part.text}-${index}`"
+                                >
                                     <span v-if="part.isLatin" class="name-latin">{{ part.text }}</span>
                                     <template v-else>
                                         {{ part.text }}
@@ -357,7 +382,10 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                             :style="{ '--hero-opacity': heroOpacity }"
                         >
                             <h1 class="name">
-                                <template v-for="(part, index) in splitLatinText(pageShell.title)" :key="`${part.text}-${index}`">
+                                <template
+                                    v-for="(part, index) in splitLatinText(pageShell.title)"
+                                    :key="`${part.text}-${index}`"
+                                >
                                     <span v-if="part.isLatin" class="name-latin">{{ part.text }}</span>
                                     <template v-else>
                                         {{ part.text }}

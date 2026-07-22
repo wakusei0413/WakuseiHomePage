@@ -1,6 +1,6 @@
 ---
 title: 'Redmi K30 PRO截至于春节前的所有MIUI13的开发版内测刷机包.'
-description: '1. 21.12.27 链接: [http://bigota.d.miui.com/21.12.27/miui_LMIPRE_21.12.27_2162592b4f_12.0.zip](http://bigota.d.miui.com/21.12.27/miui_LMIPRE_21.12.27_2162592b4f_12.0.zip)'
+description: 'Redmi K30 Pro（lmi）春节前 MIUI 13 开发版内测刷机包合集：版本号、下载链接与推荐包整理，方便刷机备份与回退。'
 language: 'zh-CN'
 category: '折腾'
 tags: ['刷机', 'MIUI', '开发板']

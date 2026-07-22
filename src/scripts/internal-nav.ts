@@ -1,5 +1,5 @@
 /**
- * 内部链接 —— 先平滑滚到顶部，再 navigate 切页
+ * 内部链接 —— 直接 navigate 切页（新页在 after-swap 滚顶）
  * 监听 astro:page-load，确保 view transitions 切页后重新绑定
  */
 
@@ -24,32 +24,6 @@ function shouldHandleNavigationClick(event: MouseEvent, anchor: HTMLAnchorElemen
     );
 }
 
-function scrollCurrentPageToTop(): Promise<void> {
-    const s = document.getElementById('pageScroller') ?? document.querySelector('.page-scroller');
-    if (s) {
-        s.scrollTo({ top: 0, behavior: 'smooth' });
-        return new Promise((resolve) => {
-            const fallback = window.setTimeout(resolve, 1200);
-            const onScrollEnd = () => {
-                if (s.scrollTop <= 0) {
-                    s.removeEventListener('scroll', onScrollEnd);
-                    clearTimeout(fallback);
-                    resolve();
-                }
-            };
-            s.addEventListener('scroll', onScrollEnd, { passive: true });
-            if (s.scrollTop <= 0) {
-                s.removeEventListener('scroll', onScrollEnd);
-                clearTimeout(fallback);
-                resolve();
-            }
-        });
-    }
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    return Promise.resolve();
-}
-
 function bindLink(a: HTMLAnchorElement): void {
     if (a.dataset.scrollNav === '1') return;
     a.dataset.scrollNav = '1';
@@ -62,7 +36,7 @@ function bindLink(a: HTMLAnchorElement): void {
             navigateToHashSection(href);
             return;
         }
-        scrollCurrentPageToTop().then(() => navigate(href));
+        navigate(href);
     });
 }
 

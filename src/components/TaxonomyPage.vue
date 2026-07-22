@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import type { PostListItem, TaxonomyTerm } from '../lib/post-model';
 import PostCard from './PostCard.vue';
+import { useMasonryOrder } from '../composables/useMasonryOrder';
 
 const props = defineProps<{
     variant: 'categories' | 'tags';
@@ -16,6 +17,7 @@ const variantLabel = computed(() => (props.variant === 'categories' ? '分类' :
 const allLabel = computed(() => (props.variant === 'categories' ? '全部分类' : '全部标签'));
 const indexHref = '/archives';
 const visiblePosts = computed(() => props.posts ?? []);
+const { orderedItems: displayPosts } = useMasonryOrder(visiblePosts);
 const emptyText = '这里暂时还没有文章。';
 </script>
 
@@ -63,9 +65,9 @@ const emptyText = '这里暂时还没有文章。';
                     </a>
                 </nav>
 
-                <div v-if="visiblePosts.length" class="post-list--masonry taxonomy-post-list">
+                <div v-if="displayPosts.length" class="post-list--masonry taxonomy-post-list">
                     <PostCard
-                        v-for="post in visiblePosts"
+                        v-for="post in displayPosts"
                         :key="post.slug"
                         :slug="post.slug"
                         :data="post.data"

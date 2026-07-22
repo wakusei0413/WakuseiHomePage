@@ -133,12 +133,14 @@ onUnmounted(() => {
                             {{ t('search.clear') }}
                         </button>
                     </div>
-                    <p id="search-modal-help" class="search-help">{{ t('search.help') }}</p>
+                    <p id="search-modal-help" class="search-help">
+                        {{ t('search.help') }}
+                    </p>
                 </div>
 
                 <div class="search-modal-body">
                     <div v-if="loading" class="search-loading">
-                        <p>加载中...</p>
+                        <p>{{ t('search.loading') }}</p>
                     </div>
 
                     <template v-else>

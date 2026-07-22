@@ -18,11 +18,14 @@ let suppressNextClick = false;
 let suppressClickTimer: ReturnType<typeof setTimeout> | undefined;
 let mountedCleanup: (() => void) | undefined;
 
-const totalPages = computed(() => Math.ceil(props.config.links.length / ITEMS_PER_PAGE));
+const totalPages = computed(() => Math.max(1, Math.ceil(props.config.links.length / ITEMS_PER_PAGE)));
 const pages = computed(() => {
     const result: SocialLink[][] = [];
     for (let i = 0; i < props.config.links.length; i += ITEMS_PER_PAGE) {
         result.push(props.config.links.slice(i, i + ITEMS_PER_PAGE));
+    }
+    if (result.length === 0) {
+        result.push([]);
     }
     return result;
 });
@@ -85,10 +88,18 @@ function handleLinkClick(event: MouseEvent, linkElement: HTMLAnchorElement) {
 
 onMounted(() => {
     const wrapper = navRef.value;
-    if (!wrapper || totalPages.value <= 1) return;
+    if (!wrapper) return;
 
     window.addEventListener('pagehide', clearAllHoveredStates);
     window.addEventListener('pageshow', clearAllHoveredStates);
+
+    if (totalPages.value <= 1) {
+        mountedCleanup = () => {
+            window.removeEventListener('pagehide', clearAllHoveredStates);
+            window.removeEventListener('pageshow', clearAllHoveredStates);
+        };
+        return;
+    }
 
     let isDown = false;
     let startX = 0;
@@ -170,39 +181,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <nav v-if="props.config.links.length <= ITEMS_PER_PAGE" id="socialLinks" ref="navRef" class="social-links">
-        <div
-            v-for="(link, index) in props.config.links"
-            :key="link.url + index"
-            class="social-link-slot"
-            @pointerenter="(e: PointerEvent) => setHoveredState(e.currentTarget as HTMLElement, true)"
-            @pointerleave="(e: PointerEvent) => setHoveredState(e.currentTarget as HTMLElement, false)"
-            @pointerdown="(e: PointerEvent) => setHoveredState(e.currentTarget as HTMLElement, true)"
-            @pointerup="(e: PointerEvent) => setHoveredState(e.currentTarget as HTMLElement, false)"
-            @pointercancel="(e: PointerEvent) => setHoveredState(e.currentTarget as HTMLElement, false)"
-        >
-            <a
-                :href="link.url"
-                :aria-label="link.name"
-                :target="isMailTo(link.url) ? '_self' : '_blank'"
-                :rel="isMailTo(link.url) ? undefined : 'noopener noreferrer'"
-                class="social-link social-link--custom"
-                :style="`--custom-color: ${getLinkColor(link, index)}`"
-                @click="(event: MouseEvent) => handleLinkClick(event, event.currentTarget as HTMLAnchorElement)"
-                @blur="
-                    (event: FocusEvent) => {
-                        const slot = (event.currentTarget as HTMLElement).closest('.social-link-slot');
-                        if (slot) setHoveredState(slot as HTMLElement, false);
-                    }
-                "
-            >
-                <Icon v-if="link.icon" :name="link.icon" class="social-icon" size="1.25rem" />
-                <span class="link-label">{{ link.name }}</span>
-            </a>
-        </div>
-    </nav>
-
-    <nav v-else id="socialLinks" ref="navRef" class="social-links-wrapper">
+    <nav id="socialLinks" ref="navRef" class="social-links-wrapper">
         <div
             id="socialLinksPage"
             class="social-links-page"
@@ -251,7 +230,7 @@ onUnmounted(() => {
             />
         </div>
 
-        <div v-if="totalPages > 1" class="social-links-dots">
+        <div class="social-links-dots">
             <button
                 v-for="(_, i) in totalPages"
                 :key="'dot-' + i"

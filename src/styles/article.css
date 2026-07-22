@@ -13,8 +13,31 @@
     font-family: var(--font-ui);
 }
 
+/* 非正文导读卡：标题 / meta / 封面，与正文视觉分区 */
+.post-container .post-lead {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 32px;
+    padding: 22px 22px 20px;
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    background: var(--panel-glass);
+    box-shadow: var(--panel-shadow);
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
+}
+
+[data-theme='dark'] .post-container .post-lead {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(20, 20, 20, 0.72);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.06),
+        0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
 .post-container .post-header {
-    margin-bottom: 24px;
+    margin: 0;
 }
 
 .post-container .post-title {
@@ -55,9 +78,9 @@
     aspect-ratio: 16 / 9;
     overflow: hidden;
     border: 1px solid var(--panel-border);
-    border-radius: 6px;
-    box-shadow: var(--panel-shadow);
-    margin-bottom: 24px;
+    border-radius: 8px;
+    box-shadow: none;
+    margin: 0;
 }
 
 .post-container .post-hero-image {
@@ -582,6 +605,13 @@
     .post-container {
         padding: 0 16px;
         max-width: 100%;
+    }
+
+    .post-container .post-lead {
+        gap: 14px;
+        margin-bottom: 24px;
+        padding: 16px 14px 14px;
+        border-radius: 8px;
     }
 
     .post-body {
