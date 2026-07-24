@@ -201,8 +201,7 @@ export async function loadSiteStats(): Promise<SiteStats> {
         }
     }
 
-    const yearSpan =
-        yearFrom !== null && yearTo !== null ? Math.max(1, yearTo - yearFrom + 1) : 0;
+    const yearSpan = yearFrom !== null && yearTo !== null ? Math.max(1, yearTo - yearFrom + 1) : 0;
 
     return {
         postCount: entries.length,
@@ -215,9 +214,7 @@ export async function loadSiteStats(): Promise<SiteStats> {
 }
 
 /** Most recently updated post (by updatedDate, else pubDate), optional exclude slugs. */
-export async function loadRecentlyUpdatedPost(
-    excludeSlugs: string[] = []
-): Promise<FeaturedPostItem | null> {
+export async function loadRecentlyUpdatedPost(excludeSlugs: string[] = []): Promise<FeaturedPostItem | null> {
     const exclude = new Set(excludeSlugs);
     const entries = await loadPublishedEntries();
     const ranked = entries
