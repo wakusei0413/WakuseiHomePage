@@ -34,13 +34,14 @@
     .left-panel {
         width: 100%;
         min-width: 100%;
-        height: auto;
+        height: 100svh;
+        min-height: 100svh;
         flex-shrink: 0;
         border-right-width: 0;
         border-bottom: 1px solid var(--panel-border);
         padding: var(--space-lg);
         overflow-y: visible;
-        justify-content: flex-start;
+        justify-content: center;
     }
 
     .page-transition-surface {
@@ -58,16 +59,13 @@
     }
 
     .hero-sticky {
-        min-height: auto;
+        height: 100svh;
+        min-height: 100svh;
     }
 
-    /* Mobile non-home: keep a compact persistent marquee band without an empty 100vh hero. */
-    .hero-sticky:not([data-is-home]) {
-        height: calc(var(--ticket-height) + var(--marquee-bottom) + 1rem);
-        min-height: calc(var(--ticket-height) + var(--marquee-bottom) + 1rem);
-    }
-
-    .hero-sticky:not([data-is-home]) .left-panel {
+    /* The widget rail is a desktop-only enhancement. Mobile keeps the full hero content. */
+    .hero-marquee,
+    .hero-marquee-defocus {
         display: none;
     }
 
@@ -253,7 +251,7 @@
     }
 
     .left-panel {
-        padding-bottom: calc(var(--space-lg) + 7rem);
+        padding-bottom: var(--space-lg);
     }
 }
 
@@ -261,7 +259,6 @@
 @media (max-width: 600px) {
     .left-panel {
         padding: var(--space-md);
-        padding-bottom: calc(var(--space-md) + 6.75rem);
     }
 
     :root {

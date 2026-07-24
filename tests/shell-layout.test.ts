@@ -90,10 +90,11 @@ describe('persistent shell layout guardrails', () => {
         expect(siteShell).toContain("pageShell.mode === 'article'");
     });
 
-    it('marks home hero-sticky so mobile can hide non-home first screens', () => {
+    it('keeps shell mode markers while mobile preserves every first screen', () => {
         expect(siteShell).toContain('data-is-home');
         expect(siteShell).toContain('data-shell-mode');
-        expect(responsiveCss).toMatch(/\.hero-sticky:not\(\[data-is-home\]\)/);
+        expect(responsiveCss).not.toMatch(/\.hero-sticky:not\(\[data-is-home\]\)/);
+        expect(responsiveCss).toMatch(/\.left-panel\s*\{[^}]*height:\s*100svh/);
     });
 
     it('has transition surface with z-index and background', () => {

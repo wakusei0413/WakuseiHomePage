@@ -2,11 +2,11 @@
 
 ![Version](https://img.shields.io/badge/version-2.0.0-9a0a0a?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-ffe600?style=for-the-badge)
-![Astro](https://img.shields.io/badge/Astro-6-ff5d01?style=for-the-badge&logo=astro&logoColor=white)
+![Astro](https://img.shields.io/badge/Astro-7-ff5d01?style=for-the-badge&logo=astro&logoColor=white)
 ![Vue](https://img.shields.io/badge/Vue-3-42b883?style=for-the-badge&logo=vuedotjs&logoColor=white)
 ![Cloudflare Pages](https://img.shields.io/badge/Cloudflare%20Pages-static-f38020?style=for-the-badge&logo=cloudflarepages&logoColor=white)
 
-基于 **Astro 6 + Vue 3 + Pinia + TypeScript** 的静态个人主页与博客，部署到 Cloudflare Pages（纯静态，无 SSR / Functions）。
+基于 **Astro 7 + Vue 3 + Pinia + TypeScript** 的静态个人主页与博客，部署到 Cloudflare Pages（纯静态，无 SSR / Functions）。
 
 ![主页截图](docs/assets/screenshots/homepage-01.png)
 
@@ -22,7 +22,7 @@
 
 | 类别 | 选型 |
 |------|------|
-| 框架 | Astro 6（`output: 'static'`） |
+| 框架 | Astro 7（`output: 'static'`） |
 | UI | Vue 3（`<script setup>` islands）+ Pinia |
 | 内容 | Astro Content Collections + Zod（`astro/zod`） |
 | 校验 / 类型 | Zod、TypeScript（`astro check`） |
@@ -157,6 +157,7 @@ updatedDate: '2026-06-21'
 | 路径 | 说明 |
 |------|------|
 | `/` | 主页 + 文章列表（`#posts`） |
+| `/page/[page]` | 首页文章静态分页（从第 2 页开始生成） |
 | `/posts/[...slug]` | 文章 |
 | `/archives`、`/topics`、`/categories`、`/tags`、`/search` | 归档 / 话题 / 分类 / 标签 / 搜索 |
 | `/rss.xml`、`/atom.xml` | Feeds |

@@ -2,11 +2,13 @@
 import HomepageApp from '../components/HomepageApp.vue';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { siteConfig } from '../data/site';
+import { createHomepagePage, homepagePagePath } from '../lib/home-pagination';
 import { loadPublishedPosts } from '../lib/posts';
 
-const posts = await loadPublishedPosts();
+const page = createHomepagePage(await loadPublishedPosts(), 1);
+const paginationNext = page.pagination.nextHref ? homepagePagePath(2) : undefined;
 ---
 
-<BaseLayout shellMode="home" shellTitle={siteConfig.profile.name}>
-    <HomepageApp client:idle posts={posts} />
+<BaseLayout shellMode="home" shellTitle={siteConfig.profile.name} paginationNext={paginationNext}>
+    <HomepageApp client:idle posts={page.posts} pagination={page.pagination} />
 </BaseLayout>

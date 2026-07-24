@@ -1,9 +1,5 @@
 import { computed, onMounted, onUnmounted, ref, type Ref } from 'vue';
-import {
-    MASONRY_SINGLE_COLUMN_MQ,
-    masonryColumnCount,
-    toColumnMajorOrder
-} from '../lib/masonry-order';
+import { MASONRY_SINGLE_COLUMN_MQ, masonryColumnCount, toColumnMajorOrder } from '../lib/masonry-order';
 
 /**
  * Reorders a chronological list so CSS multi-column masonry reads left→right

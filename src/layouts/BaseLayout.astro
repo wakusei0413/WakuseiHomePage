@@ -23,6 +23,8 @@ interface Props {
     shellMode?: 'home' | 'blog' | 'article' | 'error';
     shellTitle?: string;
     ogImage?: string;
+    paginationPrev?: string;
+    paginationNext?: string;
 }
 
 const {
@@ -30,7 +32,9 @@ const {
     description = siteConfig.description,
     shellMode = 'error',
     shellTitle = title,
-    ogImage
+    ogImage,
+    paginationPrev,
+    paginationNext
 } = Astro.props;
 const isHomePage = shellMode === 'home';
 const [featuredPosts, siteStats] = await Promise.all([loadFeaturedPosts(3), loadSiteStats()]);
@@ -76,6 +80,8 @@ const googleFontsUrl =
         <meta name="theme-color" content={siteConfig.themeColor} />
         <style is:inline set:html={`:root{--theme-color:${siteConfig.themeColor}}`}></style>
         <link rel="canonical" href={canonicalUrl} />
+        {paginationPrev && <link rel="prev" href={new URL(paginationPrev, siteUrl).toString()} />}
+        {paginationNext && <link rel="next" href={new URL(paginationNext, siteUrl).toString()} />}
         <link rel="sitemap" href="/sitemap-index.xml" />
         <link rel="alternate" type="application/rss+xml" title={`${siteConfig.title} RSS`} href="/rss.xml" />
         <link rel="alternate" type="application/atom+xml" title={`${siteConfig.title} Atom`} href="/atom.xml" />
@@ -249,6 +255,7 @@ const googleFontsUrl =
         </noscript>
         <script>
             import '../scripts/navigation-runtime';
+            import '../scripts/inertial-scroll';
         </script>
     </body>
 </html>

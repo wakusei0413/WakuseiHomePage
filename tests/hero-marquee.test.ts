@@ -96,16 +96,16 @@ describe('hero widget marquee', () => {
         expect(marquee).toContain('usePageShellStore');
     });
 
-    it('keeps the persistent marquee mounted for every shell mode', () => {
+    it('keeps the persistent marquee mounted for desktop shell modes and hides it on mobile', () => {
         const heroContent = shell.slice(shell.indexOf('<div class="hero-content"'), shell.indexOf('<TopBar'));
         expect(heroContent.match(/<HeroWidgetMarquee/g)?.length).toBe(2);
         expect(heroContent).not.toMatch(/HeroWidgetMarquee[\s\S]*v-if="pageShell\.isHomePage"/);
         expect(layout).toContain('transition:persist');
         const responsiveCss = read('src/styles/responsive.css');
-        expect(responsiveCss).toContain('.hero-sticky:not([data-is-home]) .left-panel');
-        expect(responsiveCss).toMatch(
-            /\.hero-sticky:not\(\[data-is-home\]\)\s*\{[^}]*height:\s*calc\(var\(--ticket-height\)/
-        );
+        expect(responsiveCss).toMatch(/\.hero-marquee,\s*\.hero-marquee-defocus\s*\{[^}]*display:\s*none/);
+        expect(responsiveCss).toMatch(/\.hero-sticky\s*\{[^}]*height:\s*100svh/);
+        expect(responsiveCss).toMatch(/\.left-panel\s*\{[^}]*height:\s*100svh[^}]*justify-content:\s*center/);
+        expect(responsiveCss).not.toContain('.hero-sticky:not([data-is-home]) .left-panel');
     });
 
     it('uses progressive Gaussian defocus under the strip; cards clamp long titles', () => {

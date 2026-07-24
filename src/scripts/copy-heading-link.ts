@@ -27,7 +27,7 @@ function fallbackCopy(text: string): boolean {
     try {
         ok = document.execCommand('copy');
     } catch {
-        ok = false;
+        /* ok stays false */
     }
     document.body.removeChild(ta);
     return ok;

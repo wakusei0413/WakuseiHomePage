@@ -2,6 +2,7 @@ import { navigate } from 'astro:transitions/client';
 
 // Matches internal hrefs that point at a homepage section, e.g. "/#posts".
 const HASH_SECTION_RE = /^\/#(.+)$/;
+const HOME_PAGE_PATH_RE = /^\/(?:page\/[1-9]\d*\/?)?$/;
 
 export function isHashSectionHref(href: string): boolean {
     return HASH_SECTION_RE.test(href);
@@ -30,10 +31,10 @@ function scrollPageScrollerToElement(id: string): boolean {
 // native hash-scroll can't reach the section because it lives inside the custom
 // #pageScroller scroll container, not the document. This scrolls it into view
 // after layout settles. Safe to call on every page-load: it no-ops unless the
-// URL is "/" with a non-empty hash whose target element exists.
+// URL is a homepage route with a non-empty hash whose target element exists.
 export function initHashSectionScrollOnLoad(): void {
     if (typeof window === 'undefined') return;
-    if (window.location.pathname !== '/') return;
+    if (!HOME_PAGE_PATH_RE.test(window.location.pathname)) return;
     const id = window.location.hash.slice(1);
     if (!id) return;
     requestAnimationFrame(() =>

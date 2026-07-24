@@ -374,9 +374,7 @@ export class WallpaperController {
             return;
         }
 
-        const ms = this.wallpaperConfig.rotation.enabled
-            ? this.wallpaperConfig.rotation.interval
-            : 90000;
+        const ms = this.wallpaperConfig.rotation.enabled ? this.wallpaperConfig.rotation.interval : 90000;
         this.container.style.setProperty('--wallpaper-zoom-ms', `${ms}ms`);
     }
 

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleToc from '../../components/ArticleToc.vue';
+import Icon from '../../components/Icon.vue';
 import { formatPostDateLabel, getPostStaticPaths, type PostPageProps } from '../../lib/posts';
 import { siteConfig } from '../../data/site';
 
@@ -88,8 +89,16 @@ const ogImage = frontmatter.cover
             <Content />
         </div>
         <footer class="post-footer">
-            <a href="/#posts" class="back-link">← 返回文章列表</a>
-            <a href="/" class="back-link">返回首页</a>
+            <nav class="post-footer__actions" aria-label="文章页导航">
+                <a href="/#posts" class="back-link post-footer__action post-footer__action--primary">
+                    <Icon name="arrow-left" size="0.9em" />
+                    <span>文章列表</span>
+                </a>
+                <a href="/" class="back-link post-footer__action">
+                    <Icon name="house" size="0.9em" />
+                    <span>首页</span>
+                </a>
+            </nav>
         </footer>
         <nav class="post-nav" aria-label="文章导航">
             {

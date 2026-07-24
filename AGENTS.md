@@ -1,6 +1,6 @@
 # AGENTS
 
-Astro 6 **static** + Vue 3 (`<script setup>`) + Pinia + TypeScript. Node `>=22.12.0`.
+Astro 7 **static** + Vue 3 (`<script setup>`) + Pinia + TypeScript. Node `>=22.12.0`.
 
 **Trust this file + `package.json` / `astro.config.mjs` / CI / README.**
 

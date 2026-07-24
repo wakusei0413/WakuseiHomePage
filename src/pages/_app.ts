@@ -1,3 +1,4 @@
+import './_pinia-guard';
 import type { App } from 'vue';
 import { createPinia } from 'pinia';
 
