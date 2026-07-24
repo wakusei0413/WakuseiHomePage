@@ -8,17 +8,35 @@ import { getPageShellStateFromDocument, subscribePageShellStateChange } from '..
 import { initHashSectionScrollOnLoad, navigateToHashSection } from '../lib/section-nav';
 import { usePageShellStore } from '../stores/page-shell';
 import { useSearchStore } from '../stores/search';
+import HeroWidgetMarquee, { type FeaturedPost, type SiteStats } from './HeroWidgetMarquee.vue';
 import SearchModal from './SearchModal.vue';
 import SocialLinks from './SocialLinks.vue';
 import TopBar from './TopBar.vue';
 import TypewriterSlogan from './TypewriterSlogan.vue';
 
-const props = defineProps<{
-    showTopBar?: boolean;
-    initialMode?: 'home' | 'blog' | 'article' | 'error';
-    initialTitle?: string;
-    initialIsHomePage?: boolean;
-}>();
+const props = withDefaults(
+    defineProps<{
+        showTopBar?: boolean;
+        initialMode?: 'home' | 'blog' | 'article' | 'error';
+        initialTitle?: string;
+        initialIsHomePage?: boolean;
+        featuredPosts?: FeaturedPost[];
+        siteStats?: SiteStats;
+        recentlyUpdated?: FeaturedPost | null;
+    }>(),
+    {
+        featuredPosts: () => [],
+        siteStats: () => ({
+            postCount: 0,
+            categoryCount: 0,
+            tagCount: 0,
+            yearSpan: 0,
+            yearFrom: null,
+            yearTo: null
+        }),
+        recentlyUpdated: null
+    }
+);
 
 const pageShell = usePageShellStore();
 const searchStore = useSearchStore();
@@ -398,6 +416,20 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                     </Transition>
                 </section>
             </main>
+
+            <!-- Both layers belong to the first-screen scene and pass underneath the left panel. -->
+            <HeroWidgetMarquee
+                layer="defocus"
+                :posts="props.featuredPosts"
+                :stats="props.siteStats"
+                :recently-updated="props.recentlyUpdated"
+            />
+            <HeroWidgetMarquee
+                layer="rail"
+                :posts="props.featuredPosts"
+                :stats="props.siteStats"
+                :recently-updated="props.recentlyUpdated"
+            />
         </div>
     </div>
 

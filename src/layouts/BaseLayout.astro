@@ -15,6 +15,7 @@ import Footer from '../components/Footer.vue';
 import SiteShell from '../components/SiteShell.vue';
 import TopBar from '../components/TopBar.vue';
 import { siteConfig } from '../data/site';
+import { loadFeaturedPosts, loadRecentlyUpdatedPost, loadSiteStats } from '../lib/posts';
 
 interface Props {
     title?: string;
@@ -32,6 +33,8 @@ const {
     ogImage
 } = Astro.props;
 const isHomePage = shellMode === 'home';
+const [featuredPosts, siteStats] = await Promise.all([loadFeaturedPosts(3), loadSiteStats()]);
+const recentlyUpdated = await loadRecentlyUpdatedPost(featuredPosts.map((p) => p.slug));
 const DARK_THEME_BG = '#080808';
 const wallpaperOrigins = Array.from(
     new Set(
@@ -199,6 +202,9 @@ const googleFontsUrl =
                     initialMode={shellMode}
                     initialTitle={shellTitle}
                     initialIsHomePage={isHomePage}
+                    featuredPosts={featuredPosts}
+                    siteStats={siteStats}
+                    recentlyUpdated={recentlyUpdated}
                 />
             </div>
             <div

@@ -138,6 +138,118 @@ export async function loadPublishedPosts(): Promise<PostListItem[]> {
     return (await loadPublishedPostEntries()).map(toPostListItem);
 }
 
+/** Lightweight cards for the hero marquee — only the first N posts, smaller covers, no body. */
+export interface FeaturedPostItem {
+    slug: string;
+    title: string;
+    description: string;
+    category: string | null;
+    cover: string | null;
+    dateLabel: string | null;
+}
+
+const COVER_WIDTH_FEATURED = 480;
+const FEATURED_DEFAULT_LIMIT = 3;
+
+export async function loadFeaturedPosts(limit = FEATURED_DEFAULT_LIMIT): Promise<FeaturedPostItem[]> {
+    const entries = (await loadPublishedEntries()).slice(0, Math.max(0, limit));
+    return Promise.all(
+        entries.map(async (entry) => {
+            const cover = await resolveCoverUrl(entry.data.cover, COVER_WIDTH_FEATURED);
+            return {
+                slug: postSlug(entry),
+                title: entry.data.title,
+                description: entry.data.description,
+                category: entry.data.category ?? null,
+                cover: cover ?? null,
+                dateLabel: formatDate(toIsoString(entry.data.pubDate))
+            };
+        })
+    );
+}
+
+/** Lightweight taxonomy/post counts for hero stat cards (no body, no cover). */
+export interface SiteStats {
+    postCount: number;
+    categoryCount: number;
+    tagCount: number;
+    /** Inclusive span of publication years, e.g. 5 for 2022–2026. */
+    yearSpan: number;
+    yearFrom: number | null;
+    yearTo: number | null;
+}
+
+export async function loadSiteStats(): Promise<SiteStats> {
+    const entries = await loadPublishedEntries();
+    const categories = new Set<string>();
+    const tags = new Set<string>();
+    let yearFrom: number | null = null;
+    let yearTo: number | null = null;
+
+    for (const entry of entries) {
+        const category = entry.data.category?.trim();
+        if (category) categories.add(category);
+        for (const tag of entry.data.tags ?? []) {
+            const name = tag?.trim();
+            if (name) tags.add(name);
+        }
+        const pub = entry.data.pubDate;
+        if (pub instanceof Date && !Number.isNaN(pub.getTime())) {
+            const y = pub.getFullYear();
+            yearFrom = yearFrom === null ? y : Math.min(yearFrom, y);
+            yearTo = yearTo === null ? y : Math.max(yearTo, y);
+        }
+    }
+
+    const yearSpan =
+        yearFrom !== null && yearTo !== null ? Math.max(1, yearTo - yearFrom + 1) : 0;
+
+    return {
+        postCount: entries.length,
+        categoryCount: categories.size,
+        tagCount: tags.size,
+        yearSpan,
+        yearFrom,
+        yearTo
+    };
+}
+
+/** Most recently updated post (by updatedDate, else pubDate), optional exclude slugs. */
+export async function loadRecentlyUpdatedPost(
+    excludeSlugs: string[] = []
+): Promise<FeaturedPostItem | null> {
+    const exclude = new Set(excludeSlugs);
+    const entries = await loadPublishedEntries();
+    const ranked = entries
+        .map((entry) => {
+            const updated = entry.data.updatedDate;
+            const published = entry.data.pubDate;
+            const stamp =
+                updated instanceof Date && !Number.isNaN(updated.getTime())
+                    ? updated.getTime()
+                    : published instanceof Date && !Number.isNaN(published.getTime())
+                      ? published.getTime()
+                      : 0;
+            return { entry, stamp };
+        })
+        .filter(({ entry, stamp }) => stamp > 0 && !exclude.has(postSlug(entry)))
+        .sort((a, b) => b.stamp - a.stamp);
+
+    const top = ranked[0]?.entry;
+    if (!top) return null;
+
+    const cover = await resolveCoverUrl(top.data.cover, COVER_WIDTH_FEATURED);
+    const dateRaw = top.data.updatedDate ?? top.data.pubDate;
+    return {
+        slug: postSlug(top),
+        title: top.data.title,
+        description: top.data.description,
+        category: top.data.category ?? null,
+        cover: cover ?? null,
+        dateLabel: formatDate(toIsoString(dateRaw))
+    };
+}
+
 export async function loadArchiveGroups() {
     return createArchiveGroups(await loadPublishedPosts());
 }

@@ -935,3 +935,598 @@ html:not(.is-loaded) .noise-overlay {
 [data-theme='dark'] .search-modal-overlay {
     background: rgba(0, 0, 0, 0.7);
 }
+
+/* ===== Hero marquee =====
+   Both layers are children of .hero-content and span the complete first screen.
+   Their z-index keeps them above the wallpaper and beneath the left panel. */
+:root {
+    --marquee-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    --ticket-height: 7.5rem;
+    --marquee-defocus-height: calc(var(--ticket-height) + 5.5rem);
+}
+
+.hero-marquee {
+    --ticket-fg: rgba(18, 18, 18, 0.82);
+    --ticket-muted: rgba(18, 18, 18, 0.48);
+    --ticket-paper: rgba(255, 254, 247, 0.62);
+    --ticket-line: rgba(255, 254, 247, 0.55);
+    --ticket-ink: rgba(0, 0, 0, 0.08);
+    --ticket-shadow: 0 0 0 1px var(--ticket-ink), 0 2px 10px rgba(0, 0, 0, 0.05);
+    --ticket-shadow-hover: 0 0 0 1px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.07);
+    --ticket-radius: 4px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: var(--marquee-bottom);
+    z-index: 5;
+    pointer-events: none;
+    padding: 0 1.75rem 0 1rem;
+}
+
+.hero-marquee--revealed .hero-marquee__viewport {
+    pointer-events: auto;
+    opacity: 0.92;
+}
+
+.hero-marquee--revealed:hover .hero-marquee__viewport,
+.hero-marquee--revealed:focus-within .hero-marquee__viewport {
+    opacity: 0.98;
+}
+
+.hero-marquee__viewport {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+    background: transparent;
+    opacity: 0;
+    transition: opacity 0.75s var(--curve-delicate, cubic-bezier(0.1, 0.9, 0.2, 1));
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 3.5%, #000 96.5%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 3.5%, #000 96.5%, transparent 100%);
+}
+
+/*
+  Progressive Gaussian bed inside the first-screen scene.
+  Never put opacity < 1 on this root while blur is active — kills backdrop-filter.
+  Fade the child layers in place; .hero-content owns all position and 3D motion.
+*/
+.hero-marquee-defocus {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--marquee-defocus-height);
+    z-index: 4;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.hero-marquee-defocus--scrolled-away {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.hero-marquee-defocus__layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.85s var(--curve-delicate, cubic-bezier(0.1, 0.9, 0.2, 1));
+}
+
+/* Enable blur only when fully opaque so backdrop-filter can sample wallpaper. */
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer {
+    opacity: var(--marquee-defocus-opacity, 1);
+}
+
+/* Far: light blur, falls off upward into sharp wallpaper */
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--far {
+    -webkit-backdrop-filter: blur(12px) saturate(1.05);
+    backdrop-filter: blur(12px) saturate(1.05);
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(8, 8, 10, 0.04) 38%,
+        rgba(8, 8, 10, 0.1) 70%,
+        rgba(8, 8, 10, 0.14) 100%
+    );
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 46%, #000 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 46%, #000 100%);
+}
+
+/* Mid: glass body around the ticket row */
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--mid {
+    -webkit-backdrop-filter: blur(32px) saturate(1.1);
+    backdrop-filter: blur(32px) saturate(1.1);
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(8, 8, 10, 0.06) 34%,
+        rgba(8, 8, 10, 0.16) 74%,
+        rgba(8, 8, 10, 0.22) 100%
+    );
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 12%, rgba(0, 0, 0, 0.65) 50%, #000 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, transparent 12%, rgba(0, 0, 0, 0.65) 50%, #000 100%);
+}
+
+/* Near: strongest ground-glass right under the cards */
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--near {
+    -webkit-backdrop-filter: blur(48px) saturate(1.12);
+    backdrop-filter: blur(48px) saturate(1.12);
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        transparent 30%,
+        rgba(8, 8, 10, 0.12) 62%,
+        rgba(8, 8, 10, 0.28) 100%
+    );
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 24%, rgba(0, 0, 0, 0.8) 56%, #000 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, transparent 24%, rgba(0, 0, 0, 0.8) 56%, #000 100%);
+}
+
+.hero-marquee__track {
+    display: flex;
+    width: max-content;
+    align-items: stretch;
+    gap: 0.85rem;
+    background: transparent;
+    will-change: transform;
+    animation: hero-marquee-scroll var(--marquee-duration, 80s) linear infinite;
+}
+
+.hero-marquee--paused .hero-marquee__track {
+    animation-play-state: paused;
+}
+
+.hero-marquee--static .hero-marquee__viewport {
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.hero-marquee--static .hero-marquee__viewport::-webkit-scrollbar {
+    display: none;
+}
+
+.hero-marquee--static .hero-marquee__track {
+    animation: none;
+    will-change: auto;
+}
+
+.hero-marquee--static .hero-ticket {
+    scroll-snap-align: start;
+}
+
+@keyframes hero-marquee-scroll {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+
+    to {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+/* Large quiet tickets — soft paper, no accent bars, no lift. */
+.hero-ticket {
+    flex: 0 0 auto;
+    width: 18rem;
+    height: var(--ticket-height);
+    border-radius: var(--ticket-radius);
+    border: 1px solid var(--ticket-line);
+    background: var(--ticket-paper);
+    box-shadow: var(--ticket-shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    color: var(--ticket-fg);
+    transition:
+        background 0.4s ease,
+        box-shadow 0.45s var(--curve-delicate, cubic-bezier(0.1, 0.9, 0.2, 1)),
+        border-color 0.35s ease;
+}
+
+.hero-ticket:hover,
+.hero-ticket:focus-within {
+    background: color-mix(in srgb, var(--ticket-paper) 88%, #fff 12%);
+    border-color: color-mix(in srgb, var(--ticket-line) 70%, #fff 30%);
+    box-shadow: var(--ticket-shadow-hover);
+}
+
+.hero-ticket--clock {
+    width: 14.5rem;
+}
+
+.hero-ticket--search,
+.hero-ticket--archive {
+    width: 14.25rem;
+}
+
+.hero-ticket--slogan {
+    width: 19rem;
+}
+
+.hero-ticket--stats {
+    width: 19.25rem;
+}
+
+.hero-ticket--post,
+.hero-ticket--updated {
+    width: 20.5rem;
+}
+
+/* Override legacy clock entrance hide (base.css sets .clock opacity:0). */
+.hero-ticket .time-widget--compact .weekday,
+.hero-ticket .time-widget--compact .date-display,
+.hero-ticket .time-widget--compact .clock {
+    opacity: 1;
+    transform: none;
+}
+
+.hero-ticket__pad,
+.hero-ticket__hit {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.28rem;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0.85rem 1.05rem 0.9rem;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    font: inherit;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.hero-ticket__hit {
+    cursor: pointer;
+}
+
+.hero-ticket__hit:focus-visible {
+    outline: 1.5px solid color-mix(in srgb, var(--ticket-fg) 35%, transparent);
+    outline-offset: -3px;
+}
+
+.hero-ticket__hit--stats {
+    gap: 0.4rem;
+}
+
+.hero-ticket__hit--post {
+    display: grid;
+    grid-template-columns: 5rem minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+}
+
+.hero-ticket__hit--post:not(:has(.hero-ticket__cover)) {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0;
+}
+
+.hero-ticket__label {
+    display: block;
+    flex: 0 0 auto;
+    max-width: 100%;
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ticket-muted);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hero-ticket__label:has(.hero-ticket__icon) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+}
+
+.hero-ticket__icon {
+    flex: 0 0 auto;
+    opacity: 0.55;
+}
+
+.hero-ticket__title {
+    margin: 0;
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 100%;
+    font-family: var(--font-display, 'Times New Roman', 'Noto Serif SC', serif);
+    font-size: 1.08rem;
+    font-weight: 600;
+    line-height: 1.32;
+    letter-spacing: -0.015em;
+    color: var(--ticket-fg);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.hero-ticket__meta {
+    margin: 0;
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 100%;
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    font-size: 0.76rem;
+    line-height: 1.3;
+    color: var(--ticket-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hero-ticket__meta--mono {
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
+    letter-spacing: 0.04em;
+    font-size: 0.72rem;
+}
+
+.hero-ticket__quote {
+    margin: 0;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    font-family: var(--font-display, 'Times New Roman', 'Noto Serif SC', serif);
+    font-size: 1.02rem;
+    font-weight: 500;
+    font-style: italic;
+    line-height: 1.42;
+    color: var(--ticket-fg);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.hero-ticket-quote-enter-active,
+.hero-ticket-quote-leave-active {
+    transition:
+        opacity 0.24s ease,
+        transform 0.24s var(--curve-delicate, cubic-bezier(0.1, 0.9, 0.2, 1));
+}
+
+.hero-ticket-quote-enter-from {
+    opacity: 0;
+    transform: translateY(0.35rem);
+}
+
+.hero-ticket-quote-leave-to {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+}
+
+.hero-ticket__stat-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+    min-width: 0;
+}
+
+.hero-ticket__stat {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.14rem;
+    min-width: 0;
+    padding: 0 0.7rem;
+    border-left: 1px solid rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.hero-ticket__stat:first-child {
+    padding-left: 0;
+    border-left: 0;
+}
+
+.hero-ticket__stat-value {
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
+    font-size: 1.45rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--ticket-fg);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hero-ticket__stat-label {
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ticket-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hero-ticket__cover {
+    min-width: 0;
+    min-height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-color: rgba(0, 0, 0, 0.04);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    filter: grayscale(0.2) saturate(0.85) contrast(0.98);
+    opacity: 0.88;
+}
+
+.hero-ticket__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.8rem 1rem 0.85rem;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+/* Post cards: title may drop to 1 line when space is tight with cover + meta. */
+.hero-ticket--post .hero-ticket__title,
+.hero-ticket--updated .hero-ticket__title {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.hero-ticket--post .hero-ticket__body:has(.hero-ticket__meta) .hero-ticket__title,
+.hero-ticket--updated .hero-ticket__body:has(.hero-ticket__meta) .hero-ticket__title {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+/* Compact clock — same ink weight as body, no highlighter badge. */
+.time-widget--compact {
+    text-align: left;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.time-widget--compact .weekday {
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.1;
+    margin-bottom: 0.1rem;
+    letter-spacing: -0.02em;
+    color: var(--ticket-fg);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.time-widget--compact .date-display {
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    font-size: 0.78rem;
+    margin-bottom: 0.2rem;
+    color: var(--ticket-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.time-widget--compact .clock {
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1.1;
+    color: var(--ticket-fg);
+    background: transparent;
+    display: block;
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    font-variant-numeric: tabular-nums;
+    box-shadow: none;
+    text-shadow: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+[data-theme='dark'] .hero-marquee {
+    --ticket-fg: rgba(255, 254, 247, 0.86);
+    --ticket-muted: rgba(255, 254, 247, 0.48);
+    --ticket-paper: rgba(18, 18, 20, 0.55);
+    --ticket-line: rgba(255, 255, 255, 0.08);
+    --ticket-ink: rgba(255, 255, 255, 0.06);
+    --ticket-shadow: 0 0 0 1px var(--ticket-ink), 0 4px 18px rgba(0, 0, 0, 0.22);
+    --ticket-shadow-hover: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 6px 22px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme='dark'] .hero-marquee-defocus__layer--far {
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(0, 0, 0, 0.06) 35%,
+        rgba(0, 0, 0, 0.14) 70%,
+        rgba(0, 0, 0, 0.22) 100%
+    );
+}
+
+[data-theme='dark'] .hero-marquee-defocus__layer--mid {
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(0, 0, 0, 0.1) 40%,
+        rgba(0, 0, 0, 0.24) 78%,
+        rgba(0, 0, 0, 0.34) 100%
+    );
+}
+
+[data-theme='dark'] .hero-marquee-defocus__layer--near {
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        transparent 38%,
+        rgba(0, 0, 0, 0.18) 68%,
+        rgba(0, 0, 0, 0.4) 100%
+    );
+}
+
+[data-theme='dark'] .hero-ticket:hover,
+[data-theme='dark'] .hero-ticket:focus-within {
+    background: color-mix(in srgb, var(--ticket-paper) 86%, #fff 6%);
+}
+
+[data-theme='dark'] .hero-ticket__stat {
+    border-left-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='dark'] .hero-ticket__cover {
+    border-right-color: rgba(255, 255, 255, 0.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-marquee {
+        transition: none;
+    }
+
+    .hero-marquee__track {
+        animation: none;
+    }
+
+    .hero-ticket {
+        transition: none;
+    }
+
+    .hero-ticket-quote-enter-active,
+    .hero-ticket-quote-leave-active {
+        transition: none;
+    }
+
+    .hero-marquee-defocus__layer {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+}

@@ -53,7 +53,7 @@ describe('social link interaction styles', () => {
         expect(componentsCss).toMatch(/\.social-links-page\.is-swap-fade\.is-animation-alt\s*\{/);
         expect(componentsCss).toMatch(/@keyframes social-page-fade/);
         expect(componentsCss).toMatch(/@keyframes social-page-fade-alt/);
-        expect(componentsCss).not.toMatch(/scroll-snap-type:\s*x mandatory/);
-        expect(componentsCss).not.toMatch(/overflow-x:\s*auto/);
+        expect(componentsCss).not.toMatch(/\.social-links-(?:wrapper|page)\s*\{[^}]*scroll-snap-type:\s*x mandatory/);
+        expect(componentsCss).not.toMatch(/\.social-links-(?:wrapper|page)\s*\{[^}]*overflow-x:\s*auto/);
     });
 });

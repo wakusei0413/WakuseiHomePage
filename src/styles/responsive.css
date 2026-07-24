@@ -61,13 +61,14 @@
         min-height: auto;
     }
 
-    /* Mobile non-home: skip first-screen left panel; content starts immediately */
+    /* Mobile non-home: keep a compact persistent marquee band without an empty 100vh hero. */
     .hero-sticky:not([data-is-home]) {
+        height: calc(var(--ticket-height) + var(--marquee-bottom) + 1rem);
+        min-height: calc(var(--ticket-height) + var(--marquee-bottom) + 1rem);
+    }
+
+    .hero-sticky:not([data-is-home]) .left-panel {
         display: none;
-        height: 0;
-        min-height: 0;
-        overflow: hidden;
-        pointer-events: none;
     }
 
     .hero {
@@ -180,10 +181,123 @@
     }
 }
 
+@media (max-width: 900px) {
+    /* Full-width first screen: strip spans the screen and sits above the panel. */
+    :root {
+        --ticket-height: 6.4rem;
+        --marquee-bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px));
+        --marquee-defocus-height: calc(var(--ticket-height) + 4.5rem);
+    }
+
+    .hero-marquee {
+        left: 0;
+        bottom: var(--marquee-bottom);
+        padding: 0 0.85rem;
+        z-index: 5;
+    }
+
+    .hero-marquee-defocus {
+        left: 0;
+        height: var(--marquee-defocus-height);
+    }
+
+    .hero-marquee__viewport {
+        -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 4%, #000 96%, transparent 100%);
+        mask-image: linear-gradient(90deg, transparent 0%, #000 4%, #000 96%, transparent 100%);
+    }
+
+    .hero-ticket {
+        width: 15.5rem;
+    }
+
+    .hero-ticket--clock {
+        width: 12.75rem;
+    }
+
+    .hero-ticket--search,
+    .hero-ticket--archive {
+        width: 12.5rem;
+    }
+
+    .hero-ticket--slogan {
+        width: 16.25rem;
+    }
+
+    .hero-ticket--stats {
+        width: 16.5rem;
+    }
+
+    .hero-ticket--post,
+    .hero-ticket--updated {
+        width: 17.5rem;
+    }
+
+    .hero-ticket__hit--post {
+        grid-template-columns: 4.25rem 1fr;
+    }
+
+    .hero-ticket__title {
+        font-size: 1rem;
+    }
+
+    .hero-ticket__stat-value {
+        font-size: 1.28rem;
+    }
+
+    .time-widget--compact .weekday {
+        font-size: 1.08rem;
+    }
+
+    .time-widget--compact .clock {
+        font-size: 1.2rem;
+    }
+
+    .left-panel {
+        padding-bottom: calc(var(--space-lg) + 7rem);
+    }
+}
+
 /* ===== 小屏断点 ===== */
 @media (max-width: 600px) {
     .left-panel {
         padding: var(--space-md);
+        padding-bottom: calc(var(--space-md) + 6.75rem);
+    }
+
+    :root {
+        --ticket-height: 6rem;
+        --marquee-bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px));
+        --marquee-defocus-height: calc(var(--ticket-height) + 4rem);
+    }
+
+    .hero-marquee {
+        bottom: var(--marquee-bottom);
+        padding: 0 0.55rem;
+    }
+
+    .hero-marquee-defocus {
+        height: var(--marquee-defocus-height);
+    }
+
+    .hero-ticket {
+        width: 14.25rem;
+    }
+
+    .hero-ticket--clock {
+        width: 11.75rem;
+    }
+
+    .hero-ticket--post,
+    .hero-ticket--updated {
+        width: 15.75rem;
+    }
+
+    .hero-ticket--stats {
+        width: 15rem;
+    }
+
+    .hero-ticket__body {
+        padding: 0.55rem 0.9rem;
     }
 
     .bio-container {
