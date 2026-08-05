@@ -17,6 +17,7 @@
 - 明暗主题、zh-CN / en / ja 三语 UI
 - 壁纸默认图 + 外部 API 轮换；构建期封面优化（Sharp / WebP）
 - RSS / Atom、自动 sitemap、客户端搜索索引
+- 首屏直接渲染内容，不使用阻塞式 loading overlay
 
 ## 技术栈
 
@@ -89,6 +90,7 @@ customize.ts  →  site.ts（Zod：schema.ts）  →  siteConfig
 - 新增配置字段：同步改 `src/types/site.ts`、`src/data/schema.ts`、`customize.ts`
 - UI 翻译：`src/data/i18n.ts`（与 `customize.ts` 的 `i18n.locales`、类型 `Locale` 保持一致）
 - 主题：`<html data-theme="light|dark">`，head 内联脚本读 `localStorage.theme` 防闪烁
+- `customize.ts` 只导出 `editableSiteConfig`，不维护第二套快捷映射
 
 ### 常用字段速查
 
@@ -102,7 +104,8 @@ customize.ts  →  site.ts（Zod：schema.ts）  →  siteConfig
 | `wallpaper.apis` / `rotation` | 外部壁纸源与轮换间隔 |
 | `dock.items` | TopBar 导航：`link` / `action` / `panel` / `divider` |
 | `i18n` | 默认语言与可用语言列表 |
-| `footer` / `loading` / `effects` / `contentProtection` / `debug` | 页脚、加载文案、动效、交互限制、日志 |
+| `footer` / `effects` / `contentProtection` / `debug` | 页脚、动效、交互限制、日志 |
+| `loading` | 预留配置；当前默认布局不渲染阻塞式加载层 |
 
 内置 dock 行为：`toggleTheme`、`language` 面板、`openSearch`。未知 `action` / `panel` 仅 `console.warn`，不崩溃。设置入口目前可为占位（`href: '#'`）。
 
@@ -177,8 +180,12 @@ Sitemap 由 `@astrojs/sitemap` 在构建时生成（`sitemap-index.xml` / `sitem
 | `src/components/HomepageApp.vue` | 首页文章列表（瀑布流卡片） |
 | `src/components/PostCard.vue` 等 | 列表卡片、归档、搜索、文章 TOC |
 | `src/pages/_app.ts` | Vue 入口，注册 Pinia |
-| `src/lib/*` | 壁纸、搜索、归档、feeds、壳状态等 |
-| `src/scripts/*` | 文章页 DOM 增强（代码复制、灯箱、阅读进度等） |
+| `src/lib/posts.ts` | 服务端内容加载、图片优化与静态路径生成；Vue island 禁止导入 |
+| `src/lib/post-model.ts`、`archive.ts`、`search.ts` | 客户端安全的数据模型和纯逻辑 |
+| `src/lib/page-shell-context.ts` | 跨页 shell 状态解析、校验与事件分发 |
+| `src/lib/navigation-click.ts`、`section-nav.ts` | 点击增强策略与首页锚点导航 |
+| `src/lib/clipboard.ts`、`text.ts` | 统一剪贴板兼容回退与中西文显示分段 |
+| `src/scripts/*` | 页面 DOM 生命周期绑定；文章增强由 `article-runtime.ts` 汇总 |
 | `src/styles/*` | 全局与组件样式（BaseLayout 中 import 顺序即加载顺序） |
 
 静态资源：`public/res/`（头像等公开路径如 `/res/img/logo.png`）。
@@ -191,7 +198,7 @@ Sitemap 由 `@astrojs/sitemap` 在构建时生成（`sitemap-index.xml` / `sitem
 
 ## 测试
 
-测试位于 `tests/`（Vitest + jsdom），覆盖配置校验、i18n 完整性、搜索、归档、feeds、壳布局、组件约束等。
+测试位于 `tests/`（Vitest + jsdom），覆盖配置校验、i18n 完整性、搜索、归档、feeds、壳布局、导航点击策略、剪贴板回退和组件约束等。
 
 ## 开源协议
 
