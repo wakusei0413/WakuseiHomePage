@@ -4,6 +4,8 @@
  * astro:page-load，view transitions 切页后重新装饰。
  */
 
+import { copyText } from '../lib/clipboard';
+
 const DONE_DURATION = 1600;
 const BUTTON_CLASS = 'heading-copy';
 
@@ -14,36 +16,6 @@ const LINK_ICON =
 const CHECK_ICON =
     '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false">' +
     '<path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
-
-function fallbackCopy(text: string): boolean {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'absolute';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    let ok = false;
-    try {
-        ok = document.execCommand('copy');
-    } catch {
-        /* ok stays false */
-    }
-    document.body.removeChild(ta);
-    return ok;
-}
-
-async function copyText(text: string): Promise<boolean> {
-    try {
-        if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(text);
-            return true;
-        }
-    } catch {
-        /* fall through */
-    }
-    return fallbackCopy(text);
-}
 
 function buildUrl(id: string): string {
     return window.location.origin + window.location.pathname + '#' + id;

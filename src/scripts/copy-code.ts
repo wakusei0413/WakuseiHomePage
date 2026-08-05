@@ -3,38 +3,10 @@
  * 监听 astro:page-load，确保 view transitions 切页后重新装饰
  */
 
+import { copyText } from '../lib/clipboard';
+
 const DONE_LABEL = '已复制';
 const DONE_DURATION = 1600;
-
-function fallbackCopy(text: string): boolean {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'absolute';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    let ok = false;
-    try {
-        ok = document.execCommand('copy');
-    } catch {
-        /* ok stays false */
-    }
-    document.body.removeChild(ta);
-    return ok;
-}
-
-async function copyText(text: string): Promise<boolean> {
-    try {
-        if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(text);
-            return true;
-        }
-    } catch {
-        /* fall through */
-    }
-    return fallbackCopy(text);
-}
 
 function attachButton(pre: HTMLPreElement): void {
     if (pre.dataset.copyReady === '1') return;
