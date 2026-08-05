@@ -19,6 +19,12 @@ Thumbs.db
 # Reasonix tool local state
 .reasonix/
 
+# Codex tool state (logs already covered by .codex/*.log)
+.codex/environments/
+
+# OpenCode tool local install
+.opencode/
+
 .superpowers/
 
 # Backups

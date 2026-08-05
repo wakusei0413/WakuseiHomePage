@@ -2,9 +2,9 @@
 
 ## 已 gitignore 的工具垃圾
 
-`tmp/`、`output/`、`.playwright-cli/`、`terminals/`、`agent-tools/`、`dist/`、`.astro/`。
+`tmp/`、`output/`、`.playwright-cli/`、`terminals/`、`agent-tools/`、`dist/`、`.astro/`、`.reasonix/`、`.opencode/`、`.codex/environments/`。
 
-**不要把截图、Lighthouse JSON、迁移辅助脚本当产品提交。**
+**不要提交临时调试截图、Lighthouse JSON、迁移辅助脚本。** `docs/assets/screenshots/` 下用于 README 展示的成品截图是例外，有意保留。
 
 ## 图标
 
