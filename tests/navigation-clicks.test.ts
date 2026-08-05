@@ -1,33 +1,42 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { isExternalHref, isPlainPrimaryClick, shouldEnhanceAnchorClick } from '../src/lib/navigation-click';
 
-const internalNav = readFileSync(join(process.cwd(), 'src', 'scripts', 'internal-nav.ts'), 'utf8');
-const topBar = readFileSync(join(process.cwd(), 'src', 'components', 'TopBar.vue'), 'utf8');
+function click(init: MouseEventInit = {}) {
+    return new MouseEvent('click', { button: 0, cancelable: true, ...init });
+}
 
-describe('navigation click guardrails', () => {
-    it('preserves modified clicks and non-primary clicks on enhanced internal links', () => {
-        expect(internalNav).toContain('event.button === 0');
-        expect(internalNav).toContain('!event.metaKey');
-        expect(internalNav).toContain('!event.ctrlKey');
-        expect(internalNav).toContain('!event.shiftKey');
-        expect(internalNav).toContain('!event.altKey');
-        expect(internalNav).toContain("(!anchor.target || anchor.target === '_self')");
-        expect(internalNav).toContain("!anchor.hasAttribute('download')");
-        expect(internalNav).toMatch(/if \(!shouldHandleNavigationClick\(e, a\)\) return;/);
+describe('navigation click helpers', () => {
+    it('accepts only unmodified primary clicks', () => {
+        expect(isPlainPrimaryClick(click())).toBe(true);
+        expect(isPlainPrimaryClick(click({ button: 1 }))).toBe(false);
+        expect(isPlainPrimaryClick(click({ metaKey: true }))).toBe(false);
+        expect(isPlainPrimaryClick(click({ ctrlKey: true }))).toBe(false);
+        expect(isPlainPrimaryClick(click({ shiftKey: true }))).toBe(false);
+        expect(isPlainPrimaryClick(click({ altKey: true }))).toBe(false);
+
+        const prevented = click();
+        prevented.preventDefault();
+        expect(isPlainPrimaryClick(prevented)).toBe(false);
     });
 
-    it('does not hijack protocol-relative, mail, or telephone links', () => {
-        expect(internalNav).toMatch(/\(\?:mailto\|tel\)/);
-        expect(internalNav).toContain('[a-z\\d+.-]*:');
-        expect(internalNav).toMatch(/\/\//);
+    it('preserves anchors with browser-owned navigation behavior', () => {
+        const anchor = document.createElement('a');
+        expect(shouldEnhanceAnchorClick(click(), anchor)).toBe(true);
+
+        anchor.target = '_blank';
+        expect(shouldEnhanceAnchorClick(click(), anchor)).toBe(false);
+
+        anchor.target = '';
+        anchor.download = 'article.html';
+        expect(shouldEnhanceAnchorClick(click(), anchor)).toBe(false);
     });
 
-    it('preserves modified clicks on top-bar links', () => {
-        expect(topBar).toContain('event.button === 0');
-        expect(topBar).toContain('!event.metaKey');
-        expect(topBar).toContain('!event.ctrlKey');
-        expect(topBar).toContain('!event.shiftKey');
-        expect(topBar).toContain('!event.altKey');
-        expect(topBar).toMatch(/if \(!shouldHandleNavigationClick\(e\)\) return;/);
+    it('recognizes absolute, protocol-relative, mail, and telephone links', () => {
+        expect(isExternalHref('https://example.com')).toBe(true);
+        expect(isExternalHref('//example.com/path')).toBe(true);
+        expect(isExternalHref('mailto:test@example.com')).toBe(true);
+        expect(isExternalHref('tel:+123456')).toBe(true);
+        expect(isExternalHref('/posts/example')).toBe(false);
+        expect(isExternalHref('#posts')).toBe(false);
     });
 });

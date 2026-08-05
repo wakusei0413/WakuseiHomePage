@@ -1,4 +1,5 @@
 import { siteConfig } from '../data/site';
+import { dispatchPageShellStateChange, getPageShellStateFromDocument } from '../lib/page-shell-context';
 
 declare global {
     interface Window {
@@ -39,29 +40,6 @@ function applyHomePageChromeState(isHome: boolean) {
         h.classList.remove('is-home');
         b.classList.remove('is-home');
     }
-}
-
-function getShellStateFromDocument(doc: Document) {
-    const carrier = doc.getElementById('pageTransitionSurface');
-    if (!carrier) {
-        return { title: '', mode: 'error', isHomePage: false };
-    }
-    const mode =
-        carrier.dataset.shellMode === 'home' ||
-        carrier.dataset.shellMode === 'blog' ||
-        carrier.dataset.shellMode === 'article' ||
-        carrier.dataset.shellMode === 'error'
-            ? carrier.dataset.shellMode
-            : 'error';
-    return {
-        title: carrier.dataset.pageTitle || '',
-        mode,
-        isHomePage: carrier.dataset.isHome === 'true'
-    };
-}
-
-function dispatchShellState(nextState: ReturnType<typeof getShellStateFromDocument>) {
-    window.dispatchEvent(new CustomEvent('wakusei:shell-page-change', { detail: nextState }));
 }
 
 function createNavigationProgressRuntime() {
@@ -199,7 +177,7 @@ function initNavigationRuntime() {
         incomingIsHomePage =
             swapEvent.newDocument.documentElement.classList.contains('is-home') ||
             swapEvent.newDocument.body.classList.contains('is-home');
-        dispatchShellState(getShellStateFromDocument(swapEvent.newDocument));
+        dispatchPageShellStateChange(getPageShellStateFromDocument(swapEvent.newDocument));
 
         const theme = getActiveTheme();
         const nextThemeColor = theme === 'dark' ? DARK_THEME_BG : siteConfig.themeColor;

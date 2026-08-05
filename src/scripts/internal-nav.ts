@@ -4,33 +4,16 @@
  */
 
 import { navigate } from 'astro:transitions/client';
+import { isExternalHref, shouldEnhanceAnchorClick } from '../lib/navigation-click';
 import { isHashSectionHref, navigateToHashSection } from '../lib/section-nav';
-
-function isExternalLink(href: string): boolean {
-    // Protocol-relative (//host), absolute (https://), and non-http schemes.
-    return /^(?:[a-z][a-z\d+.-]*:)?\/\//i.test(href) || /^(?:mailto|tel):/i.test(href);
-}
-
-function shouldHandleNavigationClick(event: MouseEvent, anchor: HTMLAnchorElement): boolean {
-    return (
-        event.button === 0 &&
-        !event.defaultPrevented &&
-        !event.metaKey &&
-        !event.ctrlKey &&
-        !event.shiftKey &&
-        !event.altKey &&
-        !anchor.hasAttribute('download') &&
-        (!anchor.target || anchor.target === '_self')
-    );
-}
 
 function bindLink(a: HTMLAnchorElement): void {
     if (a.dataset.scrollNav === '1') return;
     a.dataset.scrollNav = '1';
     a.addEventListener('click', (e: MouseEvent) => {
-        if (!shouldHandleNavigationClick(e, a)) return;
+        if (!shouldEnhanceAnchorClick(e, a)) return;
         const href = a.getAttribute('href');
-        if (!href || isExternalLink(href)) return;
+        if (!href || isExternalHref(href)) return;
         e.preventDefault();
         if (isHashSectionHref(href)) {
             navigateToHashSection(href);

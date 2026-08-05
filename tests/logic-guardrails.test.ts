@@ -46,10 +46,12 @@ describe('logic guardrails', () => {
 
         expect(beforeSwapStart).toBeGreaterThanOrEqual(0);
         expect(beforeSwapBlock).toContain('swapEvent.newDocument');
-        expect(beforeSwapBlock).toContain('getShellStateFromDocument(swapEvent.newDocument)');
-        expect(beforeSwapBlock).toContain('dispatchShellState');
+        expect(beforeSwapBlock).toContain('getPageShellStateFromDocument(swapEvent.newDocument)');
+        expect(beforeSwapBlock).toContain('dispatchPageShellStateChange');
         expect(baseLayout).toContain('pageTransitionSurface');
-        expect(navigationRuntime).toContain('wakusei:shell-page-change');
+        expect(navigationRuntime).toContain("from '../lib/page-shell-context'");
+        expect(navigationRuntime).not.toContain('function getShellStateFromDocument');
+        expect(navigationRuntime).not.toContain('function dispatchShellState');
     });
 
     it('resets the shared page scroller after Astro swaps content', () => {
