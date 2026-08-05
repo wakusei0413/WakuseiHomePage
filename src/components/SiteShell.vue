@@ -6,6 +6,7 @@ import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations }
 import { WallpaperController } from '../lib/wallpaper-scroller';
 import { getPageShellStateFromDocument, subscribePageShellStateChange } from '../lib/page-shell-context';
 import { initHashSectionScrollOnLoad, navigateToHashSection } from '../lib/section-nav';
+import { splitLatinText } from '../lib/text';
 import { usePageShellStore } from '../stores/page-shell';
 import { useSearchStore } from '../stores/search';
 import HeroWidgetMarquee, { type FeaturedPost, type SiteStats } from './HeroWidgetMarquee.vue';
@@ -116,13 +117,6 @@ function teardownWallpaper() {
         wallpaperController.destroy();
         wallpaperController = null;
     }
-}
-
-function splitLatinText(text: string) {
-    return text
-        .split(/([A-Za-z][A-Za-z0-9'.-]*)/g)
-        .filter(Boolean)
-        .map((part) => ({ text: part, isLatin: /^[A-Za-z]/.test(part) }));
 }
 
 function handleHeroAvatarActivate() {

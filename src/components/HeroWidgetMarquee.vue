@@ -369,7 +369,7 @@ onUnmounted(() => {
                     <template v-if="item.kind === 'clock'">
                         <div class="hero-ticket__pad">
                             <span class="hero-ticket__label">{{ t('widgets.clock.kicker') }}</span>
-                            <ClockPanel :config="siteConfig.time" compact />
+                            <ClockPanel :config="siteConfig.time" />
                         </div>
                     </template>
 

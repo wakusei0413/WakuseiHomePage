@@ -1,39 +1,22 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
 import { useTime } from '../composables/useTime';
 import type { TimeConfig } from '../types/site';
 
-const props = withDefaults(
-    defineProps<{
-        config: TimeConfig;
-        compact?: boolean;
-    }>(),
-    { compact: false }
-);
+const props = defineProps<{ config: TimeConfig }>();
 
 const { timeString, dateParts } = useTime(props.config);
-// base.css hides .clock/.weekday/.date-display until .clock--entered is set.
-const entered = ref(false);
-
-onMounted(() => {
-    requestAnimationFrame(() => {
-        entered.value = true;
-    });
-});
 </script>
 
 <template>
-    <div class="time-widget" :class="{ 'time-widget--compact': compact, 'clock--entered': entered }">
-        <div v-if="config.showWeekday" class="weekday" :class="{ 'clock--entered': entered }">
+    <div class="time-widget time-widget--compact">
+        <!-- Weekday/date are also SSR-time dependent: they roll over at midnight
+             and change with the locale, so allow text mismatch just like the clock. -->
+        <div v-if="config.showWeekday" class="weekday" data-allow-mismatch="text">
             {{ dateParts.weekday }}
         </div>
-        <div
-            v-if="config.showDate && dateParts.dateDisplay"
-            class="date-display"
-            :class="{ 'clock--entered': entered }"
-        >
+        <div v-if="config.showDate && dateParts.dateDisplay" class="date-display" data-allow-mismatch="text">
             {{ dateParts.dateDisplay }}
         </div>
-        <div class="clock" :class="{ 'clock--entered': entered }">{{ timeString }}</div>
+        <div class="clock" data-allow-mismatch="text">{{ timeString }}</div>
     </div>
 </template>

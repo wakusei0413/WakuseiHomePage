@@ -1158,14 +1158,6 @@ html:not(.is-loaded) .noise-overlay {
     width: 20.5rem;
 }
 
-/* Override legacy clock entrance hide (base.css sets .clock opacity:0). */
-.hero-ticket .time-widget--compact .weekday,
-.hero-ticket .time-widget--compact .date-display,
-.hero-ticket .time-widget--compact .clock {
-    opacity: 1;
-    transform: none;
-}
-
 .hero-ticket__pad,
 .hero-ticket__hit {
     display: flex;

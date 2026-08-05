@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useI18n } from '../composables/useI18n';
+import { shouldEnhanceAnchorClick } from '../lib/navigation-click';
 import {
     buildTocTree,
     getHeadingTitle,
@@ -426,6 +427,8 @@ function collapse() {
 }
 
 function handleLinkClick(e: MouseEvent, id: string) {
+    const anchor = e.currentTarget as HTMLAnchorElement | null;
+    if (anchor && !shouldEnhanceAnchorClick(e, anchor)) return;
     e.preventDefault();
     history.replaceState(null, '', `#${id}`);
     // Close the drawer after navigation; the fixed side panel stays open.

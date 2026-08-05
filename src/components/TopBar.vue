@@ -4,7 +4,9 @@ import { navigate } from 'astro:transitions/client';
 import Icon from './Icon.vue';
 import type { Locale } from '../data/i18n';
 import { getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel } from '../lib/dock';
+import { isPlainPrimaryClick, shouldEnhanceAnchorClick } from '../lib/navigation-click';
 import { isHashSectionHref, navigateToHashSection } from '../lib/section-nav';
+import { splitLatinText } from '../lib/text';
 import { useI18n } from '../composables/useI18n';
 import { useTheme } from '../composables/useTheme';
 import { usePageShellStore } from '../stores/page-shell';
@@ -354,6 +356,8 @@ function scrollCurrentPageToTop(): void {
 }
 
 function handleLeftClick(e: MouseEvent) {
+    const anchor = e.currentTarget as HTMLAnchorElement | null;
+    if (anchor && !shouldEnhanceAnchorClick(e, anchor)) return;
     if (isMobile.value) {
         e.preventDefault();
         openSidebar();
@@ -370,23 +374,12 @@ function handleLeftClick(e: MouseEvent) {
     }
 }
 
-function shouldHandleNavigationClick(event: MouseEvent): boolean {
-    return (
-        event.button === 0 &&
-        !event.defaultPrevented &&
-        !event.metaKey &&
-        !event.ctrlKey &&
-        !event.shiftKey &&
-        !event.altKey
-    );
-}
-
 function handleDockLinkClick(e: MouseEvent, href: string) {
     if (isDockLinkDisabled(href)) {
         e.preventDefault();
         return;
     }
-    if (!shouldHandleNavigationClick(e)) return;
+    if (!isPlainPrimaryClick(e)) return;
     if (isHashSectionHref(href)) {
         e.preventDefault();
         navigateToHashSection(href);
@@ -409,7 +402,7 @@ function handleSidebarDockLinkClick(e: MouseEvent, href: string) {
         closeSidebar();
         return;
     }
-    if (!shouldHandleNavigationClick(e)) {
+    if (!isPlainPrimaryClick(e)) {
         closeSidebar();
         return;
     }
@@ -436,13 +429,6 @@ function shouldRenderTrailingDivider() {
     const items = siteConfig.dock.items;
     const lastItem = items[items.length - 1];
     return items.length > 0 && lastItem?.type !== 'divider';
-}
-
-function splitLatinText(text: string) {
-    return text
-        .split(/([A-Za-z][A-Za-z0-9'.-]*)/g)
-        .filter(Boolean)
-        .map((part) => ({ text: part, isLatin: /^[A-Za-z]/.test(part) }));
 }
 </script>
 

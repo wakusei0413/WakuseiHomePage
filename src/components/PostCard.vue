@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { navigate } from 'astro:transitions/client';
 import { useI18n } from '../composables/useI18n';
+import { shouldEnhanceAnchorClick } from '../lib/navigation-click';
 import { estimateReadingTime } from '../lib/post-model';
 
 interface PostData {
@@ -59,6 +60,8 @@ onUnmounted(() => {
 });
 
 function handleClick(e: MouseEvent) {
+    const anchor = e.currentTarget as HTMLAnchorElement | null;
+    if (!anchor || !shouldEnhanceAnchorClick(e, anchor)) return;
     e.preventDefault();
     navigate(`/posts/${props.slug}`);
 }

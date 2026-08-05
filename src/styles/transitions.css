@@ -157,12 +157,6 @@
     transition: none;
 }
 
-/* Cancel the legacy .left-panel .hero slideIn so it never fights the stagger. */
-.left-panel .left-panel-content-enter-active,
-.left-panel .left-panel-content-leave-active {
-    animation: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
     .left-panel-content-enter-active,
     .left-panel-content-leave-active {
