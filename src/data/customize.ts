@@ -1,24 +1,24 @@
 import type { SiteConfig } from '../types/site';
 
-// Edit this file for nearly all everyday homepage changes.
-// Sections are grouped by what usually gets customized together.
+// 日常站点配置的唯一入口；site.ts 会通过 schema.ts 校验后再暴露给运行时。
+// 新增字段时同步更新 types/site.ts 与 schema.ts，不要建立第二套快捷配置映射。
 export const editableSiteConfig: SiteConfig = {
     version: '2.0.0',
 
-    // Browser and SEO metadata.
+    // 浏览器与 SEO 元数据。
     title: '遊星Wakusei的个人小屋',
     description: 'Wakusei - 个人主页',
     lang: 'zh-CN',
     themeColor: '#fffef7',
 
-    // Hero/profile block.
+    // 首屏个人信息。
     profile: {
         name: '遊星 Wakusei',
         status: '正在武装保卫开源社区！',
         avatar: '/res/img/logo.png'
     },
 
-    // Social links shown under the intro text.
+    // 首屏社交链接。
     socialLinks: {
         colorScheme: 'cycle',
         links: [
@@ -51,12 +51,6 @@ export const editableSiteConfig: SiteConfig = {
                 url: 'https://status.wakusei.top/',
                 icon: 'fa-solid fa-arrow-up-right-dots',
                 color: '#ddff00'
-            },
-            {
-                name: 'Testing',
-                url: 'https://testing.wakusei.top/',
-                icon: 'fa-solid fa-flask',
-                color: '#16deca'
             }
         ]
     },
@@ -65,7 +59,7 @@ export const editableSiteConfig: SiteConfig = {
         text: '© 2026 遊星 Wakusei'
     },
 
-    // Typewriter text block.
+    // 打字机与首页速览文案。
     slogans: {
         list: [
             '安静，我在用锤子TNT vibe coding！',
@@ -80,7 +74,7 @@ export const editableSiteConfig: SiteConfig = {
         loop: true
     },
 
-    // Right-side time card.
+    // 首页速览时钟。
     time: {
         format: '24h',
         showWeekday: true,
@@ -88,7 +82,7 @@ export const editableSiteConfig: SiteConfig = {
         updateInterval: 1000
     },
 
-    // Loading overlay text rotation.
+    // 预留加载文案契约；默认布局不再渲染阻塞式 loading overlay。
     loading: {
         texts: [
             '少女祈祷中...',
@@ -105,13 +99,10 @@ export const editableSiteConfig: SiteConfig = {
         textSwitchInterval: 2000
     },
 
-    // Wallpaper sources and scrolling behavior.
+    // 桌面壁纸源、失败重试与轮换。
     wallpaper: {
-        // Local image shown instantly on first paint (desktop) so the hero is
-        // never blank while the external rotation API responds.
+        // 本地图负责首帧兜底，外部 API 失败不得阻断页面。
         defaultImage: '/res/img/wallpaper/default.webp',
-        // Single full-bleed image; crossfades to a fresh image every interval ms.
-        // Only one request is in flight at a time, so this is light on bandwidth.
         apis: ['https://www.loliapi.com/bg/'],
         raceTimeout: 10000,
         maxRetries: 5,
@@ -121,12 +112,12 @@ export const editableSiteConfig: SiteConfig = {
         }
     },
 
-    // Typewriter cursor style.
+    // 打字机光标。
     animation: {
         cursorStyle: 'block'
     },
 
-    // Runtime interaction guards.
+    // 可选的内容交互限制。
     contentProtection: {
         preventCopyAndDrag: false
     },
@@ -135,7 +126,7 @@ export const editableSiteConfig: SiteConfig = {
         consoleLog: true
     },
 
-    // Small page effects.
+    // 页面轻量动效。
     effects: {
         scrollReveal: {
             enabled: true,
@@ -143,22 +134,9 @@ export const editableSiteConfig: SiteConfig = {
             delay: 50
         }
     },
-    // Control dock: define items, order, icons, links and behaviour.
-    // type: 'action' | 'panel' | 'link' | 'divider'
-    //   action: internal handler (e.g. 'toggleTheme' toggles light/dark)
-    //   panel: opens a popup sheet (e.g. 'language' shows language selector)
-    //   link: href navigation (openInNewTab optional)
-    //   divider: visual separator, no display needed
-    // display.icon: Font Awesome icon class
-    // display.iconActive: optional icon shown when the action is active
-    // display.text: optional hard-coded label text
-    // display.i18nKey: key into src/data/i18n.ts, preferred if present
-    // Reserved actions that always have a handler:
-    //   'toggleTheme' — built-in
-    // Reserved panels that always have a handler:
-    //   'language'    — built-in
-    // Any other action / panel key falls through to a no-op with a console.warn,
-    // providing a hook for custom extensions.
+    // 顶栏与移动菜单共用此顺序。类型：link / action / panel / divider。
+    // 内置 action：toggleTheme、openSearch；内置 panel：language。
+    // 文案优先使用 i18nKey；设置入口当前保持 href: '#' 占位。
     dock: {
         items: [
             {
@@ -224,19 +202,9 @@ export const editableSiteConfig: SiteConfig = {
             }
         ]
     },
-    // Translations are in src/data/i18n.ts — edit there for dock label customisation.
+    // 翻译正文统一维护在 src/data/i18n.ts。
     i18n: {
         defaultLocale: 'zh-CN',
         locales: ['zh-CN', 'en', 'ja']
     }
-};
-
-export const quickEditSections = {
-    i18n: editableSiteConfig.i18n,
-    profile: editableSiteConfig.profile,
-    socialLinks: editableSiteConfig.socialLinks,
-    slogans: editableSiteConfig.slogans,
-    wallpaper: editableSiteConfig.wallpaper,
-    time: editableSiteConfig.time,
-    dock: editableSiteConfig.dock
 };

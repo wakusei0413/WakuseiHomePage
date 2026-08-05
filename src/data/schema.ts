@@ -56,7 +56,7 @@ const i18nSchema = z.object({
     locales: z.array(z.enum(['zh-CN', 'en', 'ja'])).min(1)
 });
 
-export const siteConfigSchema = z.object({
+const siteConfigSchema = z.object({
     version: z.string().min(1),
     title: z.string().min(1),
     description: z.string().min(1),
