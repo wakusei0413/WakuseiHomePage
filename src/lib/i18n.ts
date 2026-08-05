@@ -1,4 +1,3 @@
-import { translations } from '../data/i18n';
 import type { Locale } from '../data/i18n';
 import type { I18nConfig } from '../types/site';
 
@@ -22,7 +21,7 @@ export function getStoredTheme(): Theme | null {
     return null;
 }
 
-export function getSystemTheme(): Theme {
+function getSystemTheme(): Theme {
     if (typeof window !== 'undefined' && window.matchMedia) {
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
@@ -56,5 +55,4 @@ export function persistLang(lang: Locale) {
     if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY_LANG, lang);
 }
 
-export { translations };
 export type { Locale };

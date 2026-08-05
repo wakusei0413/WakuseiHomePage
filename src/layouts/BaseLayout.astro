@@ -164,13 +164,19 @@ const googleFontsUrl =
             <link href={googleFontsUrl} rel="stylesheet" />
         </noscript>
         <ClientRouter />
-        <script is:inline define:vars={{ darkBg: DARK_THEME_BG }}>
+        <script is:inline define:vars={{ darkBg: DARK_THEME_BG, validLocales: siteConfig.i18n.locales }}>
             (function () {
                 var theme = localStorage.getItem('theme');
                 if (theme === 'dark' || theme === 'light') {
                     document.documentElement.setAttribute('data-theme', theme);
                 } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     document.documentElement.setAttribute('data-theme', 'dark');
+                }
+                // Keep <html lang> in sync with the persisted locale before first
+                // paint so the page language never lags the stored choice.
+                var storedLang = localStorage.getItem('lang');
+                if (storedLang && validLocales.indexOf(storedLang) !== -1) {
+                    document.documentElement.lang = storedLang;
                 }
                 var appliedTheme = document.documentElement.getAttribute('data-theme');
                 if (appliedTheme === 'dark') {
