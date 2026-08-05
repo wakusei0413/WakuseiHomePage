@@ -16,6 +16,9 @@ Thumbs.db
 # Local git worktrees
 .worktrees/
 
+# Reasonix tool local state
+.reasonix/
+
 .superpowers/
 
 # Backups
