@@ -2,7 +2,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleToc from '../../components/ArticleToc.vue';
 import Icon from '../../components/Icon.vue';
-import { formatPostDateLabel, getPostStaticPaths, type PostPageProps } from '../../lib/posts';
+import { formatPostDateLabel } from '../../lib/post-model';
+import { getPostStaticPaths, type PostPageProps } from '../../lib/posts';
 import { siteConfig } from '../../data/site';
 
 export { getPostStaticPaths as getStaticPaths };

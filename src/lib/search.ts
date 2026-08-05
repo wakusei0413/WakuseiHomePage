@@ -34,15 +34,15 @@ export interface SearchIndexSource {
 
 const SNIPPET_RADIUS = 52;
 
-export function normalizeSearchText(value: string): string {
+function normalizeSearchText(value: string): string {
     return value.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, ' ').trim();
 }
 
-export function tokenizeSearchQuery(query: string): string[] {
+function tokenizeSearchQuery(query: string): string[] {
     return Array.from(new Set(normalizeSearchText(query).split(' ').filter(Boolean)));
 }
 
-export function stripMarkdownToText(markdown: string): string {
+function stripMarkdownToText(markdown: string): string {
     return markdown
         .replace(/```[\s\S]*?```/g, ' ')
         .replace(/`([^`]+)`/g, '$1')
@@ -56,7 +56,7 @@ export function stripMarkdownToText(markdown: string): string {
         .trim();
 }
 
-export function createSearchIndexEntry(
+function createSearchIndexEntry(
     slug: string,
     data: PostFrontmatter,
     dateLabel: string | null,

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
     PAGE_SHELL_CHANGE_EVENT,
+    dispatchPageShellStateChange,
     getPageShellStateFromDocument,
     getPageShellStateFromElement,
     subscribePageShellStateChange
@@ -74,11 +75,7 @@ describe('page shell context helpers', () => {
     it('subscribes to shell page change events', () => {
         const callback = vi.fn();
         const cleanup = subscribePageShellStateChange(callback);
-        window.dispatchEvent(
-            new CustomEvent(PAGE_SHELL_CHANGE_EVENT, {
-                detail: { title: '博客', mode: 'blog', isHomePage: false }
-            })
-        );
+        dispatchPageShellStateChange({ title: '博客', mode: 'blog', isHomePage: false });
         expect(callback).toHaveBeenCalledWith({ title: '博客', mode: 'blog', isHomePage: false });
         cleanup();
         window.dispatchEvent(

@@ -2,7 +2,8 @@
 import TaxonomyPage from '../../components/TaxonomyPage.vue';
 import { siteConfig } from '../../data/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCategoryStaticPaths, type TaxonomyPageProps } from '../../lib/posts';
+import type { TaxonomyPageProps } from '../../lib/post-model';
+import { getCategoryStaticPaths } from '../../lib/posts';
 
 export { getCategoryStaticPaths as getStaticPaths };
 

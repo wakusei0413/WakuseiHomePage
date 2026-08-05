@@ -15,26 +15,9 @@ import {
 } from './post-model';
 import { createSearchIndex, type SearchIndexEntry } from './search';
 
-export { createArchiveGroups, filterArchiveGroups } from './archive';
-export type { ArchiveFilter, ArchiveGroups, ArchiveMonthGroup, ArchivePostItem, ArchiveYearGroup } from './archive';
-export {
-    countWords,
-    estimateReadingTime,
-    formatDate,
-    formatPostDateLabel,
-    type PostDateLabel,
-    type PostFrontmatter,
-    type PostListItem,
-    type PostNavEntry,
-    type TaxonomyKind,
-    type TaxonomyPageProps,
-    type TaxonomyTerm
-} from './post-model';
-export type { SearchHighlightPart, SearchIndexEntry, SearchMatchSnippet, SearchResult } from './search';
+type BlogEntry = CollectionEntry<'blog'>;
 
-export type BlogEntry = CollectionEntry<'blog'>;
-
-export interface PostEntry {
+interface PostEntry {
     slug: string;
     data: PostFrontmatter;
     body: string;
@@ -51,7 +34,7 @@ export interface PostPageProps {
 const COVER_WIDTH_LIST = 800;
 const COVER_WIDTH_HERO = 1400;
 
-export function postSlug(entry: BlogEntry): string {
+function postSlug(entry: BlogEntry): string {
     return entry.id.replace(/\\/g, '/').replace(/\/index$/i, '');
 }
 
@@ -62,7 +45,7 @@ function toIsoString(value?: Date | string): string | undefined {
     return date.toISOString();
 }
 
-export async function resolveCoverUrl(
+async function resolveCoverUrl(
     cover: BlogEntry['data']['cover'] | undefined,
     width: number
 ): Promise<string | undefined> {
@@ -76,7 +59,7 @@ export async function resolveCoverUrl(
     return image.src;
 }
 
-export function serializeFrontmatter(data: BlogEntry['data'], coverUrl?: string): PostFrontmatter {
+function serializeFrontmatter(data: BlogEntry['data'], coverUrl?: string): PostFrontmatter {
     return {
         title: data.title,
         description: data.description,
@@ -91,7 +74,7 @@ export function serializeFrontmatter(data: BlogEntry['data'], coverUrl?: string)
     };
 }
 
-export async function loadPublishedEntries(): Promise<BlogEntry[]> {
+async function loadPublishedEntries(): Promise<BlogEntry[]> {
     const posts = await getCollection('blog', ({ data }) => data.draft !== true);
     // Newest first; same-day ties break by slug so order is stable.
     return posts.sort((a, b) => {
@@ -116,7 +99,7 @@ export async function loadPublishedPostEntries(): Promise<PostEntry[]> {
     );
 }
 
-export function toPostListItem(entry: PostEntry): PostListItem {
+function toPostListItem(entry: PostEntry): PostListItem {
     return {
         slug: entry.slug,
         data: entry.data,
@@ -125,7 +108,7 @@ export function toPostListItem(entry: PostEntry): PostListItem {
     };
 }
 
-export function toPostNavEntry(entry: PostEntry): PostNavEntry {
+function toPostNavEntry(entry: PostEntry): PostNavEntry {
     return {
         slug: entry.slug,
         title: entry.data.title,
@@ -139,7 +122,7 @@ export async function loadPublishedPosts(): Promise<PostListItem[]> {
 }
 
 /** Lightweight cards for the hero marquee — only the first N posts, smaller covers, no body. */
-export interface FeaturedPostItem {
+interface FeaturedPostItem {
     slug: string;
     title: string;
     description: string;
@@ -169,7 +152,7 @@ export async function loadFeaturedPosts(limit = FEATURED_DEFAULT_LIMIT): Promise
 }
 
 /** Lightweight taxonomy/post counts for hero stat cards (no body, no cover). */
-export interface SiteStats {
+interface SiteStats {
     postCount: number;
     categoryCount: number;
     tagCount: number;

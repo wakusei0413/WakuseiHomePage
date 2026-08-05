@@ -1,6 +1,6 @@
 import type { PostListItem } from './post-model';
 
-export const HOME_POSTS_PER_PAGE = 6;
+const HOME_POSTS_PER_PAGE = 6;
 
 export interface HomepagePageLink {
     page: number;
