@@ -58,13 +58,23 @@
    with the wallpaper's own crossfade, so a wallpaper change never hard-swaps a
    glass surface. The blur is baked into the bitmaps by SiteShell, so there is
    no CSS filter at all: no filter re-rasterization, no extra download, and the
-   constantly animating wallpaper behind costs nothing per frame. The inset
-   overscan hides the texture's edge fringing. */
+   constantly animating wallpaper behind costs nothing per frame. The blur is
+   edge-clamped at bake time, so the texture has no dark fringe to hide. */
 .left-panel::before,
 .left-panel::after {
     content: '';
     position: absolute;
-    inset: -64px;
+    /* The wallpaper behind is `object-fit: cover` on the full 100vw × 100vh
+       scene, so the glass mirror paints the *same* cover on a full-viewport box
+       anchored to the panel's top-left (which coincides with the viewport's
+       top-left). The panel's own overflow then clips it to the left strip, so
+       the blurred texture shows exactly the wallpaper region behind the panel —
+       same scale, same position — instead of re-cropping the image to the
+       narrow panel box (which used to squash/zoom it). */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     z-index: -1;
     pointer-events: none;
     background-size: cover;

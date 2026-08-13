@@ -1113,10 +1113,11 @@ html:not(.is-loaded) .noise-overlay {
     opacity: var(--marquee-defocus-opacity, 1);
 }
 
-/* The pre-blurred wallpaper snapshots: bed-sized layers (not full-viewport)
-   showing the wallpaper's bottom band — background-size: 100vw 100vh displays
-   the texture at exactly the wallpaper's size, bottom-aligned, so the visible
-   band tracks the sharp wallpaper behind the strip. Bed-sized keeps the
+/* The pre-blurred wallpaper snapshots: each slot is a full-viewport box,
+   bottom-anchored, painted with `background-size: cover` so it reproduces the
+   wallpaper's `object-fit: cover` exactly; the bed's overflow clips it to the
+   bottom band. The visible band therefore tracks the sharp wallpaper behind the
+   strip at the same scale and position. The bed-sized container keeps the
    composited layers small, which matters because the Ken Burns mirror animates
    their transform every frame. Each layer paints a texture whose blur was baked
    in with canvas when the frame was preloaded (--glass-far/--glass-mid/
@@ -1126,12 +1127,17 @@ html:not(.is-loaded) .noise-overlay {
 .hero-marquee-defocus__layer::after {
     content: '';
     position: absolute;
+    /* Full-viewport `cover`, bottom-anchored so the box coincides exactly with
+       the wallpaper's `object-fit: cover` scene; the bed's overflow clips it to
+       the bottom band. This shows the wallpaper's bottom strip at the same
+       scale and position as the sharp wallpaper behind it (no 100vw×100vh
+       stretch, no re-crop). */
     left: 0;
-    right: 0;
     bottom: 0;
-    height: var(--marquee-defocus-height);
-    background-size: 100vw 100vh;
-    background-position: center bottom;
+    width: 100vw;
+    height: 100vh;
+    background-size: cover;
+    background-position: center center;
     background-repeat: no-repeat;
     transition: opacity 0.9s ease;
 }

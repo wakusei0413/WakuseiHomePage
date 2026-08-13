@@ -54,6 +54,17 @@ describe('wallpaper full-bleed layout', () => {
         expect(siteShell).toContain('--kenburns-duration');
     });
 
+    it('mirrors the wallpaper cover exactly (full-viewport box, not a re-crop)', () => {
+        // The wallpaper is object-fit: cover on the full scene, so the glass
+        // must paint the same cover on a full-viewport box anchored to the
+        // panel's top-left — never `inset: -64px` (which re-cropped/squashed the
+        // image to the narrow panel box).
+        expect(layoutCss).toMatch(
+            /\.left-panel::before,\s*\.left-panel::after\s*\{[\s\S]*?width:\s*100vw;[\s\S]*?height:\s*100vh;[\s\S]*?background-size:\s*cover;/
+        );
+        expect(layoutCss).not.toMatch(/\.left-panel::before,[\s\S]*?inset:\s*-64px/);
+    });
+
     it('keeps page content above hero and wallpaper', () => {
         expect(layoutCss).toContain('.homepage-content');
         expect(layoutCss).toContain('.homepage-section-title');

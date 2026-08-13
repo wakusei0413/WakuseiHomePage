@@ -160,6 +160,16 @@ describe('hero widget marquee', () => {
         expect(i18n).toContain("'widgets.stats.kicker'");
     });
 
+    it('mirrors the wallpaper cover on the defocus bed (full-viewport box, no stretch)', () => {
+        // The bed slots must reproduce the wallpaper's object-fit: cover with a
+        // full-viewport, bottom-anchored box — never the old 100vw×100vh stretch,
+        // which distorted the image whenever the viewport ratio ≠ image ratio.
+        expect(componentsCss).toMatch(
+            /\.hero-marquee-defocus__layer::before,\s*\.hero-marquee-defocus__layer::after\s*\{[\s\S]*?background-size:\s*cover;[\s\S]*?background-position:\s*center center;/
+        );
+        expect(componentsCss).not.toMatch(/background-size:\s*100vw\s*100vh/);
+    });
+
     it('mirrors the wallpaper Ken Burns zoom on the defocus bed textures', () => {
         expect(componentsCss).toMatch(
             /\.glass-kenburns \.hero-marquee-defocus__layer::before[\s\S]*?animation:\s*glass-kenburns var\(--kenburns-duration,\s*8s\) infinite/
