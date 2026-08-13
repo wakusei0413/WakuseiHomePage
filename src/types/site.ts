@@ -60,6 +60,11 @@ export interface SocialLinksConfig {
     links: SocialLink[];
 }
 
+export interface GithubConfig {
+    username: string;
+    url: string;
+}
+
 export interface FooterConfig {
     text: string;
 }
@@ -133,6 +138,7 @@ export interface SiteConfig {
     themeColor: string;
     profile: ProfileConfig;
     socialLinks: SocialLinksConfig;
+    github: GithubConfig;
     footer: FooterConfig;
     slogans: SlogansConfig;
     time: TimeConfig;

@@ -23,6 +23,10 @@
     --avatar-glow: #ffc107;
     --avatar-border: rgba(0, 0, 0, 0.2);
     --panel-bg: rgba(255, 254, 247, 0.85);
+    /* Opaque paper used by the left panel: the frosted look is faked with a
+       static pre-blurred wallpaper copy above it, so the panel itself must be
+       opaque to stop the sharp animated wallpaper leaking through. */
+    --panel-bg-solid: #fffef7;
     --panel-blur: blur(40px) saturate(200%);
     --panel-glass: rgba(255, 254, 247, 0.4);
     --panel-border: rgba(0, 0, 0, 0.2);
@@ -97,6 +101,7 @@
     --avatar-glow: #ff9900;
     --avatar-border: rgba(255, 255, 255, 0.08);
     --panel-bg: rgba(12, 12, 12, 0.85);
+    --panel-bg-solid: #121212;
     --panel-blur: blur(40px) saturate(200%);
     --panel-glass: rgba(18, 18, 18, 0.9);
     --panel-border: rgba(255, 255, 255, 0.12);
@@ -171,8 +176,7 @@ body,
 /* 确保过渡不影响文本渲染 */
 .name,
 .weekday,
-.clock,
-.bio {
+.clock {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -201,9 +205,4 @@ body,
     -ms-user-drag: none;
     user-drag: none;
     -webkit-touch-callout: none;
-}
-
-/* Cursor idle calm */
-.typewriter-cursor.cursor-idle {
-    animation-duration: 2s;
 }

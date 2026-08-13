@@ -71,6 +71,10 @@ const siteConfigSchema = z.object({
         colorScheme: z.enum(['cycle', 'same']),
         links: z.array(socialLinkSchema).min(1)
     }),
+    github: z.object({
+        username: z.string().min(1),
+        url: z.string().min(1)
+    }),
     footer: z.object({
         text: z.string().min(1)
     }),

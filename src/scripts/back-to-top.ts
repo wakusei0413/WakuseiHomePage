@@ -10,6 +10,7 @@ let btn: HTMLElement | null = null;
 let scrollerEl: HTMLElement | null = null;
 let scrollHandler: (() => void) | null = null;
 let clickHandler: (() => void) | null = null;
+let frame: number | null = null;
 
 function getScroller(): HTMLElement | null {
     const el = document.querySelector<HTMLElement>(SCROLLER_SELECTOR);
@@ -21,9 +22,23 @@ function update(): void {
     btn.classList.toggle('back-to-top--visible', scrollerEl.scrollTop > THRESHOLD);
 }
 
+// Coalesce to one classList pass per animation frame instead of one per scroll
+// event (scrollTop reads force layout on every call).
+function scheduleUpdate(): void {
+    if (frame !== null) return;
+    frame = requestAnimationFrame(() => {
+        frame = null;
+        update();
+    });
+}
+
 function teardown(): void {
     if (scrollHandler && scrollerEl) scrollerEl.removeEventListener('scroll', scrollHandler);
     if (clickHandler && btn) btn.removeEventListener('click', clickHandler);
+    if (frame !== null) {
+        cancelAnimationFrame(frame);
+        frame = null;
+    }
     scrollHandler = null;
     clickHandler = null;
     btn = null;
@@ -35,7 +50,7 @@ function bind(): void {
     btn = document.querySelector<HTMLElement>('.back-to-top');
     scrollerEl = getScroller();
     if (!btn || !scrollerEl) return;
-    scrollHandler = update;
+    scrollHandler = scheduleUpdate;
     clickHandler = () => scrollerEl?.scrollTo({ top: 0, behavior: 'smooth' });
     scrollerEl.addEventListener('scroll', scrollHandler, { passive: true });
     btn.addEventListener('click', clickHandler);

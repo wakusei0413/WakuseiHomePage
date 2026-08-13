@@ -55,6 +55,13 @@ export const editableSiteConfig: SiteConfig = {
         ]
     },
 
+    // GitHub 贡献图（左侧面板格子图的数据与跳转目标）。
+    // 数据在 npm run build 时同步为 /github-contributions.json，客户端不再实时请求。
+    github: {
+        username: 'wakusei0413',
+        url: 'https://github.com/wakusei0413'
+    },
+
     footer: {
         text: '© 2026 遊星 Wakusei'
     },

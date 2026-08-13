@@ -262,31 +262,6 @@ html:not(.is-loaded) .noise-overlay {
     min-height: 100px;
 }
 
-.bio {
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
-.typewriter-cursor {
-    display: inline-block;
-    color: #3e59ff;
-    color: var(--accent-blue, #3e59ff);
-    font-weight: 700;
-    animation: blink 0.8s step-end infinite;
-    margin-left: 2px;
-}
-
-@keyframes blink {
-    0%,
-    50% {
-        opacity: 1;
-    }
-    51%,
-    100% {
-        opacity: 0;
-    }
-}
-
 /* ===== 社交链接 ===== */
 .social-links {
     display: flex;
@@ -575,6 +550,104 @@ html:not(.is-loaded) .noise-overlay {
     box-shadow:
         0 0 0 1px rgba(255, 255, 255, 0.2),
         0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== GitHub 贡献图（左侧面板 bio 区域） ===== */
+.github-contrib {
+    --github-cell-gap: 2px;
+    --github-l0: rgba(0, 0, 0, 0.07);
+    --github-l1: #9be9a8;
+    --github-l2: #40c463;
+    --github-l3: #30a14e;
+    --github-l4: #216e39;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    min-height: 64px;
+    color: var(--fg);
+    text-decoration: none;
+    outline-offset: 4px;
+}
+
+.github-contrib:hover .github-contrib__total,
+.github-contrib:focus-visible .github-contrib__total {
+    color: var(--accent-blue);
+}
+
+.github-contrib__label {
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.github-contrib__message {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--muted);
+}
+
+.github-contrib__graph {
+    display: flex;
+    gap: var(--github-cell-gap);
+    width: 100%;
+    max-width: 340px;
+}
+
+.github-contrib__week {
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    gap: var(--github-cell-gap);
+}
+
+.github-contrib__cell {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 1.5px;
+    background: var(--github-l0);
+    transition: transform 0.2s ease-out;
+}
+
+.github-contrib:hover .github-contrib__cell {
+    transform: scale(1.12);
+}
+
+.github-contrib__cell--l1 {
+    background: var(--github-l1);
+}
+
+.github-contrib__cell--l2 {
+    background: var(--github-l2);
+}
+
+.github-contrib__cell--l3 {
+    background: var(--github-l3);
+}
+
+.github-contrib__cell--l4 {
+    background: var(--github-l4);
+}
+
+.github-contrib__total {
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    font-size: 0.76rem;
+    line-height: 1.3;
+    color: var(--muted);
+    transition: color 0.2s ease-out;
+}
+
+[data-theme='dark'] .github-contrib {
+    --github-l0: rgba(255, 255, 255, 0.08);
+    --github-l1: #0e4429;
+    --github-l2: #006d32;
+    --github-l3: #26a641;
+    --github-l4: #39d353;
 }
 
 /* ===== Social Links ===== */
@@ -948,7 +1021,10 @@ html:not(.is-loaded) .noise-overlay {
 .hero-marquee {
     --ticket-fg: rgba(18, 18, 18, 0.82);
     --ticket-muted: rgba(18, 18, 18, 0.48);
-    --ticket-paper: rgba(255, 254, 247, 0.62);
+    /* Slightly more opaque than the original live-blur paper: the ground-glass
+       bed is now a static pre-blurred snapshot, so a touch of extra paper keeps
+       the tickets crisp without losing the frosted depth. */
+    --ticket-paper: rgba(255, 254, 247, 0.72);
     --ticket-line: rgba(255, 254, 247, 0.55);
     --ticket-ink: rgba(0, 0, 0, 0.08);
     --ticket-shadow: 0 0 0 1px var(--ticket-ink), 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -986,9 +1062,18 @@ html:not(.is-loaded) .noise-overlay {
 }
 
 /*
-  Progressive Gaussian bed inside the first-screen scene.
-  Never put opacity < 1 on this root while blur is active — kills backdrop-filter.
+  Progressive ground-glass bed inside the first-screen scene.
   Fade the child layers in place; .hero-content owns all position and 3D motion.
+
+  Performance note: the layers used to carry backdrop-filter blurs (12/32/48px)
+  sampled from the *constantly animating* wallpaper, so every Ken Burns frame
+  forced a full-width re-blur of the live backdrop — a major jank source. Each
+  layer now paints a *static, pre-blurred* copy of the current wallpaper
+  (--glass-far/--glass-mid/--glass-near — the blur is baked into the bitmap by
+  SiteShell while the frame is still preloading, so there is no CSS filter at
+  all). A wallpaper change crossfades the texture in via the ::before/::after
+  slots (compositor-only opacity, in sync with the wallpaper) — never a hard
+  swap — and the animating wallpaper behind costs nothing per frame.
 */
 .hero-marquee-defocus {
     position: absolute;
@@ -1012,56 +1097,111 @@ html:not(.is-loaded) .noise-overlay {
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.85s var(--curve-delicate, cubic-bezier(0.1, 0.9, 0.2, 1));
-}
-
-/* Enable blur only when fully opaque so backdrop-filter can sample wallpaper. */
-.hero-marquee-defocus--revealed .hero-marquee-defocus__layer {
-    opacity: var(--marquee-defocus-opacity, 1);
-}
-
-/* Far: light blur, falls off upward into sharp wallpaper */
-.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--far {
-    -webkit-backdrop-filter: blur(12px) saturate(1.05);
-    backdrop-filter: blur(12px) saturate(1.05);
-    background: linear-gradient(
+    /* Shared darkening gradient (was on the texture pseudo) — the pseudos now
+       carry only the pre-blurred wallpaper texture so they can crossfade. */
+    background-image: linear-gradient(
         180deg,
         transparent 0%,
         rgba(8, 8, 10, 0.04) 38%,
         rgba(8, 8, 10, 0.1) 70%,
         rgba(8, 8, 10, 0.14) 100%
     );
+}
+
+/* Enable the bed only when fully opaque so the reveal reads as a single fade. */
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer {
+    opacity: var(--marquee-defocus-opacity, 1);
+}
+
+/* The pre-blurred wallpaper snapshots: bed-sized layers (not full-viewport)
+   showing the wallpaper's bottom band — background-size: 100vw 100vh displays
+   the texture at exactly the wallpaper's size, bottom-aligned, so the visible
+   band tracks the sharp wallpaper behind the strip. Bed-sized keeps the
+   composited layers small, which matters because the Ken Burns mirror animates
+   their transform every frame. Each layer paints a texture whose blur was baked
+   in with canvas when the frame was preloaded (--glass-far/--glass-mid/
+   --glass-near, plus the --*-next incoming slot). The two slots crossfade via
+   opacity — no CSS filter, no hard texture swap. */
+.hero-marquee-defocus__layer::before,
+.hero-marquee-defocus__layer::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--marquee-defocus-height);
+    background-size: 100vw 100vh;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    transition: opacity 0.9s ease;
+}
+
+.hero-marquee-defocus__layer::before {
+    background-image: var(--glass-far);
+}
+
+.hero-marquee-defocus__layer::after {
+    background-image: var(--glass-far-next);
+    opacity: 0;
+}
+
+.glass-swapping .hero-marquee-defocus__layer::before {
+    opacity: 0;
+}
+
+.glass-swapping .hero-marquee-defocus__layer::after {
+    opacity: 1;
+}
+
+.glass-no-transition .hero-marquee-defocus__layer::before,
+.glass-no-transition .hero-marquee-defocus__layer::after {
+    transition: none;
+}
+
+/* Ken Burns mirror for the bed (keyframes in layout.css): the blurred texture
+   slots zoom in sync with the wallpaper — a pure transform animation,
+   compositor-only, never re-rasterizing the pre-blurred textures. Only the
+   ::before slot animates: the ::after slot is visible just during the 0.9s
+   crossfade, which lands on the scale(1) plateau of the eased curve, so a
+   static ::after is indistinguishable and halves the composited layers. */
+.glass-kenburns .hero-marquee-defocus__layer::before {
+    transform-origin: center center;
+    will-change: transform;
+    animation: glass-kenburns var(--kenburns-duration, 8s) infinite;
+}
+
+/* Far: light vignette, falls off upward into sharp wallpaper */
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--far {
     -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 46%, #000 100%);
     mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 46%, #000 100%);
 }
 
 /* Mid: glass body around the ticket row */
 .hero-marquee-defocus--revealed .hero-marquee-defocus__layer--mid {
-    -webkit-backdrop-filter: blur(32px) saturate(1.1);
-    backdrop-filter: blur(32px) saturate(1.1);
-    background: linear-gradient(
-        180deg,
-        transparent 0%,
-        rgba(8, 8, 10, 0.06) 34%,
-        rgba(8, 8, 10, 0.16) 74%,
-        rgba(8, 8, 10, 0.22) 100%
-    );
     -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 12%, rgba(0, 0, 0, 0.65) 50%, #000 100%);
     mask-image: linear-gradient(180deg, transparent 0%, transparent 12%, rgba(0, 0, 0, 0.65) 50%, #000 100%);
 }
 
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--mid::before {
+    background-image: var(--glass-mid);
+}
+
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--mid::after {
+    background-image: var(--glass-mid-next);
+}
+
 /* Near: strongest ground-glass right under the cards */
 .hero-marquee-defocus--revealed .hero-marquee-defocus__layer--near {
-    -webkit-backdrop-filter: blur(48px) saturate(1.12);
-    backdrop-filter: blur(48px) saturate(1.12);
-    background: linear-gradient(
-        180deg,
-        transparent 0%,
-        transparent 30%,
-        rgba(8, 8, 10, 0.12) 62%,
-        rgba(8, 8, 10, 0.28) 100%
-    );
     -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 24%, rgba(0, 0, 0, 0.8) 56%, #000 100%);
     mask-image: linear-gradient(180deg, transparent 0%, transparent 24%, rgba(0, 0, 0, 0.8) 56%, #000 100%);
+}
+
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--near::before {
+    background-image: var(--glass-near);
+}
+
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--near::after {
+    background-image: var(--glass-near-next);
 }
 
 .hero-marquee__track {
@@ -1449,15 +1589,17 @@ html:not(.is-loaded) .noise-overlay {
 [data-theme='dark'] .hero-marquee {
     --ticket-fg: rgba(255, 254, 247, 0.86);
     --ticket-muted: rgba(255, 254, 247, 0.48);
-    --ticket-paper: rgba(18, 18, 20, 0.55);
+    --ticket-paper: rgba(18, 18, 20, 0.68);
     --ticket-line: rgba(255, 255, 255, 0.08);
     --ticket-ink: rgba(255, 255, 255, 0.06);
     --ticket-shadow: 0 0 0 1px var(--ticket-ink), 0 4px 18px rgba(0, 0, 0, 0.22);
     --ticket-shadow-hover: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 6px 22px rgba(0, 0, 0, 0.28);
 }
 
+/* Dark theme: the darkening gradients live on the layer (the texture pseudos
+   are theme-agnostic and crossfade between --glass-* / --glass-*-next). */
 [data-theme='dark'] .hero-marquee-defocus__layer--far {
-    background: linear-gradient(
+    background-image: linear-gradient(
         180deg,
         transparent 0%,
         rgba(0, 0, 0, 0.06) 35%,
@@ -1467,7 +1609,7 @@ html:not(.is-loaded) .noise-overlay {
 }
 
 [data-theme='dark'] .hero-marquee-defocus__layer--mid {
-    background: linear-gradient(
+    background-image: linear-gradient(
         180deg,
         transparent 0%,
         rgba(0, 0, 0, 0.1) 40%,
@@ -1477,7 +1619,7 @@ html:not(.is-loaded) .noise-overlay {
 }
 
 [data-theme='dark'] .hero-marquee-defocus__layer--near {
-    background: linear-gradient(
+    background-image: linear-gradient(
         180deg,
         transparent 0%,
         transparent 38%,
@@ -1515,10 +1657,5 @@ html:not(.is-loaded) .noise-overlay {
     .hero-ticket-quote-enter-active,
     .hero-ticket-quote-leave-active {
         transition: none;
-    }
-
-    .hero-marquee-defocus__layer {
-        -webkit-backdrop-filter: none !important;
-        backdrop-filter: none !important;
     }
 }

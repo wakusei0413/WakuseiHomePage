@@ -1,3 +1,4 @@
+import { describe, expect, it, vi } from 'vitest';
 import {
     decorateWallpaperImage,
     prepareWallpaperImageForDisplay,
@@ -79,22 +80,94 @@ describe('WallpaperController internals', () => {
         expect(image.decoding).toBe('async');
     });
 
-    it('syncs ken-burns duration to the rotation interval on attach', () => {
-        const props: Record<string, string> = {};
-        const container = {
-            style: {
-                setProperty(name: string, value: string) {
-                    props[name] = value;
+    it('fires onWallpaperPreload with the loaded element before activation', async () => {
+        const preloaded: string[] = [];
+        const controller = new WallpaperController(
+            { ...baseConfig },
+            { onWallpaperPreload: (img) => preloaded.push(img.src) }
+        );
+        const container = { innerHTML: '', appendChild() {} } as unknown as HTMLElement;
+        controller.attach(container);
+
+        controller.loadWithRetry = async () =>
+            ({
+                src: 'frame-X',
+                className: '',
+                setAttribute() {},
+                remove() {},
+                classList: { remove() {}, add() {} },
+                get offsetWidth() {
+                    return 1;
+                },
+                animate() {
+                    return { currentTime: 0, play() {}, cancel() {}, playState: 'idle' };
+                },
+                style: {}
+            }) as unknown as HTMLImageElement;
+
+        await (controller as unknown as { loadIntoLayer(slot: number): Promise<boolean> }).loadIntoLayer(0);
+
+        expect(preloaded).toEqual(['frame-X']);
+    });
+
+    it('swaps as soon as a late preload lands (readiness-driven rotation)', async () => {
+        vi.useFakeTimers();
+        try {
+            const activeSrcs: string[] = [];
+            const controller = new WallpaperController(
+                { ...baseConfig, rotation: { enabled: true, interval: 100 } },
+                { onWallpaperChange: (img) => activeSrcs.push(img.src) }
+            );
+            const container = { innerHTML: '', appendChild() {} } as unknown as HTMLElement;
+            controller.attach(container);
+
+            const makeImage = (src: string) =>
+                ({
+                    src,
+                    className: '',
+                    setAttribute() {},
+                    remove() {},
+                    classList: { remove() {}, add() {} },
+                    get offsetWidth() {
+                        return 1;
+                    },
+                    animate() {
+                        return { currentTime: 0, play() {}, cancel() {}, playState: 'idle' };
+                    },
+                    style: {}
+                }) as unknown as HTMLImageElement;
+
+            let resolveSecond!: (img: HTMLImageElement) => void;
+            const secondLoad = new Promise<HTMLImageElement>((resolve) => {
+                resolveSecond = resolve;
+            });
+            let firstCall = true;
+            controller.loadWithRetry = async () => {
+                if (firstCall) {
+                    firstCall = false;
+                    return makeImage('frame-A');
                 }
-            }
-        };
+                return secondLoad;
+            };
 
-        const controller = new WallpaperController({
-            ...baseConfig,
-            rotation: { enabled: true, interval: 45000 }
-        });
-        controller.attach(container as unknown as HTMLElement);
+            // First frame loads instantly; the second (hidden) frame stays
+            // in-flight while the interval fires.
+            controller.init();
+            await vi.advanceTimersByTimeAsync(0);
+            expect(activeSrcs).toEqual(['frame-A']);
 
-        expect(props['--wallpaper-zoom-ms']).toBe('45000ms');
+            // Interval fires at 100ms while the preload is still in flight:
+            // the current frame must stay on screen.
+            await vi.advanceTimersByTimeAsync(100);
+            expect(activeSrcs).toEqual(['frame-A']);
+
+            // The preload lands 50ms later — the swap must happen immediately,
+            // not wait for the next interval tick.
+            resolveSecond(makeImage('frame-B'));
+            await vi.advanceTimersByTimeAsync(50);
+            expect(activeSrcs).toEqual(['frame-A', 'frame-B']);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 });

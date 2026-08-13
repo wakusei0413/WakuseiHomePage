@@ -24,8 +24,6 @@
     border-radius: 10px;
     background: var(--panel-glass);
     box-shadow: var(--panel-shadow);
-    backdrop-filter: var(--panel-blur);
-    -webkit-backdrop-filter: var(--panel-blur);
 }
 
 [data-theme='dark'] .post-container .post-lead {
@@ -733,7 +731,6 @@
     width: 100%;
     border: 1px solid var(--panel-border);
     background-color: var(--panel-glass);
-    backdrop-filter: var(--panel-blur);
     border-radius: 4px;
     box-shadow: var(--panel-shadow);
     overflow: hidden;

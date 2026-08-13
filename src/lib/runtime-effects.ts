@@ -103,8 +103,10 @@ export function initScrollAnimations(delay: number, offset: number) {
 
 export function initMobileStickyAvatar(container: HTMLElement, avatarBox: HTMLElement) {
     let isMobile = window.matchMedia('(max-width: 900px)').matches;
+    let frame: number | null = null;
 
-    const handleScroll = () => {
+    const applyScrollState = () => {
+        frame = null;
         if (!isMobile) {
             return;
         }
@@ -114,6 +116,12 @@ export function initMobileStickyAvatar(container: HTMLElement, avatarBox: HTMLEl
         } else {
             avatarBox.classList.remove('scrolled');
         }
+    };
+
+    // Coalesce to one pass per animation frame (scrollTop is a layout read).
+    const handleScroll = () => {
+        if (frame !== null) return;
+        frame = window.requestAnimationFrame(applyScrollState);
     };
 
     const handleResize = () => {
@@ -130,5 +138,9 @@ export function initMobileStickyAvatar(container: HTMLElement, avatarBox: HTMLEl
     return () => {
         container.removeEventListener('scroll', handleScroll);
         window.removeEventListener('resize', handleResize);
+        if (frame !== null) {
+            cancelAnimationFrame(frame);
+            frame = null;
+        }
     };
 }

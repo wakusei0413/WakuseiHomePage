@@ -21,10 +21,37 @@ describe('wallpaper full-bleed layout', () => {
         expect(responsiveCss).toMatch(/\.wallpaper-scroll-area[\s\S]*?display:\s*none/);
     });
 
-    it('keeps left-panel above the wallpaper with frosted glass', () => {
+    it('keeps left-panel above the wallpaper with frosted paper', () => {
         expect(layoutCss).toMatch(/\.left-panel\s*\{[\s\S]*?z-index:\s*var\(--z-content,\s*50\);/);
-        expect(layoutCss).toMatch(/\.left-panel\s*\{[\s\S]*?backdrop-filter:\s*var\(--panel-blur\)/);
-        expect(layoutCss).toMatch(/\.left-panel\s*\{[\s\S]*?background-color:\s*var\(--panel-bg\)/);
+        // Opaque paper base so the sharp animated wallpaper never leaks through.
+        expect(layoutCss).toMatch(/\.left-panel\s*\{[\s\S]*?background-color:\s*var\(--panel-bg-solid\)/);
+        // Performance contract: frosted glass is faked with *static
+        // pre-blurred* wallpaper copies (.left-panel::before/::after) whose
+        // blur is baked into the bitmap by SiteShell while the frame is still
+        // preloading — no CSS filter and never a live backdrop-filter that
+        // re-samples on every Ken Burns frame.
+        expect(layoutCss).toMatch(/\.left-panel::before\s*\{[\s\S]*?var\(--glass-panel\)/);
+        expect(layoutCss).toMatch(/\.left-panel::after\s*\{[\s\S]*?var\(--glass-panel-next\)/);
+        // A wallpaper change crossfades the two texture slots via opacity
+        // (.glass-swapping) instead of hard-swapping the surface. The state
+        // class lives on the persisted shell root, not <html>, so Astro's
+        // view-transition swap (which resets <html> attributes) never clears it.
+        expect(layoutCss).toMatch(/\.glass-swapping \.left-panel::before\s*\{[\s\S]*?opacity:\s*0;/);
+        expect(layoutCss).toMatch(/\.glass-swapping \.left-panel::after\s*\{[\s\S]*?opacity:\s*0\.18;/);
+        expect(layoutCss).not.toMatch(/html\.glass-(swapping|kenburns|no-transition)/);
+        expect(layoutCss).not.toMatch(/\.left-panel::before\s*\{[\s\S]*?filter:/);
+        expect(layoutCss).not.toMatch(/\.left-panel\s*\{[\s\S]*?backdrop-filter:/);
+    });
+
+    it('mirrors the wallpaper Ken Burns zoom on the panel glass', () => {
+        expect(layoutCss).toMatch(/@keyframes glass-kenburns/);
+        expect(layoutCss).toMatch(
+            /\.glass-kenburns \.left-panel::before[\s\S]*?animation:\s*glass-kenburns var\(--kenburns-duration,\s*8s\) infinite/
+        );
+        // The mirror is a pure transform animation — no filter re-rasterization.
+        expect(layoutCss).not.toMatch(/\.glass-kenburns[^}]*filter:/);
+        expect(siteShell).toContain('glass-kenburns');
+        expect(siteShell).toContain('--kenburns-duration');
     });
 
     it('keeps page content above hero and wallpaper', () => {
@@ -33,11 +60,14 @@ describe('wallpaper full-bleed layout', () => {
         expect(layoutCss).toContain('.homepage-section-lead');
     });
 
-    it('applies a slow non-linear zoom while each wallpaper is active', () => {
-        expect(layoutCss).toMatch(/@keyframes\s+wallpaper-ken-burns/);
-        expect(layoutCss).toMatch(/\.wallpaper-image\.active\s*\{[\s\S]*?animation:\s*wallpaper-ken-burns/);
+    it('crossfades wallpaper layers with a smooth opacity transition', () => {
+        expect(layoutCss).toMatch(/\.wallpaper-image\s*\{[\s\S]*?transition:\s*opacity[^;]*;/);
+        expect(layoutCss).toMatch(/\.wallpaper-image\.active\s*\{[\s\S]*?opacity:\s*1;/);
+    });
+
+    it('shortens the crossfade when the user prefers reduced motion', () => {
         expect(layoutCss).toMatch(
-            /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)[\s\S]*?\.wallpaper-image\.active[\s\S]*?animation:\s*none/
+            /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)[\s\S]*?\.wallpaper-image[\s\S]*?transition-duration:\s*0\.4s;/
         );
     });
 });

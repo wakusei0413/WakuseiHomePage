@@ -2,6 +2,19 @@ import type { WallpaperConfig } from '../types/site';
 
 type WallpaperCallbacks = {
     onReady?: () => void;
+    /**
+     * Fires whenever a layer's image has finished loading and been adopted
+     * (first frame and every preload), while the image is still hidden. The
+     * glass surfaces pre-bake their blurred textures from this element so the
+     * swap itself is a cheap texture change.
+     */
+    onWallpaperPreload?: (img: HTMLImageElement) => void;
+    /**
+     * Fires whenever a layer becomes the active wallpaper frame. The glass
+     * surfaces use this to switch their static pre-blurred wallpaper copies to
+     * the new frame (one texture swap per change, never a live re-sample).
+     */
+    onWallpaperChange?: (img: HTMLImageElement) => void;
 };
 
 type WallpaperPrefetch = {
@@ -33,26 +46,37 @@ export function prepareWallpaperImageForDisplay(image: HTMLImageElement) {
  *     adopts that exact element, so the first frame never waits for hydration and
  *     never downloads the same URL twice.
  *   - The next image is preloaded into the hidden layer the moment the current one
- *     is shown. By the time the rotation interval fires the next image is already
- *     decoded, so the swap is an instant crossfade instead of a multi-second wait
- *     on a stale frame.
+ *     is shown. By the time the rotation interval fires the next image is usually
+ *     already decoded, so the swap is an instant crossfade instead of a
+ *     multi-second wait on a stale frame.
+ *   - Rotation is readiness-driven: each swap is scheduled `interval` ms after
+ *     the previous one, and if the preload has not landed yet the swap happens
+ *     the instant it does — never on a fixed grid that can leave a ready frame
+ *     sitting hidden for most of an extra interval (a slow API then delays the
+ *     rotation by exactly its fetch time, not by up to a whole interval).
  *   - Only one network request is in flight at any time.
  */
 export class WallpaperController {
     private container: HTMLElement | null = null;
     private layers: HTMLImageElement[] = [];
     private ready: boolean[] = [false, false];
+    // One Ken Burns animation per layer, so a freshly activated layer can adopt
+    // the exact playback phase of the layer it replaces (see activateLayer).
+    private kenburns: (Animation | null)[] = [null, null];
     private activeIndex = 0;
-    private rotationTimer: ReturnType<typeof setInterval> | null = null;
+    private rotationTimer: number | null = null;
+    /** True while a rotation is waiting for its preload to land (see rotate()). */
+    private rotationPending = false;
     private visibilityHandler: (() => void) | null = null;
     private isDestroyed = false;
     private isPaused = false;
     private hasReadyFired = false;
     private preloadingSlot: number | null = null;
-    // The crossfade transition in layout.css runs for 0.8s. Replacing the layer we
+    private reduceMotion = false;
+    // The crossfade transition in layout.css runs for 0.9s. Replacing the layer we
     // just hid while it is still fading out would cut the transition short, so we
     // wait for it to finish before recycling that slot for the next preload.
-    private readonly fadeMs = 900;
+    private readonly fadeMs = 1000;
     private readonly callbacks: WallpaperCallbacks;
 
     constructor(
@@ -64,18 +88,18 @@ export class WallpaperController {
 
     attach(container: HTMLElement) {
         this.container = container;
-        this.syncZoomDuration();
     }
 
     init() {
         this.isDestroyed = false;
+        this.reduceMotion =
+            typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
         if (!this.container) {
             this.fireReady();
             return;
         }
 
-        this.syncZoomDuration();
         this.bindVisibilityHandling();
         this.buildLayers();
 
@@ -91,7 +115,7 @@ export class WallpaperController {
             this.fireReady();
 
             if (this.wallpaperConfig.rotation.enabled) {
-                this.startRotation();
+                this.scheduleRotation();
                 // Kick the next image off immediately so the first crossfade is
                 // instant instead of waiting an entire interval for a fresh fetch.
                 this.preloadOther(0);
@@ -102,12 +126,13 @@ export class WallpaperController {
     pause() {
         this.isPaused = true;
         this.stopRotation();
+        this.rotationPending = false;
     }
 
     resume() {
         this.isPaused = false;
         if (this.wallpaperConfig.rotation.enabled) {
-            this.startRotation();
+            this.scheduleRotation();
             // If the hidden layer never finished preloading before the tab was
             // hidden, resume it now so the next swap is still instant.
             this.preloadOther(this.activeIndex);
@@ -117,6 +142,7 @@ export class WallpaperController {
     destroy() {
         this.isDestroyed = true;
         this.stopRotation();
+        this.rotationPending = false;
         this.teardownVisibilityHandling();
 
         if (this.container) {
@@ -125,6 +151,7 @@ export class WallpaperController {
 
         this.layers = [];
         this.ready = [false, false];
+        this.cancelKenBurns();
     }
 
     // ----- image loading (kept from the previous implementation) -----
@@ -244,6 +271,7 @@ export class WallpaperController {
         this.container.innerHTML = '';
         this.layers = [null, null] as unknown as HTMLImageElement[];
         this.ready = [false, false];
+        this.cancelKenBurns();
     }
 
     /**
@@ -316,10 +344,18 @@ export class WallpaperController {
         if (previous && previous.parentElement) {
             previous.remove();
         }
+        this.kenburns[slot]?.cancel();
+        this.kenburns[slot] = null;
 
         this.layers[slot] = image;
         this.container?.appendChild(image);
         this.ready[slot] = true;
+
+        // The image is loaded and in the DOM (hidden until activated): let the
+        // glass surfaces pre-bake their blurred textures from this exact element
+        // so the eventual swap is a plain texture change with no decode, no
+        // extra network request and no filter re-rasterization.
+        this.callbacks.onWallpaperPreload?.(image);
     }
 
     private async loadIntoLayer(slot: number): Promise<boolean> {
@@ -342,6 +378,9 @@ export class WallpaperController {
             // set layer.src (these APIs commonly reply with no-store). Reusing the
             // loaded element avoids a redundant second download + decode entirely.
             this.adoptImageAsLayer(slot, image);
+            // If a rotation is waiting on this fetch, complete it right now
+            // instead of on the next interval tick.
+            this.resolvePendingRotation();
             return true;
         } catch {
             return false;
@@ -357,8 +396,7 @@ export class WallpaperController {
         // Force a style/layout flush so a freshly-attached layer is committed at
         // opacity 0 before we add .active. Without this, the very first image (and
         // any layer added and activated in the same tick) would snap straight to
-        // opacity 1 instead of running the 0.8s crossfade transition.
-        // Also restarts wallpaper-ken-burns when the same node is re-activated.
+        // opacity 1 instead of running the 0.9s crossfade transition.
         if (target) {
             target.classList.remove('active');
             void target.offsetWidth;
@@ -366,16 +404,82 @@ export class WallpaperController {
         }
         otherEl?.classList.remove('active');
         this.activeIndex = slot;
+
+        // Notify glass surfaces of the newly active frame so their static
+        // blurred copies can switch to it (one texture swap per change).
+        this.callbacks.onWallpaperChange?.(this.layers[slot]);
+
+        // Start the new layer's Ken Burns at the exact phase the outgoing layer is
+        // currently at. The zoom keeps flowing without the scale(1.1) -> scale(1)
+        // jump that restarting the animation from scratch would produce.
+        this.startKenBurns(slot, this.getPhaseMs(other));
     }
 
-    /** Match Ken Burns duration to the rotation window (or a long hold when rotation is off). */
-    private syncZoomDuration() {
-        if (!this.container) {
+    /**
+     * Drives the Ken Burns zoom with the Web Animations API so each layer can pick
+     * up the current phase of the layer it replaces (zero visual jump on swap).
+     *
+     * With rotation enabled the animation is a slow breathing loop (1 -> 1.1 -> 1)
+     * whose cycle length equals the rotation interval, so every swap lands on the
+     * same phase the outgoing layer ended on and the zoom restarts naturally with
+     * the fresh frame. Without rotation it is a single long push to 1.1.
+     */
+    private startKenBurns(slot: number, phaseMs: number) {
+        const el = this.layers[slot];
+        if (!el) {
             return;
         }
 
-        const ms = this.wallpaperConfig.rotation.enabled ? this.wallpaperConfig.rotation.interval : 90000;
-        this.container.style.setProperty('--wallpaper-zoom-ms', `${ms}ms`);
+        const previous = this.kenburns[slot];
+        if (previous) {
+            previous.cancel();
+        }
+
+        if (this.reduceMotion) {
+            el.style.transform = 'scale(1)';
+            this.kenburns[slot] = null;
+            return;
+        }
+
+        const rotating = this.wallpaperConfig.rotation.enabled;
+        const cycleMs = rotating ? this.wallpaperConfig.rotation.interval : 90000;
+        const keyframes = rotating
+            ? [
+                  // Both segments use the same ease-in-out curve so the turn-around
+                  // at the peak is seamless — velocity touches zero from both sides.
+                  { transform: 'scale(1)', offset: 0, easing: 'cubic-bezier(0.37, 0, 0.63, 1)' },
+                  { transform: 'scale(1.1)', offset: 0.68, easing: 'cubic-bezier(0.37, 0, 0.63, 1)' },
+                  { transform: 'scale(1)', offset: 1 }
+              ]
+            : [{ transform: 'scale(1)', easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)' }, { transform: 'scale(1.1)' }];
+
+        const animation = el.animate(keyframes, {
+            duration: cycleMs,
+            iterations: rotating ? Infinity : 1,
+            fill: 'both'
+        });
+        // Seek to the outgoing layer's phase (no-op on the very first frame, where
+        // phaseMs is 0) and make sure the animation actually plays from there.
+        animation.currentTime = phaseMs;
+        animation.play();
+        this.kenburns[slot] = animation;
+    }
+
+    /** Playback phase (0..cycle) of a layer's Ken Burns animation, or 0 when idle. */
+    private getPhaseMs(slot: number): number {
+        const animation = this.kenburns[slot];
+        if (!animation || animation.playState === 'idle') {
+            return 0;
+        }
+
+        const cycleMs = this.wallpaperConfig.rotation.enabled ? this.wallpaperConfig.rotation.interval : 90000;
+        const current = typeof animation.currentTime === 'number' ? animation.currentTime : 0;
+        return current - Math.floor(current / cycleMs) * cycleMs;
+    }
+
+    private cancelKenBurns() {
+        this.kenburns.forEach((animation) => animation?.cancel());
+        this.kenburns = [null, null];
     }
 
     private preloadOther(active: number) {
@@ -400,19 +504,25 @@ export class WallpaperController {
         this.callbacks.onReady?.();
     }
 
-    private startRotation() {
+    /**
+     * Schedules the next rotation `interval` ms from now (a chained timeout, not
+     * a fixed grid), so a swap that was delayed by a slow fetch never pushes the
+     * following ones further off — each interval is measured from its own swap.
+     */
+    private scheduleRotation() {
         if (this.rotationTimer !== null || this.isDestroyed || this.isPaused) {
             return;
         }
 
-        this.rotationTimer = setInterval(() => {
+        this.rotationTimer = window.setTimeout(() => {
+            this.rotationTimer = null;
             void this.rotate();
         }, this.wallpaperConfig.rotation.interval);
     }
 
     private stopRotation() {
         if (this.rotationTimer !== null) {
-            clearInterval(this.rotationTimer);
+            clearTimeout(this.rotationTimer);
             this.rotationTimer = null;
         }
     }
@@ -425,9 +535,11 @@ export class WallpaperController {
         const next = (this.activeIndex + 1) % this.layers.length;
 
         if (!this.ready[next]) {
-            // The preloaded image is not ready yet (slow network). Keep the current
-            // frame on screen rather than flashing to a blank layer; the in-flight
-            // preload will land shortly and the next tick will swap.
+            // The preloaded image has not landed yet (slow network). Keep the
+            // current frame on screen rather than flashing to a blank layer, but
+            // swap the instant the in-flight fetch completes instead of waiting
+            // for the next interval tick (resolvePendingRotation).
+            this.rotationPending = true;
             this.preloadOther(this.activeIndex);
             return;
         }
@@ -435,14 +547,26 @@ export class WallpaperController {
         const vacated = this.activeIndex;
         this.activateLayer(next);
         this.ready[vacated] = false;
-        // Begin preloading the slot we just vacated once its crossfade has finished,
-        // so the following swap is instant too.
+        // Next swap is scheduled from THIS swap (readiness-driven cadence).
+        this.scheduleRotation();
+        // Begin preloading the slot we just vacated once its crossfade has
+        // finished, so the following swap is instant too.
         window.setTimeout(() => {
             if (this.isDestroyed || this.isPaused) {
                 return;
             }
             this.preloadOther(this.activeIndex);
         }, this.fadeMs);
+    }
+
+    /** Fires a pending rotation as soon as its preload becomes ready. */
+    private resolvePendingRotation() {
+        if (!this.rotationPending || this.isDestroyed || this.isPaused) {
+            return;
+        }
+
+        this.rotationPending = false;
+        void this.rotate();
     }
 
     private bindVisibilityHandling() {
@@ -457,7 +581,7 @@ export class WallpaperController {
             }
 
             if (!this.isPaused) {
-                this.startRotation();
+                this.scheduleRotation();
                 this.preloadOther(this.activeIndex);
             }
         };

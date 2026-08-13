@@ -46,7 +46,11 @@ function initInertialScroll() {
     }
 
     function animate() {
-        const currentTop = scroller.scrollTop;
+        // Use the value we wrote last frame instead of re-reading scrollTop:
+        // reading it forces a synchronous layout every frame. If the browser
+        // clamped the write (scroll end), the resulting scroll event makes
+        // syncExternalScroll adopt the real position and stop this loop.
+        const currentTop = lastAppliedTop ?? scroller.scrollTop;
         const distance = targetTop - currentTop;
         if (Math.abs(distance) <= SETTLE_DISTANCE) {
             lastAppliedTop = targetTop;

@@ -108,21 +108,46 @@ describe('hero widget marquee', () => {
         expect(responsiveCss).not.toContain('.hero-sticky:not([data-is-home]) .left-panel');
     });
 
-    it('uses progressive Gaussian defocus under the strip; cards clamp long titles', () => {
+    it('restores the frosted bed via static pre-blurred wallpaper copies; cards clamp long titles', () => {
         expect(shell).toContain('<HeroWidgetMarquee');
         expect(marquee).toContain('hero-marquee-defocus');
         expect(marquee).toContain('hero-marquee-defocus__layer--far');
         expect(marquee).toContain('hero-marquee-defocus__layer--mid');
         expect(marquee).toContain('hero-marquee-defocus__layer--near');
         expect(componentsCss).toMatch(/hero-marquee-defocus__layer--near/);
+        // Performance contract: the bed samples the *constantly animating*
+        // wallpaper, so it must be a static pre-blurred copy (the blur is baked
+        // into the bitmap by SiteShell while the frame is still preloading) —
+        // never a live backdrop-filter that re-rasterizes on every Ken Burns
+        // frame, and never a CSS filter that re-blurs on every wallpaper change.
+        expect(componentsCss).not.toMatch(
+            /\.hero-marquee-defocus--revealed \.hero-marquee-defocus__layer[\s\S]*?backdrop-filter:\s*blur/
+        );
+        expect(componentsCss).toMatch(/\.hero-marquee-defocus__layer::before\s*\{[\s\S]*?var\(--glass-far\)/);
         expect(componentsCss).toMatch(
-            /\.hero-marquee-defocus--revealed \.hero-marquee-defocus__layer--near[\s\S]*?backdrop-filter:\s*blur\(48px\)/
+            /\.hero-marquee-defocus--revealed \.hero-marquee-defocus__layer--mid::before\s*\{[\s\S]*?var\(--glass-mid\)/
         );
         expect(componentsCss).toMatch(
-            /\.hero-marquee-defocus--revealed \.hero-marquee-defocus__layer--far[\s\S]*?backdrop-filter:\s*blur\(12px\)/
+            /\.hero-marquee-defocus--revealed \.hero-marquee-defocus__layer--near::before\s*\{[\s\S]*?var\(--glass-near\)/
         );
-        expect(componentsCss).toMatch(/Never put opacity < 1 on this root/);
-        expect(componentsCss).toMatch(/--ticket-paper/);
+        // The incoming frame's textures land in the ::after slots and the two
+        // slots crossfade via opacity (.glass-swapping) — a compositor-only
+        // transition, never a hard texture swap. The state class lives on the
+        // persisted shell root, not <html>, so Astro's view-transition swap
+        // (which resets <html> attributes) never clears it mid-navigation.
+        expect(componentsCss).toMatch(/\.hero-marquee-defocus__layer::after\s*\{[\s\S]*?var\(--glass-far-next\)/);
+        expect(componentsCss).toMatch(
+            /\.glass-swapping \.hero-marquee-defocus__layer::before\s*\{[\s\S]*?opacity:\s*0;/
+        );
+        expect(componentsCss).toMatch(
+            /\.glass-swapping \.hero-marquee-defocus__layer::after\s*\{[\s\S]*?opacity:\s*1;/
+        );
+        expect(componentsCss).not.toMatch(/html\.glass-(swapping|kenburns|no-transition)/);
+        expect(componentsCss).not.toMatch(/\.hero-marquee-defocus[\s\S]*?::before\s*\{[\s\S]*?filter:\s*blur/);
+        expect(componentsCss).not.toMatch(/Never put opacity < 1 on this root/);
+        // Readability: a touch more opaque than the original live-blur paper,
+        // since the pre-blurred bed is a fixed snapshot.
+        expect(componentsCss).toMatch(/--ticket-paper:\s*rgba\(255,\s*254,\s*247,\s*0\.72\)/);
         expect(componentsCss).toMatch(/--ticket-height:\s*7\.5rem/);
         expect(componentsCss).toMatch(/-webkit-line-clamp:\s*2/);
         expect(componentsCss).toMatch(/overflow-wrap:\s*anywhere/);
@@ -133,6 +158,16 @@ describe('hero widget marquee', () => {
         expect(componentsCss).toMatch(/\.hero-ticket__title\s*\{[^}]*flex:\s*0 0 auto/);
         expect(componentsCss).not.toMatch(/\.hero-ticket\s*\{[\s\S]*?backdrop-filter:\s*blur/);
         expect(i18n).toContain("'widgets.stats.kicker'");
+    });
+
+    it('mirrors the wallpaper Ken Burns zoom on the defocus bed textures', () => {
+        expect(componentsCss).toMatch(
+            /\.glass-kenburns \.hero-marquee-defocus__layer::before[\s\S]*?animation:\s*glass-kenburns var\(--kenburns-duration,\s*8s\) infinite/
+        );
+        expect(shell).toContain('glass-kenburns');
+        expect(shell).toContain('--kenburns-duration');
+        // Pure transform — never a filter that would re-rasterize per frame.
+        expect(componentsCss).not.toMatch(/\.glass-kenburns[^}]*filter:/);
     });
 
     it('shares a single clock timer across subscribers', () => {

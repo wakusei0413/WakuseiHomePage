@@ -7,6 +7,7 @@
 | `/archives`、`/topics`、`/categories`、`/tags`、`/search` | 博客 shell |
 | `/rss.xml`、`/atom.xml` | Feed |
 | `/search-index.json` | 客户端搜索索引（构建时生成） |
+| `/github-contributions.json` | GitHub 提交数据快照（构建时抓取生成） |
 | `/404` | `shellMode="error"` |
 
 ## 静态资源

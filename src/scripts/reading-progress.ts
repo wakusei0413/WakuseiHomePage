@@ -39,15 +39,31 @@ let scrollerEl: HTMLElement | null = null;
 let bodyEl: HTMLElement | null = null;
 let scrollHandler: (() => void) | null = null;
 let resizeHandler: (() => void) | null = null;
+let frame: number | null = null;
 
 function applyProgress() {
     if (!fillEl || !scrollerEl || !bodyEl) return;
     fillEl.style.transform = 'scaleX(' + computeProgress(scrollerEl, bodyEl) + ')';
 }
 
+// Coalesce to one update per animation frame: the scroller fires many scroll
+// events per frame, and each computeProgress call reads two bounding rects
+// (forced layout). Running it once per frame keeps the article scroll path cheap.
+function scheduleProgress() {
+    if (frame !== null) return;
+    frame = window.requestAnimationFrame(() => {
+        frame = null;
+        applyProgress();
+    });
+}
+
 function teardown() {
     if (scrollHandler && scrollerEl) scrollerEl.removeEventListener('scroll', scrollHandler);
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
+    if (frame !== null) {
+        cancelAnimationFrame(frame);
+        frame = null;
+    }
     scrollHandler = null;
     resizeHandler = null;
     fillEl = null;
@@ -61,8 +77,8 @@ function bind() {
     scrollerEl = getScroller();
     bodyEl = getPostBody();
     if (!fillEl || !scrollerEl || !bodyEl) return;
-    scrollHandler = applyProgress;
-    resizeHandler = applyProgress;
+    scrollHandler = scheduleProgress;
+    resizeHandler = scheduleProgress;
     scrollerEl.addEventListener('scroll', scrollHandler, { passive: true });
     window.addEventListener('resize', resizeHandler, { passive: true });
     applyProgress();

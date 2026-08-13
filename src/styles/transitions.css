@@ -31,7 +31,10 @@
 .hero-content {
     position: absolute;
     inset: 0;
-    will-change: transform, opacity, filter;
+    /* No permanent will-change: the 3D sink transform (translateZ inside the
+       perspective on .hero-sticky) promotes this to its own layer on demand,
+       and a permanent full-viewport layer with `will-change: filter` kept the
+       browser tracking expensive filter rasterization forever. */
     backface-visibility: hidden;
 }
 

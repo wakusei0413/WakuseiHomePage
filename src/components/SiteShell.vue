@@ -4,6 +4,7 @@ import { siteConfig } from '../data/site';
 import { createLogger } from '../lib/logger';
 import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations } from '../lib/runtime-effects';
 import { WallpaperController } from '../lib/wallpaper-scroller';
+import { bakeGlassTexture, canvasBlurSupported, type GlassTextures } from '../lib/wallpaper-glass';
 import { getPageShellStateFromDocument, subscribePageShellStateChange } from '../lib/page-shell-context';
 import { initHashSectionScrollOnLoad, navigateToHashSection } from '../lib/section-nav';
 import { splitLatinText } from '../lib/text';
@@ -11,9 +12,9 @@ import { usePageShellStore } from '../stores/page-shell';
 import { useSearchStore } from '../stores/search';
 import HeroWidgetMarquee, { type FeaturedPost, type SiteStats } from './HeroWidgetMarquee.vue';
 import SearchModal from './SearchModal.vue';
+import GitHubContributions from './GitHubContributions.vue';
 import SocialLinks from './SocialLinks.vue';
 import TopBar from './TopBar.vue';
-import TypewriterSlogan from './TypewriterSlogan.vue';
 
 const props = withDefaults(
     defineProps<{
@@ -55,18 +56,38 @@ const logger = createLogger(siteConfig.debug.consoleLog);
 const containerRef = ref<HTMLElement>();
 const avatarRef = ref<HTMLDivElement>();
 const wallpaperRef = ref<HTMLDivElement>();
+const shellRef = ref<HTMLDivElement>();
 const ready = ref(false);
 const heroEntering = ref(true);
 const heroRevealed = ref(false);
 const isMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
 
 let wallpaperController: WallpaperController | null = null;
+// --- frosted-glass texture management ---
+// The glass surfaces paint *pre-blurred* canvas copies of the current wallpaper
+// (baked while each new frame is still hidden), so a wallpaper change is a
+// compositor-only opacity crossfade between the ::before/::after texture slots
+// — no CSS filter re-rasterization, no second download, no hard texture swap.
+const GLASS_FADE_MS = 900; // matches the .wallpaper-image crossfade
+const glassTextureCache = new Map<string, GlassTextures>();
+let glassFadeTimer: number | undefined;
+let glassBakeToken = 0;
+let currentGlassSrc = '';
 let watchStop: (() => void) | null = null;
 let shellCleanup: (() => void) | undefined;
 let scrollCleanup: (() => void) | undefined;
 let scrollAnimationCleanup: (() => void) | undefined;
 let stickyAvatarCleanup: (() => void) | undefined;
 const pageCleanups: Array<() => void> = [];
+
+// The glass surfaces read their textures + Ken Burns state from the persisted
+// shell element (not <html>): it lives inside the view-transition
+// `transition:persist` wrapper, so Astro's swap — which wipes every attribute
+// on <html> — never clears the glass between navigations, and the Ken Burns
+// mirror keeps its phase (its class/`--kenburns-duration` are never removed).
+function glassRoot(): HTMLElement {
+    return shellRef.value ?? document.documentElement;
+}
 
 const heroOpacity = computed(() => {
     const sp = pageShell.scrollProgress;
@@ -77,16 +98,20 @@ const heroOpacity = computed(() => {
 
 const heroStyle = computed(() => {
     const sp = pageShell.scrollProgress;
-    // Avoid forcing a composited layer (transform/filter/opacity) before the user
+    // Avoid forcing a composited layer (transform/opacity) before the user
     // scrolls so the hero paints in normal flow and the LCP element renders at FCP.
     if (sp <= 0) return '';
+    // Performance note: the old scroll style animated `filter: blur(...)` every
+    // frame, which re-rasterized the whole first-screen scene on the main thread
+    // (the wallpaper + marquee + panel) and was the primary source of scroll jank.
+    // The 3D sink + fade keep the visual intent; the filter is gone from the
+    // scroll path entirely.
     return (
         'transform: ' +
         `translateZ(${-600 * sp}px) ` +
         `rotateX(${15 * sp}deg) ` +
         `scale(${1 - 0.3 * sp}); ` +
-        `opacity: ${Math.max(1 - sp * 1.2, 0)}; ` +
-        `filter: brightness(${1 - sp * 0.6}) blur(${sp * 8}px)`
+        `opacity: ${Math.max(1 - sp * 1.2, 0)};`
     );
 });
 
@@ -101,6 +126,34 @@ function startWallpaperLoading() {
     wallpaperController = new WallpaperController(siteConfig.wallpaper, {
         onReady: () => {
             ready.value = true;
+        },
+        // Bake the blurred glass textures the moment a new frame is preloaded,
+        // so by the time it is shown the swap is a plain texture change.
+        onWallpaperPreload: (img) => {
+            void scheduleGlassBake(img);
+        },
+        // Publish the active frame's ready-made textures to the CSS glass
+        // surfaces, crossfaded in sync with the wallpaper's own crossfade. If
+        // the textures are still baking (a late preload), the bake completion
+        // handler applies them the moment they land.
+        onWallpaperChange: (img) => {
+            if (!img?.src) {
+                return;
+            }
+            // Start the glass Ken Burns mirror in the same task the wallpaper's
+            // own zoom animation begins, so their phases stay locked. Applying
+            // the class again on later swaps never restarts the animation.
+            const rotation = siteConfig.wallpaper.rotation;
+            if (rotation.enabled) {
+                const root = glassRoot();
+                root.style.setProperty('--kenburns-duration', `${rotation.interval}ms`);
+                root.classList.add('glass-kenburns');
+            }
+            currentGlassSrc = img.src;
+            const textures = glassTextureCache.get(img.src);
+            if (textures) {
+                applyGlass(textures);
+            }
         }
     });
 
@@ -117,6 +170,160 @@ function teardownWallpaper() {
         wallpaperController.destroy();
         wallpaperController = null;
     }
+    // Cancel pending glass work (in-flight crossfade + bakes), revoke the baked
+    // blob: URLs, and drop the CSS snapshot so no stale wallpaper lingers
+    // (e.g. after a desktop -> mobile switch, where the wallpaper itself is gone).
+    clearTimeout(glassFadeTimer);
+    glassBakeToken += 1;
+    glassTextureCache.forEach((textures) => {
+        [textures.panel, textures.far, textures.mid, textures.near].forEach((url) => {
+            try {
+                URL.revokeObjectURL(url);
+            } catch {
+                // ignore — the URL is already gone
+            }
+        });
+    });
+    glassTextureCache.clear();
+    currentGlassSrc = '';
+    const root = glassRoot();
+    root.classList.remove('glass-swapping', 'glass-no-transition', 'glass-kenburns');
+    root.style.removeProperty('--kenburns-duration');
+    [
+        '--glass-panel',
+        '--glass-far',
+        '--glass-mid',
+        '--glass-near',
+        '--glass-panel-next',
+        '--glass-far-next',
+        '--glass-mid-next',
+        '--glass-near-next'
+    ].forEach((prop) => root.style.removeProperty(prop));
+}
+
+/**
+ * Bakes the four pre-blurred glass textures for a freshly loaded wallpaper
+ * frame: one draw per animation frame (each is small), with the JPEG encodes
+ * themselves running on a background thread via canvas.toBlob. The textures are
+ * cached by URL; the swap only happens after all four have landed (or is
+ * skipped entirely if baking is unavailable, in which case the glass simply
+ * keeps its previous frame's texture).
+ */
+function scheduleGlassBake(img: HTMLImageElement): void {
+    if (!canvasBlurSupported() || glassTextureCache.has(img.src)) {
+        return;
+    }
+
+    const src = img.src;
+    const token = ++glassBakeToken;
+    const textures: Partial<GlassTextures> = {};
+    // blur radii mirror the CSS the defocus bed used; the panel adds saturation.
+    const jobs: Array<[keyof GlassTextures, number, number?]> = [
+        ['far', 12],
+        ['mid', 32],
+        ['near', 48],
+        ['panel', 40, 2]
+    ];
+    let pending = jobs.length;
+
+    const commitIfDone = () => {
+        if (token !== glassBakeToken || --pending > 0) {
+            return; // teardown cancelled the bake, or textures still missing
+        }
+        const done = textures as GlassTextures;
+        if (done.panel && done.far && done.mid && done.near) {
+            glassTextureCache.set(src, done);
+            trimGlassTextureCache();
+            // The frame is already active (first load, or a late preload that
+            // activated before its textures finished baking): crossfade now.
+            if (currentGlassSrc === src) {
+                applyGlass(done);
+            }
+        }
+    };
+
+    const chain = () => {
+        if (token !== glassBakeToken) {
+            return; // teardown cancelled this bake
+        }
+        const job = jobs.shift();
+        if (!job) {
+            return;
+        }
+        const [key, blur, saturate] = job;
+        void bakeGlassTexture(img, blur, saturate)
+            .then((baked) => {
+                if (baked) {
+                    textures[key] = baked;
+                }
+                commitIfDone();
+            })
+            .catch(() => commitIfDone());
+        requestAnimationFrame(chain);
+    };
+
+    requestAnimationFrame(chain);
+}
+
+/**
+ * Crossfades the glass surfaces to a new frame's textures, in sync with the
+ * wallpaper's own crossfade. Each surface paints two texture slots
+ * (--glass-* and --glass-*-next); the incoming textures go into the "next"
+ * slots (one per frame, so each texture's one-time raster is spread), then
+ * `.glass-swapping` (on the persisted shell root) animates the old slot out
+ * and the new slot in over 0.9s — a pure compositor opacity transition.
+ */
+function applyGlass(textures: GlassTextures): void {
+    const root = glassRoot();
+    clearTimeout(glassFadeTimer);
+
+    const entries: Array<[string, string]> = [
+        ['--glass-panel-next', textures.panel],
+        ['--glass-far-next', textures.far],
+        ['--glass-mid-next', textures.mid],
+        ['--glass-near-next', textures.near]
+    ];
+
+    const chain = () => {
+        const next = entries.shift();
+        if (!next) {
+            // All incoming textures are in place: start the crossfade, then
+            // move them into the permanent slots once it has finished.
+            root.classList.add('glass-swapping');
+            glassFadeTimer = window.setTimeout(() => finishGlassSwap(textures), GLASS_FADE_MS + 60);
+            return;
+        }
+        root.style.setProperty(next[0], `url("${next[1]}")`);
+        requestAnimationFrame(chain);
+    };
+
+    chain();
+}
+
+/** After the crossfade: promote the new textures and snap the slots back. */
+function finishGlassSwap(textures: GlassTextures): void {
+    const root = glassRoot();
+    root.style.setProperty('--glass-panel', `url("${textures.panel}")`);
+    root.style.setProperty('--glass-far', `url("${textures.far}")`);
+    root.style.setProperty('--glass-mid', `url("${textures.mid}")`);
+    root.style.setProperty('--glass-near', `url("${textures.near}")`);
+    root.classList.remove('glass-swapping');
+    // Snap the pseudo opacities back without re-running the transition (the
+    // visible picture is unchanged: the new texture stays at full strength).
+    root.classList.add('glass-no-transition');
+    void root.offsetWidth;
+    root.classList.remove('glass-no-transition');
+}
+
+function trimGlassTextureCache(): void {
+    // Keep the cache small — only the current frame plus the incoming one(s).
+    while (glassTextureCache.size > 4) {
+        const oldest = glassTextureCache.keys().next().value;
+        if (oldest === undefined) {
+            break;
+        }
+        glassTextureCache.delete(oldest);
+    }
 }
 
 function handleHeroAvatarActivate() {
@@ -132,20 +339,40 @@ function attachScrollListener() {
     scrollCleanup = undefined;
     const scroller = document.getElementById('pageScroller');
     if (!scroller) return;
+    // Coalesce scroll progress updates to one store write per animation frame:
+    // scroll events can fire several times per frame (especially while the
+    // inertial-scroll rAF loop is driving scrollTop), and every store write
+    // re-evaluates the hero styles below. Batching them here keeps the scroll
+    // path to a single style write per frame.
+    let frame: number | undefined;
+    let pendingScrollTop = scroller.scrollTop;
+    let pendingDirection: 'up' | 'down' | null = null;
     let lastScrollY = scroller.scrollTop;
+
+    const flush = () => {
+        frame = undefined;
+        pageShell.setScrollProgress(Math.min(pendingScrollTop / window.innerHeight, 1));
+        if (pendingDirection) {
+            pageShell.setScrollDirection(pendingDirection);
+            pendingDirection = null;
+        }
+    };
+
     const handleScroll = () => {
         const currentScrollTop = scroller.scrollTop;
-        pageShell.setScrollProgress(Math.min(currentScrollTop / window.innerHeight, 1));
         if (currentScrollTop > lastScrollY) {
-            pageShell.setScrollDirection('down');
+            pendingDirection = 'down';
         } else if (currentScrollTop < lastScrollY) {
-            pageShell.setScrollDirection('up');
+            pendingDirection = 'up';
         }
         lastScrollY = currentScrollTop;
+        pendingScrollTop = currentScrollTop;
+        if (frame === undefined) frame = requestAnimationFrame(flush);
     };
     scroller.addEventListener('scroll', handleScroll, { passive: true });
     scrollCleanup = () => {
         scroller.removeEventListener('scroll', handleScroll);
+        if (frame !== undefined) cancelAnimationFrame(frame);
     };
 }
 
@@ -302,7 +529,12 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
     <div class="noise-overlay" />
 
     <!-- Desktop: left panel for all modes. Mobile: first-screen only on home (CSS). -->
-    <div class="hero-sticky" :data-shell-mode="pageShell.mode" :data-is-home="pageShell.isHomePage ? '' : undefined">
+    <div
+        ref="shellRef"
+        class="hero-sticky"
+        :data-shell-mode="pageShell.mode"
+        :data-is-home="pageShell.isHomePage ? '' : undefined"
+    >
         <div class="hero-content" :style="heroStyle">
             <main ref="containerRef" class="container">
                 <div ref="wallpaperRef" class="wallpaper-scroll-area" />
@@ -357,10 +589,7 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                             </div>
 
                             <div id="bioContainer" class="bio-container">
-                                <TypewriterSlogan
-                                    :config="siteConfig.slogans"
-                                    :cursor-style="siteConfig.animation.cursorStyle"
-                                />
+                                <GitHubContributions />
                             </div>
 
                             <SocialLinks :config="siteConfig.socialLinks" />

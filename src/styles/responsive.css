@@ -44,6 +44,13 @@
         justify-content: center;
     }
 
+    /* No wallpaper on mobile: the static frosted-glass snapshots are meaningless
+       here (the sticky hero is solid anyway), so drop the extra layers. */
+    .left-panel::before,
+    .left-panel::after {
+        display: none;
+    }
+
     .page-transition-surface {
         padding: 2.5rem 1rem;
     }
@@ -72,8 +79,11 @@
     .hero {
         position: sticky;
         top: 0;
-        background: var(--panel-bg);
-        backdrop-filter: var(--panel-blur);
+        /* Solid, not blurred: a backdrop-filter on a sticky header re-samples
+           the scrolling content beneath it on every scroll frame — a classic
+           mobile scroll-jank source. The opaque background keeps the header
+           legible at zero per-frame cost. */
+        background-color: var(--bg, #fffef7);
         z-index: 10;
         padding: var(--space-sm) 0;
         margin: calc(var(--space-sm) * -1) 0;

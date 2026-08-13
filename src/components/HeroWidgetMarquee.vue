@@ -281,8 +281,8 @@ onMounted(() => {
         if (slogans.length > 0) {
             const selector = createSloganSelector(siteConfig.slogans.mode, slogans);
             const first = selector.next();
-            // Start one phrase ahead of the left-panel typewriter so the two surfaces
-            // do not mirror the same sentence while they temporarily coexist.
+            // The rail marquee cycles slogans independently of the left panel
+            // (which now hosts the GitHub contribution graph instead of a typewriter).
             sloganText.value = slogans.length > 1 ? selector.next().text : first.text;
             scheduleSloganRotation(selector);
         }
