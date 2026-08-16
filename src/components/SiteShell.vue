@@ -58,8 +58,6 @@ const avatarRef = ref<HTMLDivElement>();
 const wallpaperRef = ref<HTMLDivElement>();
 const shellRef = ref<HTMLDivElement>();
 const ready = ref(false);
-const heroEntering = ref(true);
-const heroRevealed = ref(false);
 const isMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
 
 let wallpaperController: WallpaperController | null = null;
@@ -298,13 +296,8 @@ onMounted(() => {
         { immediate: true }
     );
 
-    // Reveal the left-panel hero with a staggered entrance once hydrated. The
-    // children are pre-hidden via the .hero-entering class (rendered in SSR) so the
-    // first paint is already hidden and the entrance never flickers.
-    requestAnimationFrame(() => {
-        heroEntering.value = false;
-        heroRevealed.value = true;
-    });
+    // The hero entrance is driven by html.is-entering (removed at first paint
+    // by the inline script in BaseLayout), not by hydration — see layout.css.
 
     document.addEventListener('astro:after-swap', resyncShellStateAfterSwap);
     pageCleanups.push(() => document.removeEventListener('astro:after-swap', resyncShellStateAfterSwap));
@@ -375,7 +368,6 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                             v-if="pageShell.mode === 'home'"
                             :key="pageShell.leftPanelKey"
                             class="hero"
-                            :class="{ 'hero-entering': heroEntering, 'hero-revealed': heroRevealed }"
                             :style="{ '--hero-opacity': heroOpacity }"
                         >
                             <div
@@ -429,7 +421,6 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                             v-else-if="pageShell.mode === 'blog'"
                             :key="pageShell.leftPanelKey"
                             class="hero hero-minimal"
-                            :class="{ 'hero-entering': heroEntering, 'hero-revealed': heroRevealed }"
                             :style="{ '--hero-opacity': heroOpacity }"
                         >
                             <h1 class="name">
@@ -449,7 +440,6 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
                             v-else-if="pageShell.mode === 'article'"
                             :key="pageShell.leftPanelKey"
                             class="hero hero-minimal"
-                            :class="{ 'hero-entering': heroEntering, 'hero-revealed': heroRevealed }"
                             :style="{ '--hero-opacity': heroOpacity }"
                         >
                             <h1 class="name">

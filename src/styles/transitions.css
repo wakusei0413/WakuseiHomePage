@@ -152,8 +152,8 @@
     filter: blur(8px);
 }
 
-/* The entrance itself is driven by the .hero-revealed child stagger defined in
-   layout.css, so the Vue Transition keeps its enter phase a no-op to avoid
+/* The entrance itself is driven by the html.is-entering child stagger defined
+   in layout.css, so the Vue Transition keeps its enter phase a no-op to avoid
    double-animating opacity over the stagger. The leave phase still fades the
    outgoing header out cleanly. */
 .left-panel-content-enter-active {
@@ -173,22 +173,22 @@
         filter: none;
     }
 
-    .left-panel .hero.hero-entering > .avatar-box,
-    .left-panel .hero.hero-entering > .name,
-    .left-panel .hero.hero-entering > .status-bar,
-    .left-panel .hero.hero-entering > .bio-container,
-    .left-panel .hero.hero-entering > .social-links,
-    .left-panel .hero.hero-entering > .social-links-wrapper {
+    html.is-entering .left-panel .hero > .avatar-box,
+    html.is-entering .left-panel .hero > .name,
+    html.is-entering .left-panel .hero > .status-bar,
+    html.is-entering .left-panel .hero > .bio-container,
+    html.is-entering .left-panel .hero > .social-links,
+    html.is-entering .left-panel .hero > .social-links-wrapper {
         opacity: 1;
         transform: none;
     }
 
-    .left-panel .hero.hero-revealed > .avatar-box,
-    .left-panel .hero.hero-revealed > .name,
-    .left-panel .hero.hero-revealed > .status-bar,
-    .left-panel .hero.hero-revealed > .bio-container,
-    .left-panel .hero.hero-revealed > .social-links,
-    .left-panel .hero.hero-revealed > .social-links-wrapper {
+    html:not(.is-entering) .left-panel .hero > .avatar-box,
+    html:not(.is-entering) .left-panel .hero > .name,
+    html:not(.is-entering) .left-panel .hero > .status-bar,
+    html:not(.is-entering) .left-panel .hero > .bio-container,
+    html:not(.is-entering) .left-panel .hero > .social-links,
+    html:not(.is-entering) .left-panel .hero > .social-links-wrapper {
         animation: none;
     }
 }

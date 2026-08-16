@@ -89,40 +89,45 @@ html.is-entering .left-panel {
     opacity: var(--hero-opacity, 1);
 }
 
-/* Initial-load entrance: children stay hidden while the shell hydrates, then
-   rise/fade in with a small stagger the first time the hero is revealed. */
-.left-panel .hero.hero-entering > .avatar-box,
-.left-panel .hero.hero-entering > .name,
-.left-panel .hero.hero-entering > .status-bar,
-.left-panel .hero.hero-entering > .bio-container,
-.left-panel .hero.hero-entering > .social-links,
-.left-panel .hero.hero-entering > .social-links-wrapper {
+/* Initial-load entrance: children stay hidden until the inline first-paint
+   script removes html.is-entering (two rAFs after DOMContentLoaded), then rise
+   in with a small stagger. This is deliberately NOT gated on Vue hydration
+   (client:idle): on slow devices hydration is deferred ~2s+, and hiding the
+   hero until then pushes the avatar (the LCP element) render delay past 2.5s.
+   The panel itself reveals on the same first-paint tick, so the two stay in
+   sync and the entrance never flickers. */
+html.is-entering .left-panel .hero > .avatar-box,
+html.is-entering .left-panel .hero > .name,
+html.is-entering .left-panel .hero > .status-bar,
+html.is-entering .left-panel .hero > .bio-container,
+html.is-entering .left-panel .hero > .social-links,
+html.is-entering .left-panel .hero > .social-links-wrapper {
     opacity: 0;
     transform: translateY(18px);
 }
 
-.left-panel .hero.hero-revealed > .avatar-box {
+html:not(.is-entering) .left-panel .hero > .avatar-box {
     animation: hero-item-rise 0.62s var(--curve-delicate) backwards;
     animation-delay: 0.05s;
 }
 
-.left-panel .hero.hero-revealed > .name {
+html:not(.is-entering) .left-panel .hero > .name {
     animation: hero-item-rise 0.62s var(--curve-delicate) backwards;
     animation-delay: 0.15s;
 }
 
-.left-panel .hero.hero-revealed > .status-bar {
+html:not(.is-entering) .left-panel .hero > .status-bar {
     animation: hero-item-rise 0.62s var(--curve-delicate) backwards;
     animation-delay: 0.25s;
 }
 
-.left-panel .hero.hero-revealed > .bio-container {
+html:not(.is-entering) .left-panel .hero > .bio-container {
     animation: hero-item-rise 0.62s var(--curve-delicate) backwards;
     animation-delay: 0.35s;
 }
 
-.left-panel .hero.hero-revealed > .social-links,
-.left-panel .hero.hero-revealed > .social-links-wrapper {
+html:not(.is-entering) .left-panel .hero > .social-links,
+html:not(.is-entering) .left-panel .hero > .social-links-wrapper {
     animation: hero-item-rise 0.62s var(--curve-delicate) backwards;
     animation-delay: 0.45s;
 }
