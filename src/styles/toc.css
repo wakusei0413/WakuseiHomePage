@@ -21,7 +21,7 @@
 
 .article-toc__panel {
     pointer-events: auto;
-    border-radius: 12px;
+    border-radius: var(--radius-xl);
     background: var(--toc-panel-bg);
     backdrop-filter: var(--panel-blur);
     -webkit-backdrop-filter: var(--panel-blur);
@@ -41,7 +41,7 @@
     max-height: calc(100dvh - 180px);
     overflow-y: auto;
     transform: translateY(-50%);
-    z-index: 1500;
+    z-index: var(--z-float, 1500);
 }
 
 .toc-panel-enter-from,
@@ -59,8 +59,8 @@
 .toc-panel-enter-active,
 .toc-panel-leave-active {
     transition:
-        transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-        opacity 0.25s ease;
+        transform 0.25s var(--curve-snap),
+        opacity 0.25s var(--curve-snap);
 }
 
 .article-toc__header {
@@ -95,11 +95,11 @@
     width: 34px;
     height: 34px;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-md);
     background: transparent;
     color: var(--fg);
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s var(--curve-snap);
 }
 
 .article-toc__close:hover {
@@ -119,15 +119,15 @@
     left: 8px;
     right: 8px;
     height: var(--toc-active-marker-height, 0);
-    border-radius: 6px;
+    border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--accent-blue) 10%, transparent);
     opacity: var(--toc-active-marker-opacity, 0);
     pointer-events: none;
     transform: translateY(var(--toc-active-marker-y, 0));
     transition:
-        transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-        height 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-        opacity 0.14s ease;
+        transform 0.22s var(--curve-snap),
+        height 0.22s var(--curve-snap),
+        opacity 0.14s var(--curve-snap);
     will-change: transform, height;
 }
 
@@ -148,11 +148,11 @@
     padding: 3px 0 3px 12px;
     font-size: 0.9rem;
     line-height: 1.35;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     opacity: var(--toc-item-opacity, 1);
     transition:
-        opacity 0.2s ease,
-        background-color 0.2s ease;
+        opacity 0.2s var(--curve-snap),
+        background-color 0.2s var(--curve-snap);
 }
 
 .article-toc__item:hover {
@@ -173,11 +173,11 @@
     overflow: hidden;
     transform-origin: top left;
     transition:
-        max-height 220ms cubic-bezier(0.16, 1, 0.3, 1),
-        padding-top 220ms cubic-bezier(0.16, 1, 0.3, 1),
-        padding-bottom 220ms cubic-bezier(0.16, 1, 0.3, 1),
-        opacity 140ms cubic-bezier(0.2, 0, 0, 1),
-        transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+        max-height 220ms var(--curve-snap),
+        padding-top 220ms var(--curve-snap),
+        padding-bottom 220ms var(--curve-snap),
+        opacity 140ms var(--curve-press),
+        transform 220ms var(--curve-snap);
     will-change: max-height, opacity, transform;
 }
 
@@ -201,7 +201,7 @@
 /* Vue's FLIP move phase keeps surrounding rows gliding into their new places
  * while one section closes and the next opens. */
 .toc-subitem-move {
-    transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 240ms var(--curve-snap);
 }
 
 .article-toc__item--active .article-toc__link {
@@ -220,7 +220,7 @@
     white-space: nowrap;
     text-decoration: none;
     color: inherit;
-    transition: color 0.18s ease;
+    transition: color 0.18s var(--curve-snap);
 }
 
 .article-toc__capsule {
@@ -234,7 +234,7 @@
     gap: 8px;
     height: 44px;
     padding: 0 16px;
-    border-radius: 22px;
+    border-radius: var(--radius-pill);
     border: 1px solid var(--panel-border);
     background: var(--toc-panel-bg);
     backdrop-filter: var(--panel-blur);
@@ -263,8 +263,8 @@
 .toc-capsule-enter-active,
 .toc-capsule-leave-active {
     transition:
-        transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-        opacity 0.25s ease;
+        transform 0.25s var(--curve-snap),
+        opacity 0.25s var(--curve-snap);
 }
 
 .article-toc__capsule-text {
@@ -296,7 +296,7 @@
 
 .toc-overlay-enter-active,
 .toc-overlay-leave-active {
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s var(--curve-snap);
 }
 
 .article-toc__panel--drawer {
@@ -339,7 +339,7 @@
 
 .toc-drawer-enter-active,
 .toc-drawer-leave-active {
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.25s var(--curve-snap);
 }
 
 .article-toc__capsule:focus-visible,
@@ -403,14 +403,14 @@
     height: 20px;
     padding: 0;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--muted, #666);
     cursor: pointer;
     opacity: 0.55;
     transition:
-        opacity 0.2s ease,
-        background-color 0.2s ease;
+        opacity 0.2s var(--curve-snap),
+        background-color 0.2s var(--curve-snap);
 }
 
 .article-toc__toggle:hover,
@@ -426,7 +426,7 @@
 }
 
 .article-toc__toggle svg {
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.2s var(--curve-snap);
 }
 
 /* Collapsed: chevron points right (▾ rotates to ▸). */

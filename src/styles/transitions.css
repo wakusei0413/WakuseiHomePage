@@ -68,11 +68,11 @@
 }
 
 ::view-transition-old(page-content) {
-    animation: vt-content-out 0.16s ease both;
+    animation: vt-content-out 0.16s var(--curve-snap) both;
 }
 
 ::view-transition-new(page-content) {
-    animation: vt-content-in 0.22s ease both;
+    animation: vt-content-in 0.22s var(--curve-snap) both;
 }
 
 ::view-transition-old(site-shell),
@@ -105,8 +105,8 @@
     opacity: 0;
     transform: translateY(-3px);
     transition:
-        opacity 0.16s ease,
-        transform 0.16s ease;
+        opacity 0.16s var(--curve-snap),
+        transform 0.16s var(--curve-snap);
 }
 
 .navigation-progress--visible {
@@ -121,7 +121,7 @@
     transform-origin: left center;
     background: linear-gradient(90deg, var(--accent-blue, #3e59ff), var(--accent-yellow, #ffe600));
     box-shadow: 0 0 18px color-mix(in srgb, var(--accent-blue, #3e59ff) 55%, transparent);
-    transition: transform 0.18s ease-out;
+    transition: transform 0.18s var(--curve-snap);
 }
 
 .navigation-progress--done .navigation-progress__bar {
@@ -143,8 +143,8 @@
 
 .left-panel-content-leave-active {
     transition:
-        filter 0.18s ease,
-        opacity 0.18s ease;
+        filter 0.18s var(--curve-snap),
+        opacity 0.18s var(--curve-snap);
 }
 
 .left-panel-content-leave-to {

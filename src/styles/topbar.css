@@ -34,18 +34,18 @@ body {
     border-bottom: 1px solid rgba(0, 0, 0, 0.2);
     color: #0a0a0a;
     border-radius: 0;
-    z-index: 2000;
+    z-index: var(--z-bar, 2000);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 24px;
     box-sizing: border-box;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-float);
     transform: translateY(var(--nav-translate-y, 0));
     transition:
-        left 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.4s var(--curve-delicate, cubic-bezier(0.1, 0.9, 0.2, 1)),
+        left 0.35s var(--curve-snap),
+        transform 0.3s var(--curve-standard),
+        opacity 0.4s var(--curve-delicate),
         background-color var(--transition-normal),
         border-bottom-color var(--transition-normal),
         color var(--transition-normal),
@@ -66,7 +66,7 @@ html.is-entering .top-bar {
     background-color: rgba(18, 18, 18, 0.8);
     border-bottom-color: rgba(255, 255, 255, 0.12);
     color: #ffffff;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    box-shadow: var(--shadow-float);
 }
 
 .top-bar-left {
@@ -82,7 +82,7 @@ html.is-entering .top-bar {
     cursor: pointer;
     white-space: nowrap;
     transition:
-        width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        width 0.35s var(--curve-snap),
         color var(--transition-normal);
 }
 
@@ -121,7 +121,7 @@ html.is-entering .top-bar {
 .top-bar-avatar {
     width: 40px;
     height: 40px;
-    border-radius: 6px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--avatar-frame-color);
     overflow: hidden;
     flex-shrink: 0;
@@ -164,7 +164,7 @@ html.is-entering .top-bar {
 .top-bar-dock-item {
     width: 48px;
     height: 48px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     border: none;
     background: transparent;
     color: inherit;
@@ -220,17 +220,17 @@ html.is-entering .top-bar {
     backdrop-filter: blur(40px) saturate(220%);
     border: 1px solid rgba(255, 255, 255, 0.5);
     color: #0a0a0a;
-    border-radius: 16px;
+    border-radius: var(--radius-2xl);
     padding: 8px;
     min-width: 160px;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
-    z-index: 3000;
+    box-shadow: var(--shadow-pop);
+    z-index: var(--z-bar-popup, 3000);
     opacity: 0;
     transform: translateX(-50%) translateY(-6px) scale(0.96);
     pointer-events: none;
     transition:
-        opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.4s var(--curve-snap),
+        transform 0.4s var(--curve-snap),
         background-color var(--transition-normal),
         border-color var(--transition-normal),
         color var(--transition-normal),
@@ -265,12 +265,12 @@ html.is-entering .top-bar {
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     cursor: pointer;
     color: inherit;
     font-size: 0.9rem;
     transition:
-        background 0.15s ease,
+        background 0.15s var(--curve-snap),
         color var(--transition-normal);
 }
 
@@ -285,7 +285,7 @@ html.is-entering .top-bar {
 .top-bar-popup-option .check-icon {
     width: 16px;
     opacity: 0;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.15s var(--curve-snap);
 }
 
 .top-bar-popup-option.selected .check-icon {
@@ -309,7 +309,7 @@ html.is-entering .top-bar {
         height: auto;
         min-height: 48px;
         padding: 6px 14px 6px 6px;
-        border-radius: 999px;
+        border-radius: var(--radius-pill);
         border: 1px solid rgba(0, 0, 0, 0.12);
         border-bottom: 1px solid rgba(0, 0, 0, 0.12);
         box-shadow:
@@ -319,8 +319,8 @@ html.is-entering .top-bar {
         justify-content: flex-start;
         z-index: calc(var(--z-dock, 10000) - 1);
         transition:
-            transform 0.35s var(--curve-delicate, cubic-bezier(0.1, 0.9, 0.2, 1)),
-            opacity 0.35s var(--curve-delicate, cubic-bezier(0.1, 0.9, 0.2, 1)),
+            transform 0.35s var(--curve-delicate),
+            opacity 0.35s var(--curve-delicate),
             background-color var(--transition-normal),
             border-color var(--transition-normal),
             color var(--transition-normal),
@@ -399,8 +399,8 @@ html.is-entering .top-bar {
         opacity: 0;
         pointer-events: none;
         transition:
-            transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-            opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transform 0.35s var(--curve-snap),
+            opacity 0.35s var(--curve-snap);
     }
 
     .top-bar-sidebar[data-open] {
@@ -470,8 +470,8 @@ html.is-entering .top-bar {
         opacity: 0;
         pointer-events: none;
         transition:
-            background-color 0.35s ease,
-            opacity 0.35s ease;
+            background-color 0.35s var(--curve-snap),
+            opacity 0.35s var(--curve-snap);
     }
 
     .top-bar-sidebar-overlay[data-open] {
@@ -498,7 +498,7 @@ html.is-entering .top-bar {
         height: 48px;
         flex: 0 0 48px;
         border: 2px solid #555555;
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
         background-color: #1a1a1a;
         box-shadow:
             0 0 12px rgba(255, 200, 80, 0.25),
@@ -548,7 +548,7 @@ html.is-entering .top-bar {
         text-decoration: none;
         font-size: 1rem;
         cursor: pointer;
-        transition: background-color 0.2s ease;
+        transition: background-color 0.2s var(--curve-snap);
         text-align: left;
     }
 
@@ -576,7 +576,7 @@ html.is-entering .top-bar {
         height: 0.75rem;
         margin-left: auto;
         font-size: 0.75rem;
-        transition: transform 0.25s ease;
+        transition: transform 0.25s var(--curve-snap);
     }
 
     .sidebar-menu-item.expanded .expand-icon {
@@ -589,8 +589,8 @@ html.is-entering .top-bar {
         overflow: hidden;
         opacity: 0;
         transition:
-            max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-            opacity 0.25s ease;
+            max-height 0.3s var(--curve-snap),
+            opacity 0.25s var(--curve-snap);
     }
 
     .sidebar-submenu.expanded {
@@ -606,7 +606,7 @@ html.is-entering .top-bar {
         cursor: pointer;
         font-size: 0.95rem;
         color: #e8e8ec;
-        transition: background-color 0.2s ease;
+        transition: background-color 0.2s var(--curve-snap);
     }
 
     .sidebar-submenu-item:hover {
@@ -622,7 +622,7 @@ html.is-entering .top-bar {
         width: 16px;
         color: var(--accent-blue);
         flex-shrink: 0;
-        transition: opacity 0.15s ease;
+        transition: opacity 0.15s var(--curve-snap);
     }
 
     .sidebar-submenu-item.selected .check-icon {

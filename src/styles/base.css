@@ -66,20 +66,79 @@
     --z-loading: 9998;
     --z-noise: 10001;
 
-    /* 过渡动画参数 */
-    --transition-fast: 0.2s ease-out;
-    --transition-normal: 0.3s ease-out;
-    --transition-slow: 0.5s ease-out;
-
-    /* 过渡属性分组 */
-    --transition-layout:
-        width var(--transition-normal), height var(--transition-normal), padding var(--transition-normal),
-        margin var(--transition-normal), max-width var(--transition-normal), min-height var(--transition-normal);
-
-    /* 超细腻曲线：10%起步，90%时间都在做极微小的平滑收尾 */
+    /* ===== 动效体系：统一曲线 =====
+       全站只允许这几条曲线，禁止再引入新的 cubic-bezier：
+       --curve-delicate 签名长过渡（>=0.5s）：入场、主题切换、细腻布局
+       --curve-snap    日常 UI 反馈（0.15-0.4s）：hover、弹层、抽屉、reveal */
     --curve-delicate: cubic-bezier(0.1, 0.9, 0.2, 1);
+    --curve-snap: cubic-bezier(0.16, 1, 0.3, 1);
+    --curve-standard: cubic-bezier(0.4, 0, 0.2, 1); /* 对称位移/布局移动 */
+    --curve-press: cubic-bezier(0.2, 0, 0, 1); /* 即时按压响应（<=0.1s） */
+    /* Ken Burns 呼吸循环专用；与 wallpaper-scroller.ts 里的 WAAPI easing 保持同步 */
+    --curve-loop: cubic-bezier(0.37, 0, 0.63, 1);
+    --curve-fade: ease; /* 纯 opacity 交叉淡化（壁纸/玻璃交换） */
+
+    --transition-fast: 0.2s var(--curve-snap);
+    --transition-normal: 0.3s var(--curve-snap);
+    --transition-slow: 0.5s var(--curve-snap);
     --transition-delicate: 0.8s var(--curve-delicate);
-    --transition-all: all var(--transition-delicate);
+
+    /* ===== 圆角刻度 ===== */
+    --radius-xs: 3px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-2xl: 16px;
+    --radius-pill: 999px;
+
+    /* ===== 浮层投影 ===== */
+    --shadow-float: 0 4px 20px rgba(0, 0, 0, 0.1); /* 悬浮条/胶囊 */
+    --shadow-pop: 0 8px 40px rgba(0, 0, 0, 0.3); /* 弹出面板/下拉 */
+
+    /* ===== 悬浮体系：统一 hover"浮起"（3D 侧视立体）=====
+       悬浮感 = 原地垂直抬升 + 轻微 3D 侧仰(rotateX) + 少量深度升起(translateZ)
+       + 分层投影分离，全部在 perspective 提供的 3D 空间里完成——
+       从侧上方看，卡片"弹离桌面"而不是平面平移。
+       刻意不用 scale：scale 是平面放大，会产生"扑脸"感；
+       这里的立体感来自 rotateX 侧仰 + translateZ 深度，方向是"升起"不是"放大"。
+       --curve-lift 带极轻微回弹过冲，产生"弹起"感；
+       投影用更慢曲线跟随，形成"光跟不上影"的节奏。 */
+    --curve-lift: cubic-bezier(0.22, 1.2, 0.36, 1); /* 轻微过冲的浮升曲线 */
+    --lift-persp: 1200px; /* 3D 视距：越小立体感越强 */
+    --lift-y: -6px; /* 大卡片：原地抬升 */
+    --lift-y-md: -4px; /* 宽幅行级 */
+    --lift-y-sm: -3px; /* 小按钮 */
+    --lift-rot: 2.5deg; /* 大卡片：侧仰角（顶边微后仰） */
+    --lift-rot-md: 2deg;
+    --lift-rot-sm: 1.5deg;
+    --lift-z: 10px; /* 大卡片：深度升起 */
+    --lift-z-md: 7px;
+    --lift-z-sm: 4px;
+    --lift: perspective(var(--lift-persp)) translateY(var(--lift-y)) rotateX(var(--lift-rot)) translateZ(var(--lift-z));
+    --lift-md: perspective(var(--lift-persp)) translateY(var(--lift-y-md)) rotateX(var(--lift-rot-md))
+        translateZ(var(--lift-z-md));
+    --lift-sm: perspective(var(--lift-persp)) translateY(var(--lift-y-sm)) rotateX(var(--lift-rot-sm))
+        translateZ(var(--lift-z-sm));
+    /* 分层悬浮投影：近地接触 + 中场扩散 + 远场氛围 */
+    --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.07), 0 14px 28px rgba(0, 0, 0, 0.11), 0 30px 60px rgba(0, 0, 0, 0.09);
+    --shadow-lift-sm: 0 2px 4px rgba(0, 0, 0, 0.06), 0 8px 16px rgba(0, 0, 0, 0.1);
+
+    /* ===== 焦点环 ===== */
+    --focus-ring: 2px solid var(--accent-blue);
+    --focus-offset: 2px;
+
+    /* 层级管理 */
+    --z-wallpaper: 0;
+    --z-content: 50;
+    --z-buttons: 1000;
+    --z-float: 1500; /* 浮动控件：返回顶部 / TOC 面板 */
+    --z-bar: 2000; /* 顶部导航栏 */
+    --z-bar-popup: 3000; /* 导航栏弹出层 */
+    --z-loading: 9998;
+    --z-dock: 10000; /* Dock / 模态 / 遮罩 */
+    --z-lightbox: 10050; /* 灯箱：高于一切模态 */
+    --z-noise: 10001;
 }
 
 /* ===== 暗色主题 ===== */
@@ -120,6 +179,14 @@
     --interactive-card-hover-lift: -4px;
     --interactive-card-color-fill-mix: 94%;
     --interactive-card-light-opacity: 0.8;
+
+    /* 暗色浮层投影：更深一档 */
+    --shadow-float: 0 4px 20px rgba(0, 0, 0, 0.35);
+    --shadow-pop: 0 8px 40px rgba(0, 0, 0, 0.55);
+
+    /* 暗色悬浮投影：对比更强 */
+    --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.3), 0 14px 28px rgba(0, 0, 0, 0.4), 0 30px 60px rgba(0, 0, 0, 0.35);
+    --shadow-lift-sm: 0 2px 4px rgba(0, 0, 0, 0.28), 0 8px 16px rgba(0, 0, 0, 0.36);
 }
 
 /* ===== 基础重置 ===== */
@@ -205,4 +272,35 @@ body,
     -ms-user-drag: none;
     user-drag: none;
     -webkit-touch-callout: none;
+}
+
+/* ===== 全局焦点环：键盘可达性基线 =====
+   各组件可覆盖颜色/偏移，但默认统一走这里。 */
+:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+}
+
+/* ===== 选区高亮 ===== */
+::selection {
+    background: color-mix(in srgb, var(--accent-yellow, #ffe600) 45%, transparent);
+    color: inherit;
+}
+
+[data-theme='dark'] ::selection {
+    background: color-mix(in srgb, var(--accent-blue, #5e6ad2) 55%, transparent);
+}
+
+/* ===== Reduced motion 安全网 =====
+   兜底：任何漏掉单独处理的动画/过渡都被压到近乎瞬时，
+   保留状态变化的可见性（0.01s 而非 0，避免 transitionend 监听失效）。 */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

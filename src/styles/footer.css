@@ -3,8 +3,9 @@
    ======================================== */
 
 .site-footer {
-    background-color: #0b1120;
-    color: #e2e8f0;
+    background-color: var(--panel-bg-solid);
+    border-top: 1px solid var(--panel-border);
+    color: var(--fg);
     font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
     padding: 1.5rem 3rem;
     position: relative;
@@ -23,12 +24,13 @@
 
 .footer-copyright {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--muted);
 }
 
 .footer-tagline {
     font-size: 0.875rem;
-    color: #475569;
+    color: var(--muted);
+    opacity: 0.7;
 }
 
 @media (max-width: 768px) {
@@ -40,8 +42,4 @@
         flex-direction: column;
         text-align: center;
     }
-}
-
-[data-theme='light'] .site-footer {
-    background-color: #0f172a;
 }
