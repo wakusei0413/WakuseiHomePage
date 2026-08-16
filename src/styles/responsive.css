@@ -44,10 +44,9 @@
         justify-content: center;
     }
 
-    /* No wallpaper on mobile: the static frosted-glass snapshots are meaningless
-       here (the sticky hero is solid anyway), so drop the extra layers. */
-    .left-panel::before,
-    .left-panel::after {
+    /* No wallpaper on mobile: the frosted-glass tint is meaningless here (the
+       sticky hero is solid anyway), so drop the extra layer. */
+    .left-panel::before {
         display: none;
     }
 

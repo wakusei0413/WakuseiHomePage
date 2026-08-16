@@ -4,7 +4,7 @@ import { siteConfig } from '../data/site';
 import { createLogger } from '../lib/logger';
 import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations } from '../lib/runtime-effects';
 import { WallpaperController } from '../lib/wallpaper-scroller';
-import { bakeGlassTexture, canvasBlurSupported, type GlassTextures } from '../lib/wallpaper-glass';
+import { sampleGlassTints } from '../lib/wallpaper-glass';
 import { getPageShellStateFromDocument, subscribePageShellStateChange } from '../lib/page-shell-context';
 import { initHashSectionScrollOnLoad, navigateToHashSection } from '../lib/section-nav';
 import { splitLatinText } from '../lib/text';
@@ -63,16 +63,11 @@ const heroRevealed = ref(false);
 const isMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
 
 let wallpaperController: WallpaperController | null = null;
-// --- frosted-glass texture management ---
-// The glass surfaces paint *pre-blurred* canvas copies of the current wallpaper
-// (baked while each new frame is still hidden), so a wallpaper change is a
-// compositor-only opacity crossfade between the ::before/::after texture slots
-// — no CSS filter re-rasterization, no second download, no hard texture swap.
-const GLASS_FADE_MS = 900; // matches the .wallpaper-image crossfade
-const glassTextureCache = new Map<string, GlassTextures>();
-let glassFadeTimer: number | undefined;
-let glassBakeToken = 0;
-let currentGlassSrc = '';
+// --- frosted-glass tint management ---
+// The glass surfaces paint a flat tint sampled from the current wallpaper
+// (one tiny drawImage + getImageData per change), so a wallpaper change is a
+// compositor-only background-color transition — no baked textures, no blob
+// URLs, no Ken Burns mirror to keep in phase with the wallpaper.
 let watchStop: (() => void) | null = null;
 let shellCleanup: (() => void) | undefined;
 let scrollCleanup: (() => void) | undefined;
@@ -80,11 +75,10 @@ let scrollAnimationCleanup: (() => void) | undefined;
 let stickyAvatarCleanup: (() => void) | undefined;
 const pageCleanups: Array<() => void> = [];
 
-// The glass surfaces read their textures + Ken Burns state from the persisted
-// shell element (not <html>): it lives inside the view-transition
-// `transition:persist` wrapper, so Astro's swap — which wipes every attribute
-// on <html> — never clears the glass between navigations, and the Ken Burns
-// mirror keeps its phase (its class/`--kenburns-duration` are never removed).
+// The glass surfaces read their tint from the persisted shell element (not
+// <html>): it lives inside the view-transition `transition:persist` wrapper, so
+// Astro's swap — which wipes every attribute on <html> — never clears the tint
+// between navigations.
 function glassRoot(): HTMLElement {
     return shellRef.value ?? document.documentElement;
 }
@@ -127,33 +121,18 @@ function startWallpaperLoading() {
         onReady: () => {
             ready.value = true;
         },
-        // Bake the blurred glass textures the moment a new frame is preloaded,
-        // so by the time it is shown the swap is a plain texture change.
-        onWallpaperPreload: (img) => {
-            void scheduleGlassBake(img);
-        },
-        // Publish the active frame's ready-made textures to the CSS glass
-        // surfaces, crossfaded in sync with the wallpaper's own crossfade. If
-        // the textures are still baking (a late preload), the bake completion
-        // handler applies them the moment they land.
+        // Sample the active frame's tint and publish it to the CSS glass
+        // surfaces; the surfaces transition background-color in sync with the
+        // wallpaper's own crossfade. If sampling fails (tainted canvas), the
+        // glass simply keeps the previous frame's tint.
         onWallpaperChange: (img) => {
-            if (!img?.src) {
+            const tints = sampleGlassTints(img);
+            if (!tints) {
                 return;
             }
-            // Start the glass Ken Burns mirror in the same task the wallpaper's
-            // own zoom animation begins, so their phases stay locked. Applying
-            // the class again on later swaps never restarts the animation.
-            const rotation = siteConfig.wallpaper.rotation;
-            if (rotation.enabled) {
-                const root = glassRoot();
-                root.style.setProperty('--kenburns-duration', `${rotation.interval}ms`);
-                root.classList.add('glass-kenburns');
-            }
-            currentGlassSrc = img.src;
-            const textures = glassTextureCache.get(img.src);
-            if (textures) {
-                applyGlass(textures);
-            }
+            const root = glassRoot();
+            root.style.setProperty('--glass-panel-tint', tints.panel);
+            root.style.setProperty('--glass-bed-tint', tints.bed);
         }
     });
 
@@ -170,160 +149,11 @@ function teardownWallpaper() {
         wallpaperController.destroy();
         wallpaperController = null;
     }
-    // Cancel pending glass work (in-flight crossfade + bakes), revoke the baked
-    // blob: URLs, and drop the CSS snapshot so no stale wallpaper lingers
-    // (e.g. after a desktop -> mobile switch, where the wallpaper itself is gone).
-    clearTimeout(glassFadeTimer);
-    glassBakeToken += 1;
-    glassTextureCache.forEach((textures) => {
-        [textures.panel, textures.far, textures.mid, textures.near].forEach((url) => {
-            try {
-                URL.revokeObjectURL(url);
-            } catch {
-                // ignore — the URL is already gone
-            }
-        });
-    });
-    glassTextureCache.clear();
-    currentGlassSrc = '';
+    // Drop the glass tint so no stale wallpaper color lingers (e.g. after a
+    // desktop -> mobile switch, where the wallpaper itself is gone).
     const root = glassRoot();
-    root.classList.remove('glass-swapping', 'glass-no-transition', 'glass-kenburns');
-    root.style.removeProperty('--kenburns-duration');
-    [
-        '--glass-panel',
-        '--glass-far',
-        '--glass-mid',
-        '--glass-near',
-        '--glass-panel-next',
-        '--glass-far-next',
-        '--glass-mid-next',
-        '--glass-near-next'
-    ].forEach((prop) => root.style.removeProperty(prop));
-}
-
-/**
- * Bakes the four pre-blurred glass textures for a freshly loaded wallpaper
- * frame: one draw per animation frame (each is small), with the JPEG encodes
- * themselves running on a background thread via canvas.toBlob. The textures are
- * cached by URL; the swap only happens after all four have landed (or is
- * skipped entirely if baking is unavailable, in which case the glass simply
- * keeps its previous frame's texture).
- */
-function scheduleGlassBake(img: HTMLImageElement): void {
-    if (!canvasBlurSupported() || glassTextureCache.has(img.src)) {
-        return;
-    }
-
-    const src = img.src;
-    const token = ++glassBakeToken;
-    const textures: Partial<GlassTextures> = {};
-    // blur radii mirror the CSS the defocus bed used; the panel adds saturation.
-    const jobs: Array<[keyof GlassTextures, number, number?]> = [
-        ['far', 12],
-        ['mid', 32],
-        ['near', 48],
-        ['panel', 40, 2]
-    ];
-    let pending = jobs.length;
-
-    const commitIfDone = () => {
-        if (token !== glassBakeToken || --pending > 0) {
-            return; // teardown cancelled the bake, or textures still missing
-        }
-        const done = textures as GlassTextures;
-        if (done.panel && done.far && done.mid && done.near) {
-            glassTextureCache.set(src, done);
-            trimGlassTextureCache();
-            // The frame is already active (first load, or a late preload that
-            // activated before its textures finished baking): crossfade now.
-            if (currentGlassSrc === src) {
-                applyGlass(done);
-            }
-        }
-    };
-
-    const chain = () => {
-        if (token !== glassBakeToken) {
-            return; // teardown cancelled this bake
-        }
-        const job = jobs.shift();
-        if (!job) {
-            return;
-        }
-        const [key, blur, saturate] = job;
-        void bakeGlassTexture(img, blur, saturate)
-            .then((baked) => {
-                if (baked) {
-                    textures[key] = baked;
-                }
-                commitIfDone();
-            })
-            .catch(() => commitIfDone());
-        requestAnimationFrame(chain);
-    };
-
-    requestAnimationFrame(chain);
-}
-
-/**
- * Crossfades the glass surfaces to a new frame's textures, in sync with the
- * wallpaper's own crossfade. Each surface paints two texture slots
- * (--glass-* and --glass-*-next); the incoming textures go into the "next"
- * slots (one per frame, so each texture's one-time raster is spread), then
- * `.glass-swapping` (on the persisted shell root) animates the old slot out
- * and the new slot in over 0.9s — a pure compositor opacity transition.
- */
-function applyGlass(textures: GlassTextures): void {
-    const root = glassRoot();
-    clearTimeout(glassFadeTimer);
-
-    const entries: Array<[string, string]> = [
-        ['--glass-panel-next', textures.panel],
-        ['--glass-far-next', textures.far],
-        ['--glass-mid-next', textures.mid],
-        ['--glass-near-next', textures.near]
-    ];
-
-    const chain = () => {
-        const next = entries.shift();
-        if (!next) {
-            // All incoming textures are in place: start the crossfade, then
-            // move them into the permanent slots once it has finished.
-            root.classList.add('glass-swapping');
-            glassFadeTimer = window.setTimeout(() => finishGlassSwap(textures), GLASS_FADE_MS + 60);
-            return;
-        }
-        root.style.setProperty(next[0], `url("${next[1]}")`);
-        requestAnimationFrame(chain);
-    };
-
-    chain();
-}
-
-/** After the crossfade: promote the new textures and snap the slots back. */
-function finishGlassSwap(textures: GlassTextures): void {
-    const root = glassRoot();
-    root.style.setProperty('--glass-panel', `url("${textures.panel}")`);
-    root.style.setProperty('--glass-far', `url("${textures.far}")`);
-    root.style.setProperty('--glass-mid', `url("${textures.mid}")`);
-    root.style.setProperty('--glass-near', `url("${textures.near}")`);
-    root.classList.remove('glass-swapping');
-    // Snap the pseudo opacities back without re-running the transition (the
-    // visible picture is unchanged: the new texture stays at full strength).
-    root.classList.add('glass-no-transition');
-    void root.offsetWidth;
-    root.classList.remove('glass-no-transition');
-}
-
-function trimGlassTextureCache(): void {
-    // Keep the cache small — only the current frame plus the incoming one(s).
-    while (glassTextureCache.size > 4) {
-        const oldest = glassTextureCache.keys().next().value;
-        if (oldest === undefined) {
-            break;
-        }
-        glassTextureCache.delete(oldest);
-    }
+    root.style.removeProperty('--glass-panel-tint');
+    root.style.removeProperty('--glass-bed-tint');
 }
 
 function handleHeroAvatarActivate() {

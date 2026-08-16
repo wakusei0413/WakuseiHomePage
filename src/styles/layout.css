@@ -52,58 +52,20 @@
         transform 0.5s var(--curve-delicate);
 }
 
-/* Static frosted-glass layers: pre-blurred wallpaper copies. --glass-panel is
-   the current frame's texture, --glass-panel-next the incoming one; the two
-   pseudo-elements crossfade via opacity (a compositor-only transition) in sync
-   with the wallpaper's own crossfade, so a wallpaper change never hard-swaps a
-   glass surface. The blur is baked into the bitmaps by SiteShell, so there is
-   no CSS filter at all: no filter re-rasterization, no extra download, and the
-   constantly animating wallpaper behind costs nothing per frame. The blur is
-   edge-clamped at bake time, so the texture has no dark fringe to hide. */
-.left-panel::before,
-.left-panel::after {
+/* Frosted-glass tint: a flat color sampled from the current wallpaper
+   (--glass-panel-tint, written by SiteShell on every wallpaper change) washed
+   over the opaque paper base. A tint has no geometry, so it can never drift
+   out of sync with the wallpaper, and it costs nothing per frame — the change
+   itself is a compositor-only background-color transition in sync with the
+   wallpaper's own crossfade. */
+.left-panel::before {
     content: '';
     position: absolute;
-    /* The wallpaper behind is `object-fit: cover` on the full 100vw × 100vh
-       scene, so the glass mirror paints the *same* cover on a full-viewport box
-       anchored to the panel's top-left (which coincides with the viewport's
-       top-left). The panel's own overflow then clips it to the left strip, so
-       the blurred texture shows exactly the wallpaper region behind the panel —
-       same scale, same position — instead of re-cropping the image to the
-       narrow panel box (which used to squash/zoom it). */
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    inset: 0;
     z-index: -1;
     pointer-events: none;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    opacity: 0.18;
-    transition: opacity 0.9s var(--curve-fade);
-}
-
-.left-panel::before {
-    background-image: var(--glass-panel);
-}
-
-.left-panel::after {
-    background-image: var(--glass-panel-next);
-    opacity: 0;
-}
-
-.glass-swapping .left-panel::before {
-    opacity: 0;
-}
-
-.glass-swapping .left-panel::after {
-    opacity: 0.18;
-}
-
-.glass-no-transition .left-panel::before,
-.glass-no-transition .left-panel::after {
-    transition: none;
+    background-color: rgb(var(--glass-panel-tint, 255 254 247) / 0.3);
+    transition: background-color 0.9s var(--curve-fade);
 }
 
 /* Fresh-load entrance: the panel slides/fades in from the left once the page
@@ -287,43 +249,6 @@ html.is-entering .left-panel {
     .wallpaper-image {
         will-change: opacity;
         transition-duration: 0.4s;
-    }
-}
-
-/* Ken Burns mirror: the glass textures breathe together with the sharp
-   wallpaper behind them. The keyframes + duration match the controller's Web
-   Animations kenburns exactly (--kenburns-duration, set from the rotation
-   config by SiteShell); both animations run on the same document timeline from
-   the same moment, so the phases stay locked and every rotation swap keeps
-   them continuous. It is a pure transform animation — compositor-only, never
-   re-rasterizing the pre-blurred textures. */
-@keyframes glass-kenburns {
-    0% {
-        transform: scale(1);
-        animation-timing-function: var(--curve-loop);
-    }
-    68% {
-        transform: scale(1.1);
-        animation-timing-function: var(--curve-loop);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-.glass-kenburns .left-panel::before,
-.glass-kenburns .hero-marquee-defocus__layer::before {
-    transform-origin: center center;
-    will-change: transform;
-    animation: glass-kenburns var(--kenburns-duration, 8s) infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .glass-kenburns .left-panel::before,
-    .glass-kenburns .left-panel::after,
-    .glass-kenburns .hero-marquee-defocus__layer::before,
-    .glass-kenburns .hero-marquee-defocus__layer::after {
-        animation: none;
     }
 }
 

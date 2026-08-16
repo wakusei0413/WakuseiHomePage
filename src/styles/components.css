@@ -1056,12 +1056,11 @@ html:not(.is-loaded) .noise-overlay {
   Performance note: the layers used to carry backdrop-filter blurs (12/32/48px)
   sampled from the *constantly animating* wallpaper, so every Ken Burns frame
   forced a full-width re-blur of the live backdrop — a major jank source. Each
-  layer now paints a *static, pre-blurred* copy of the current wallpaper
-  (--glass-far/--glass-mid/--glass-near — the blur is baked into the bitmap by
-  SiteShell while the frame is still preloading, so there is no CSS filter at
-  all). A wallpaper change crossfades the texture in via the ::before/::after
-  slots (compositor-only opacity, in sync with the wallpaper) — never a hard
-  swap — and the animating wallpaper behind costs nothing per frame.
+  layer now paints a flat tint sampled from the current wallpaper
+  (--glass-bed-tint, written by SiteShell on every wallpaper change). A tint
+  has no geometry, so it can never drift out of sync with the wallpaper, and it
+  costs nothing per frame; a wallpaper change is a compositor-only
+  background-color transition in sync with the wallpaper's own crossfade.
 */
 .hero-marquee-defocus {
     position: absolute;
@@ -1084,9 +1083,14 @@ html:not(.is-loaded) .noise-overlay {
     inset: 0;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.85s var(--curve-delicate);
-    /* Shared darkening gradient (was on the texture pseudo) — the pseudos now
-       carry only the pre-blurred wallpaper texture so they can crossfade. */
+    transition:
+        opacity 0.85s var(--curve-delicate),
+        background-color 0.9s var(--curve-fade);
+    /* Flat tint sampled from the wallpaper's bottom band; the three layers
+       stack the same color through their masks, so the band deepens toward
+       the bottom. */
+    background-color: rgb(var(--glass-bed-tint, 255 254 247) / 0.3);
+    /* Shared darkening gradient over the tint. */
     background-image: linear-gradient(
         180deg,
         transparent 0%,
@@ -1101,69 +1105,6 @@ html:not(.is-loaded) .noise-overlay {
     opacity: var(--marquee-defocus-opacity, 1);
 }
 
-/* The pre-blurred wallpaper snapshots: each slot is a full-viewport box,
-   bottom-anchored, painted with `background-size: cover` so it reproduces the
-   wallpaper's `object-fit: cover` exactly; the bed's overflow clips it to the
-   bottom band. The visible band therefore tracks the sharp wallpaper behind the
-   strip at the same scale and position. The bed-sized container keeps the
-   composited layers small, which matters because the Ken Burns mirror animates
-   their transform every frame. Each layer paints a texture whose blur was baked
-   in with canvas when the frame was preloaded (--glass-far/--glass-mid/
-   --glass-near, plus the --*-next incoming slot). The two slots crossfade via
-   opacity — no CSS filter, no hard texture swap. */
-.hero-marquee-defocus__layer::before,
-.hero-marquee-defocus__layer::after {
-    content: '';
-    position: absolute;
-    /* Full-viewport `cover`, bottom-anchored so the box coincides exactly with
-       the wallpaper's `object-fit: cover` scene; the bed's overflow clips it to
-       the bottom band. This shows the wallpaper's bottom strip at the same
-       scale and position as the sharp wallpaper behind it (no 100vw×100vh
-       stretch, no re-crop). */
-    left: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    transition: opacity 0.9s var(--curve-fade);
-}
-
-.hero-marquee-defocus__layer::before {
-    background-image: var(--glass-far);
-}
-
-.hero-marquee-defocus__layer::after {
-    background-image: var(--glass-far-next);
-    opacity: 0;
-}
-
-.glass-swapping .hero-marquee-defocus__layer::before {
-    opacity: 0;
-}
-
-.glass-swapping .hero-marquee-defocus__layer::after {
-    opacity: 1;
-}
-
-.glass-no-transition .hero-marquee-defocus__layer::before,
-.glass-no-transition .hero-marquee-defocus__layer::after {
-    transition: none;
-}
-
-/* Ken Burns mirror for the bed (keyframes in layout.css): the blurred texture
-   slots zoom in sync with the wallpaper — a pure transform animation,
-   compositor-only, never re-rasterizing the pre-blurred textures. Only the
-   ::before slot animates: the ::after slot is visible just during the 0.9s
-   crossfade, which lands on the scale(1) plateau of the eased curve, so a
-   static ::after is indistinguishable and halves the composited layers. */
-.glass-kenburns .hero-marquee-defocus__layer::before {
-    transform-origin: center center;
-    will-change: transform;
-    animation: glass-kenburns var(--kenburns-duration, 8s) infinite;
-}
-
 /* Far: light vignette, falls off upward into sharp wallpaper */
 .hero-marquee-defocus--revealed .hero-marquee-defocus__layer--far {
     -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 46%, #000 100%);
@@ -1176,26 +1117,10 @@ html:not(.is-loaded) .noise-overlay {
     mask-image: linear-gradient(180deg, transparent 0%, transparent 12%, rgba(0, 0, 0, 0.65) 50%, #000 100%);
 }
 
-.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--mid::before {
-    background-image: var(--glass-mid);
-}
-
-.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--mid::after {
-    background-image: var(--glass-mid-next);
-}
-
 /* Near: strongest ground-glass right under the cards */
 .hero-marquee-defocus--revealed .hero-marquee-defocus__layer--near {
     -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 24%, rgba(0, 0, 0, 0.8) 56%, #000 100%);
     mask-image: linear-gradient(180deg, transparent 0%, transparent 24%, rgba(0, 0, 0, 0.8) 56%, #000 100%);
-}
-
-.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--near::before {
-    background-image: var(--glass-near);
-}
-
-.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--near::after {
-    background-image: var(--glass-near-next);
 }
 
 .hero-marquee__track {
