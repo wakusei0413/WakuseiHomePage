@@ -47,12 +47,15 @@ export default defineConfig({
         define: {
             __VUE_PROD_DEVTOOLS__: false
         },
+        resolve: {
+            dedupe: ['vue', 'pinia']
+        },
         // `astro sync` runs a temp Vite server with `optimizeDeps.noDiscovery`,
         // so CommonJS deps in the content-collection loader chain (picomatch,
         // p-limit, …) must be pre-bundled explicitly or they load as raw CJS
         // inside the ESM module runner and throw "require is not defined".
         optimizeDeps: {
-            include: ['picomatch', 'p-limit', 'yocto-queue', 'picocolors']
+            include: ['vue', 'pinia', 'picomatch', 'p-limit', 'yocto-queue', 'picocolors']
         }
     },
     integrations: [
