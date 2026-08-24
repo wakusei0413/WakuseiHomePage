@@ -767,17 +767,30 @@ html:not(.is-loaded) .noise-overlay {
 }
 
 .social-link-dot {
+    position: relative;
     width: 8px;
     height: 8px;
     border-radius: 50%;
     border: none;
     padding: 0;
     background: var(--fg);
-    opacity: 0.2;
+    opacity: 0.25;
     cursor: pointer;
     transition:
         opacity 0.3s var(--curve-delicate),
         transform 0.3s var(--curve-delicate);
+}
+
+/* 扩展可触摸热区至 44px 满足 WCAG 规范 */
+.social-link-dot::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
 }
 
 .social-link-dot.active {
@@ -863,7 +876,8 @@ html:not(.is-loaded) .noise-overlay {
     pointer-events: none;
 }
 
-.search-modal-body .search-result:focus-visible {
+.search-modal-body .search-result:focus-visible,
+.search-modal-body .search-result--selected {
     outline: 2px solid var(--accent-blue);
     outline-offset: 3px;
     border-radius: var(--radius-md);
@@ -886,6 +900,29 @@ html:not(.is-loaded) .noise-overlay {
 
 .search-modal-body .search-summary span:first-child {
     color: var(--fg);
+}
+
+.search-modal-body .search-summary .search-view-all-link {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--accent-blue) 45%, transparent);
+    color: var(--accent-blue);
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition:
+        background-color var(--transition-fast),
+        color var(--transition-fast),
+        border-color var(--transition-fast);
+}
+
+.search-modal-body .search-summary .search-view-all-link:hover,
+.search-modal-body .search-summary .search-view-all-link:focus-visible {
+    background: color-mix(in srgb, var(--accent-blue) 12%, transparent);
+    border-color: var(--accent-blue);
 }
 
 .search-modal-body .search-snippet {
@@ -1007,8 +1044,8 @@ html:not(.is-loaded) .noise-overlay {
 }
 
 .hero-marquee {
-    --ticket-fg: rgba(18, 18, 18, 0.82);
-    --ticket-muted: rgba(18, 18, 18, 0.48);
+    --ticket-fg: rgba(18, 18, 18, 0.88);
+    --ticket-muted: rgba(18, 18, 18, 0.68);
     /* Slightly more opaque than the original live-blur paper: the ground-glass
        bed is now a static pre-blurred snapshot, so a touch of extra paper keeps
        the tickets crisp without losing the frosted depth. */
@@ -1506,8 +1543,8 @@ html:not(.is-loaded) .noise-overlay {
 }
 
 [data-theme='dark'] .hero-marquee {
-    --ticket-fg: rgba(255, 254, 247, 0.86);
-    --ticket-muted: rgba(255, 254, 247, 0.48);
+    --ticket-fg: rgba(255, 254, 247, 0.92);
+    --ticket-muted: rgba(255, 254, 247, 0.68);
     --ticket-paper: rgba(18, 18, 20, 0.68);
     --ticket-line: rgba(255, 255, 255, 0.08);
     --ticket-ink: rgba(255, 255, 255, 0.06);

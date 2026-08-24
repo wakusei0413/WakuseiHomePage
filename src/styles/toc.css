@@ -89,6 +89,7 @@
 }
 
 .article-toc__close {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -100,6 +101,17 @@
     color: var(--fg);
     cursor: pointer;
     transition: background-color 0.2s var(--curve-snap);
+}
+
+.article-toc__close::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
 }
 
 .article-toc__close:hover {
@@ -392,18 +404,30 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     padding: 0;
     border: none;
     border-radius: var(--radius-sm);
     background: transparent;
     color: var(--muted, #666);
     cursor: pointer;
-    opacity: 0.55;
+    opacity: 0.65;
     transition:
         opacity 0.2s var(--curve-snap),
         background-color 0.2s var(--curve-snap);
+}
+
+/* 扩展触控热区至 44px 避免误触标题链接 */
+.article-toc__toggle::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
 }
 
 .article-toc__toggle:hover,
@@ -415,7 +439,7 @@
 
 .article-toc__item--active .article-toc__toggle {
     color: var(--accent-blue, #3e59ff);
-    opacity: 0.9;
+    opacity: 0.95;
 }
 
 .article-toc__toggle svg {
