@@ -6,11 +6,12 @@
 
 /* ===== 布局类（从 [...slug].astro 迁移，限定在 .post-container 下防泄漏到列表页） ===== */
 .post-container {
-    max-width: min(840px, 100%);
+    max-width: min(var(--article-width, 840px), 100%);
     margin: 0 auto;
     padding: 0 24px;
     color: var(--fg, #0a0a0a);
     font-family: var(--font-ui);
+    transition: max-width var(--transition-fast);
 }
 
 /* 非正文导读卡：标题 / meta / 封面，与正文视觉分区 */
@@ -158,10 +159,24 @@
 /* ===== 正文容器 ===== */
 .post-body {
     font-family: var(--font-serif);
-    font-size: 1.0625rem;
-    line-height: 1.8;
+    font-size: calc(1.0625rem * var(--article-font-scale, 1));
+    line-height: var(--article-line-height, 1.8);
     color: var(--fg);
     overflow-wrap: break-word;
+}
+
+/* Long articles can contain hundreds of table cells and highlighted spans. Keep
+   prose in normal flow while deferring the internals of those heavy offscreen blocks. */
+.post-body > :is(.code-block, table) {
+    content-visibility: auto;
+}
+
+.post-body > .code-block {
+    contain-intrinsic-size: auto 160px;
+}
+
+.post-body > table {
+    contain-intrinsic-size: auto 225px;
 }
 
 /* 正文内的 UI 元素（代码、表格、kbd）保留无衬线 */
@@ -256,7 +271,7 @@
 /* ===== 段落 ===== */
 .post-body p {
     margin: 0 0 1.25em;
-    line-height: 1.8;
+    line-height: var(--article-line-height, 1.8);
 }
 
 .post-body :is(h1, h2, h3, h4, h5, h6) + p {
@@ -563,7 +578,7 @@
 
 .post-body li {
     margin-bottom: 0.5em;
-    line-height: 1.8;
+    line-height: var(--article-line-height, 1.8);
 }
 
 .post-body ul > li::marker {
@@ -661,8 +676,8 @@
     }
 
     .post-body {
-        font-size: 1rem;
-        line-height: 1.8;
+        font-size: calc(1rem * var(--article-font-scale, 1));
+        line-height: var(--article-line-height, 1.8);
     }
 
     /* 代码块与表格全宽出血 */
@@ -1333,62 +1348,7 @@
     }
 }
 
-/* ===== 返回顶部浮控（仅文章页，与 TOC 胶囊分置左右下角） ===== */
-.back-to-top {
-    position: fixed;
-    left: max(20px, env(safe-area-inset-left));
-    bottom: max(20px, env(safe-area-inset-bottom));
-    z-index: var(--z-float, 1500);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border: 1px solid var(--panel-border);
-    border-radius: 50%;
-    background: var(--panel-glass);
-    backdrop-filter: var(--panel-blur);
-    -webkit-backdrop-filter: var(--panel-blur);
-    box-shadow: var(--panel-shadow);
-    color: var(--fg);
-    cursor: pointer;
-    opacity: 0;
-    transform: translateY(12px) scale(0.92);
-    pointer-events: none;
-    transition:
-        opacity 0.25s var(--curve-snap),
-        transform 0.25s var(--curve-snap);
-}
-
-.back-to-top--visible {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    pointer-events: auto;
-}
-
-.back-to-top--visible:hover {
-    transform: var(--lift-sm);
-    border-color: var(--accent-blue, #3e59ff);
-    color: var(--accent-blue, #3e59ff);
-    box-shadow: var(--shadow-lift-sm);
-}
-
-.back-to-top--visible:active {
-    transform: translateY(0) scale(0.94);
-    transition-duration: 0.08s;
-}
-
-.back-to-top:focus-visible {
-    outline: 2px solid var(--accent-blue, #3e59ff);
-    outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .back-to-top {
-        transition: none;
-    }
-}
+/* ===== 返回顶部浮控已并入文章 dock（见 reading-controls.css 的 .article-dock） ===== */
 
 /* ===== 分类 / 标签聚合页 ===== */
 .taxonomy-page {

@@ -173,9 +173,9 @@ function attachScrollListener() {
     // re-evaluates the hero styles below. Batching them here keeps the scroll
     // path to a single style write per frame.
     let frame: number | undefined;
-    let pendingScrollTop = scroller.scrollTop;
+    let pendingScrollTop = 0;
     let pendingDirection: 'up' | 'down' | null = null;
-    let lastScrollY = scroller.scrollTop;
+    let lastScrollY: number | null = null;
 
     const flush = () => {
         frame = undefined;
@@ -188,9 +188,9 @@ function attachScrollListener() {
 
     const handleScroll = () => {
         const currentScrollTop = scroller.scrollTop;
-        if (currentScrollTop > lastScrollY) {
+        if (lastScrollY !== null && currentScrollTop > lastScrollY) {
             pendingDirection = 'down';
-        } else if (currentScrollTop < lastScrollY) {
+        } else if (lastScrollY !== null && currentScrollTop < lastScrollY) {
             pendingDirection = 'up';
         }
         lastScrollY = currentScrollTop;

@@ -21,7 +21,7 @@
 
 ## Islands
 
-- 默认 **`client:idle`**；只有对延迟敏感的地方才用 **`client:load`**（`SearchPage`、`ArticleToc`、交互式搜索路径）。
+- 默认 **`client:idle`**；只有首屏交互确实依赖同步水合的地方才用 **`client:load`**（搜索路径）。文章目录使用带 500ms 上限的 `client:idle`，阅读控制使用普通 `client:idle`，避免两者阻塞跨页交换。
 - 拿不准时跟邻居保持一致。
 
 ## 站内导航

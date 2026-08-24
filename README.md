@@ -134,6 +134,7 @@ wallpaper: {
 - 列表 / 渲染适配：`src/lib/posts.ts`（**仅服务端**；Vue 侧用 `post-model.ts` 等）
 - 封面：放在文章目录内，frontmatter 写相对路径，例如 `cover: './cover.webp'`（走 `image()` + `getImage` 优化）
 - `draft: true` 不出现在列表、搜索、feeds、静态路径
+- `pubDate` 必填；`author` 可按文章覆盖，未填写时结构化 SEO 使用站点 profile
 - 列表按 `pubDate` **新→旧**排序
 
 ### Frontmatter 示例
@@ -147,6 +148,9 @@ coverLayout: overlay   # 或 below
 language: 'zh-CN'
 category: '生活'
 tags: ['Astro', '笔记']
+author:                 # 可选；转载内容应填写真实作者
+  name: '作者名'
+  url: 'https://example.com/author'
 draft: false
 pubDate: '2026-06-20'
 updatedDate: '2026-06-21'

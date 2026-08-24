@@ -1,5 +1,10 @@
 // Client-safe post types and pure helpers. Do not import astro:content here.
 
+export interface PostAuthor {
+    name: string;
+    url?: string;
+}
+
 export interface PostFrontmatter {
     title: string;
     description: string;
@@ -8,9 +13,14 @@ export interface PostFrontmatter {
     language?: string;
     category?: string;
     tags?: string[];
+    author?: PostAuthor;
     draft?: boolean;
     pubDate?: string;
     updatedDate?: string;
+}
+
+export interface PublishedPostFrontmatter extends PostFrontmatter {
+    pubDate: string;
 }
 
 export interface PostListItem {

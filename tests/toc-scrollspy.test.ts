@@ -47,6 +47,13 @@ describe('TOC scrollspy alignment (click highlight bug)', () => {
         expect(tocComponent).toContain('rootMargin: `-${TOC_TOP_OFFSET}px 0px -55% 0px`');
     });
 
+    it('defers expensive TOC layout reads until the article is actually being read', () => {
+        expect(tocComponent).toContain('if (bodyActive.value && !layoutMeasureCancel) scheduleLayoutMeasure();');
+        expect(tocComponent).toContain(
+            'if (!layoutMeasured && !bodyActive.value && !scrollerElement?.scrollTop) return;'
+        );
+    });
+
     it('scrollToHeading lands the clicked heading at the band top, not flush at y=0', () => {
         // A heading sitting 600px down the viewport, scroller at the top.
         const heading = document.createElement('h2');

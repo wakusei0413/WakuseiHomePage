@@ -226,7 +226,11 @@
 .article-toc__capsule {
     position: fixed;
     right: max(20px, env(safe-area-inset-right));
-    bottom: max(20px, env(safe-area-inset-bottom));
+    /* 目录胶囊排布在文章 dock（Aa + 返回顶部）上方，与 dock 组成一个右下角堆叠。 */
+    bottom: calc(
+        var(--article-dock-bottom, max(20px, env(safe-area-inset-bottom))) + var(--article-dock-height, 98px) +
+            var(--article-dock-gap, 10px)
+    );
     z-index: calc(var(--z-dock, 10000) + 10);
     pointer-events: auto;
     display: flex;
@@ -234,12 +238,12 @@
     gap: 8px;
     height: 44px;
     padding: 0 16px;
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--panel-border);
+    border-radius: 22px;
+    border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
     background: var(--toc-panel-bg);
     backdrop-filter: var(--panel-blur);
     -webkit-backdrop-filter: var(--panel-blur);
-    box-shadow: var(--panel-shadow);
+    box-shadow: var(--article-dock-shadow, var(--panel-shadow));
     color: var(--fg);
     font-family: var(--font-ui);
     font-size: 0.85rem;
@@ -373,17 +377,6 @@
     .toc-drawer-leave-active {
         transition: none;
     }
-}
-
-/* ===== 胶囊：阅读进度百分比 ===== */
-.article-toc__capsule-progress {
-    flex-shrink: 0;
-    min-width: 2.4em;
-    text-align: center;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--accent-blue, #3e59ff);
-    font-variant-numeric: tabular-nums;
 }
 
 /* ===== h2 折叠/展开切换 ===== */

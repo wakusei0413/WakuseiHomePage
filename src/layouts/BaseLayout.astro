@@ -9,6 +9,7 @@ import '../styles/topbar.css';
 import '../styles/footer.css';
 import '../styles/article.css';
 import '../styles/toc.css';
+import '../styles/reading-controls.css';
 
 import { ClientRouter } from 'astro:transitions';
 import Footer from '../components/Footer.vue';
@@ -16,6 +17,7 @@ import SiteShell from '../components/SiteShell.vue';
 import TopBar from '../components/TopBar.vue';
 import { siteConfig } from '../data/site';
 import { loadFeaturedPosts, loadRecentlyUpdatedPost, loadSiteStats } from '../lib/posts';
+import { createBlogPostingJsonLd, serializeJsonLd, type ArticleSeoMetadata } from '../lib/seo';
 
 interface Props {
     title?: string;
@@ -23,6 +25,8 @@ interface Props {
     shellMode?: 'home' | 'blog' | 'article' | 'error';
     shellTitle?: string;
     ogImage?: string;
+    ogImageAlt?: string;
+    articleSeo?: ArticleSeoMetadata;
     paginationPrev?: string;
     paginationNext?: string;
 }
@@ -33,6 +37,8 @@ const {
     shellMode = 'error',
     shellTitle = title,
     ogImage,
+    ogImageAlt,
+    articleSeo,
     paginationPrev,
     paginationNext
 } = Astro.props;
@@ -52,13 +58,29 @@ const wallpaperOrigins = Array.from(
     )
 );
 const siteUrl = Astro.site ?? new URL('https://www.wakusei.top');
+const siteHomeUrl = new URL('/', siteUrl).toString();
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
 const ogImageUrl = ogImage
     ? ogImage.startsWith('http')
         ? ogImage
         : new URL(ogImage, siteUrl).toString()
     : new URL(siteConfig.profile.avatar, siteUrl).toString();
-const ogLocale = siteConfig.lang.replace('-', '_');
+const resolvedOgImageAlt = ogImageAlt ?? (articleSeo?.image ? title : `${siteConfig.profile.name} avatar`);
+const ogLocale = (articleSeo?.language ?? siteConfig.lang).replace('-', '_');
+const blogPosting = articleSeo
+    ? createBlogPostingJsonLd({
+          ...articleSeo,
+          canonicalUrl,
+          headline: title,
+          description,
+          publisher: {
+              name: siteConfig.profile.name,
+              url: siteHomeUrl,
+              image: new URL(siteConfig.profile.avatar, siteUrl).toString()
+          }
+      })
+    : undefined;
+const serializedBlogPosting = blogPosting ? serializeJsonLd(blogPosting) : undefined;
 const googleFontsUrl =
     'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap';
 ---
@@ -88,11 +110,18 @@ const googleFontsUrl =
         <meta property="og:site_name" content={siteConfig.title} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
-        <meta property="og:type" content="website" />
+        <meta property="og:type" content={articleSeo ? 'article' : 'website'} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:image" content={ogImageUrl} />
-        <meta property="og:image:alt" content={`${siteConfig.profile.name} avatar`} />
+        <meta property="og:image:alt" content={resolvedOgImageAlt} />
         <meta property="og:locale" content={ogLocale} />
+        {articleSeo && <meta name="author" content={articleSeo.author.name} />}
+        {articleSeo?.author.url && <meta property="article:author" content={articleSeo.author.url} />}
+        {articleSeo && <meta property="article:published_time" content={articleSeo.publishedTime} />}
+        {articleSeo && <meta property="article:modified_time" content={articleSeo.modifiedTime} />}
+        {blogPosting?.articleSection && <meta property="article:section" content={blogPosting.articleSection} />}
+        {blogPosting?.keywords?.map((tag) => <meta property="article:tag" content={tag} />)}
+        {serializedBlogPosting && <script is:inline type="application/ld+json" set:html={serializedBlogPosting} />}
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />

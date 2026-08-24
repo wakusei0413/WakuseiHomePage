@@ -188,8 +188,6 @@ function initNavigationRuntime() {
 
     document.addEventListener('astro:after-swap', () => {
         applyHomePageChromeState(incomingIsHomePage);
-        const scroller = document.getElementById('pageScroller') || document.querySelector('.page-scroller');
-        if (scroller) scroller.scrollTo({ top: 0 });
     });
 }
 

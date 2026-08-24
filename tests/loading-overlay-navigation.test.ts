@@ -112,9 +112,9 @@ describe('navigation behavior', () => {
         );
     });
 
-    it('resets the page scroller after swaps', () => {
-        expect(navigationRuntime).toContain("document.getElementById('pageScroller')");
-        expect(navigationRuntime).toContain('scrollTo({ top: 0 })');
+    it('does not synchronously relayout either document just to reset nested scroll', () => {
+        expect(navigationRuntime).not.toContain('scroller.scrollTop = 0');
+        expect(navigationRuntime).not.toContain('scroller.scrollTo({ top: 0 })');
     });
 
     it('styles the top navigation progress bar without blocking clicks', () => {

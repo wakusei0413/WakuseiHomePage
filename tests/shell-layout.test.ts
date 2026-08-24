@@ -56,6 +56,12 @@ describe('persistent shell layout guardrails', () => {
         expect(siteShell).toContain('subscribePageShellStateChange');
     });
 
+    it('does not force full-page layout while reattaching the persisted shell after a swap', () => {
+        expect(siteShell).toContain('let lastScrollY: number | null = null;');
+        expect(siteShell).not.toContain('let pendingScrollTop = scroller.scrollTop;');
+        expect(siteShell).not.toContain('let lastScrollY = scroller.scrollTop;');
+    });
+
     it('exposes shell data on the content transition surface', () => {
         expect(baseLayout).toContain('data-shell-mode');
         expect(baseLayout).toContain('data-page-title');

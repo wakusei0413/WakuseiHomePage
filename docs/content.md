@@ -7,8 +7,10 @@
 
 ## Frontmatter
 
-- **`description` 必填**（列表/SEO 用）；写真实摘要，不是正文第一行或裸 URL。
-- 字段：`title`、`description`、`cover`、`coverLayout`（`overlay` | `below`）、`category`、`tags`、`pubDate`、`updatedDate`、`language`、`draft`。
+- **`description`、`pubDate` 必填**；摘要用于列表/SEO，写真实内容，不是正文第一行或裸 URL。
+- 字段：`title`、`description`、`cover`、`coverLayout`（`overlay` | `below`）、`category`、`tags`、`author`、`pubDate`、`updatedDate`、`language`、`draft`。
+- `author` 可选，格式为 `{ name, url? }`；缺省时结构化 SEO 使用 `siteConfig.profile` 作为作者。转载文章应填写真实作者覆盖值，不要让默认值造成错误归因。
+- `updatedDate` 可选；未填写时结构化数据的 `dateModified` 与 `pubDate` 相同，页面不会显示“更新于”。
 
 ## 服务端模块 vs 客户端模块
 

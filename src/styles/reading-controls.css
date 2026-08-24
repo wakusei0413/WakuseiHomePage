@@ -1,0 +1,261 @@
+/* ========================================
+   文章 dock —— 阅读控制（Aa）+ 返回顶部 + 专注模式（仅文章页）
+   专注模式经 <html class="is-focus-mode"> 驱动，避免 JS 直接改各组件内部。
+   清爽轻量：柔和投影、近似不透明面板、浅遮罩。
+   颜色一律 token 或 color-mix，禁止硬编码深色/十六进制。
+   ======================================== */
+
+:root {
+    /* dock 几何令牌：toc.css 的目录胶囊据此排布在 dock 上方 */
+    --article-dock-item: 44px;
+    --article-dock-gap: 10px;
+    --article-dock-bottom: max(20px, env(safe-area-inset-bottom));
+    --article-dock-height: calc(var(--article-dock-item) * 2 + var(--article-dock-gap));
+    /* 柔和投影：替代 --panel-shadow 的 4px 硬偏移，用于小型浮层 */
+    --article-dock-shadow: 0 10px 30px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='dark'] {
+    --article-dock-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== 专注模式：隐藏外壳、正文居中加宽 ===== */
+html.is-focus-mode .top-bar,
+html.is-focus-mode .hero-sticky,
+html.is-focus-mode .page-footer {
+    display: none;
+}
+
+html.is-focus-mode .post-container {
+    max-width: min(1000px, 100%);
+}
+
+/* ===== dock 容器（右下角纵向堆叠） ===== */
+.article-dock {
+    position: fixed;
+    right: max(20px, env(safe-area-inset-right));
+    bottom: var(--article-dock-bottom);
+    z-index: 1490;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--article-dock-gap);
+    pointer-events: none;
+    transition:
+        opacity 0.22s ease,
+        transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0.22s;
+}
+
+/* 翻到正文开始前，整个 dock（Aa + 返回顶部）隐藏 */
+.article-dock--hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+}
+
+/* ===== 圆形 FAB（Aa / 返回顶部） ===== */
+.article-dock__fab {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--article-dock-item);
+    height: var(--article-dock-item);
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
+    box-shadow: var(--article-dock-shadow);
+    color: var(--fg);
+    cursor: pointer;
+    transition:
+        background-color var(--transition-fast),
+        color var(--transition-fast),
+        border-color var(--transition-fast);
+}
+
+.article-dock__fab:hover:not(:disabled) {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.article-dock__fab:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+.article-dock__fab--aa {
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1;
+}
+
+.article-dock__fab--active {
+    border-color: var(--accent-blue);
+    background: color-mix(in srgb, var(--accent-blue) 14%, var(--bg));
+    color: var(--accent-blue);
+}
+
+/* ===== 「Aa」模态框（居中，层级高于目录，避免互相遮挡） ===== */
+.article-dock__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-dock, 10000) + 20);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.16);
+}
+
+.article-dock__popover {
+    display: grid;
+    width: min(360px, 100%);
+    max-height: min(80dvh, 560px);
+    overflow-y: auto;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
+    box-shadow: var(--article-dock-shadow);
+    color: var(--fg);
+    font-family: var(--font-ui);
+    transform: scale(1);
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.article-dock__popover:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+.article-dock__popover-group {
+    display: grid;
+    gap: 8px;
+}
+
+.article-dock__popover-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.article-dock__popover-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.article-dock__popover-value {
+    flex: 1;
+    min-width: 3em;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--fg);
+}
+
+/* ===== 弹出面板内按钮 ===== */
+.article-dock__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--fg);
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background-color var(--transition-fast),
+        color var(--transition-fast),
+        border-color var(--transition-fast);
+}
+
+.article-dock__btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--fg) 8%, transparent);
+}
+
+.article-dock__btn:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+.article-dock__btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.article-dock__btn--font {
+    min-width: 34px;
+    padding: 0 12px;
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.article-dock__btn--seg {
+    flex: 1;
+    border-color: color-mix(in srgb, var(--fg) 18%, transparent);
+    color: var(--muted);
+}
+
+.article-dock__btn--active {
+    border-color: var(--accent-blue);
+    background: color-mix(in srgb, var(--accent-blue) 14%, transparent);
+    color: var(--accent-blue);
+}
+
+.article-dock__btn--focus {
+    width: 100%;
+    border-color: color-mix(in srgb, var(--fg) 18%, transparent);
+}
+
+/* ===== 模态框过渡（遮罩淡入 + 面板轻微缩放） ===== */
+.dock-popover-enter-from,
+.dock-popover-leave-to {
+    opacity: 0;
+}
+
+.dock-popover-enter-from .article-dock__popover,
+.dock-popover-leave-to .article-dock__popover {
+    transform: scale(0.96);
+}
+
+.dock-popover-enter-active,
+.dock-popover-leave-active {
+    transition: opacity 0.18s ease;
+}
+
+/* ===== 减弱动态：dock 与模态框不做任何动画 ===== */
+@media (prefers-reduced-motion: reduce) {
+    .article-dock,
+    .article-dock__fab,
+    .article-dock__btn,
+    .article-dock__popover,
+    .post-container {
+        transition: none;
+    }
+
+    .dock-popover-enter-active,
+    .dock-popover-leave-active {
+        transition: none;
+    }
+}

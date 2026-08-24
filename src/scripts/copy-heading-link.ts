@@ -1,8 +1,4 @@
-/**
- * 标题复制深链 —— 给文章正文每个带 id 的标题挂一个"复制链接"按钮，hover 标题
- * 时显示。点击把 当前页 + #id 写入剪贴板，短暂提示"已复制"。监听
- * astro:page-load，view transitions 切页后重新装饰。
- */
+/** 标题复制深链：由 article-runtime 在空闲阶段装饰。 */
 
 import { copyText } from '../lib/clipboard';
 
@@ -17,42 +13,75 @@ const CHECK_ICON =
     '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false">' +
     '<path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
 
+let activeRoot: HTMLElement | null = null;
+let listenerController: AbortController | null = null;
+const feedbackTimers = new Map<HTMLButtonElement, number>();
+
 function buildUrl(id: string): string {
     return window.location.origin + window.location.pathname + '#' + id;
 }
 
-function attach(heading: HTMLElement): void {
-    if (heading.dataset.copyReady === '1') return;
-    const id = heading.id;
-    if (!id) return;
+function attachButton(heading: HTMLElement): void {
+    if (heading.dataset.copyReady === '1' || !heading.id) return;
     heading.dataset.copyReady = '1';
 
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = BUTTON_CLASS;
-    btn.setAttribute('aria-label', '复制本节链接');
-    btn.innerHTML = LINK_ICON;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = BUTTON_CLASS;
+    button.setAttribute('aria-label', '复制本节链接');
+    button.innerHTML = LINK_ICON;
+    heading.appendChild(button);
+}
 
-    btn.addEventListener('click', async (e: MouseEvent) => {
-        e.preventDefault();
-        const ok = await copyText(buildUrl(id));
-        if (!ok) return;
-        btn.innerHTML = CHECK_ICON;
-        btn.classList.add(BUTTON_CLASS + '--done');
+function resetButton(button: HTMLButtonElement): void {
+    button.innerHTML = LINK_ICON;
+    button.classList.remove(BUTTON_CLASS + '--done');
+}
+
+async function onCopyClick(event: MouseEvent): Promise<void> {
+    const target = event.target;
+    if (!(target instanceof Element) || !activeRoot) return;
+
+    const button = target.closest<HTMLButtonElement>('.' + BUTTON_CLASS);
+    if (!button || !activeRoot.contains(button)) return;
+
+    const heading = button.closest<HTMLElement>(':is(h2,h3,h4,h5)[id]');
+    if (!heading) return;
+
+    event.preventDefault();
+    const ok = await copyText(buildUrl(heading.id));
+    if (!ok || !button.isConnected) return;
+
+    const previousTimer = feedbackTimers.get(button);
+    if (previousTimer !== undefined) window.clearTimeout(previousTimer);
+    button.innerHTML = CHECK_ICON;
+    button.classList.add(BUTTON_CLASS + '--done');
+    feedbackTimers.set(
+        button,
         window.setTimeout(() => {
-            btn.innerHTML = LINK_ICON;
-            btn.classList.remove(BUTTON_CLASS + '--done');
-        }, DONE_DURATION);
+            feedbackTimers.delete(button);
+            resetButton(button);
+        }, DONE_DURATION)
+    );
+}
+
+export function teardownHeadingLinks(): void {
+    listenerController?.abort();
+    listenerController = null;
+    activeRoot = null;
+    feedbackTimers.forEach((timer, button) => {
+        window.clearTimeout(timer);
+        resetButton(button);
     });
-
-    heading.appendChild(btn);
+    feedbackTimers.clear();
 }
 
-function enhance(root: ParentNode): void {
-    root.querySelectorAll<HTMLElement>('.post-body :is(h2,h3,h4,h5)[id]').forEach(attach);
+export function enhanceHeadingLinks(root: HTMLElement): void {
+    if (activeRoot === root && listenerController) return;
+
+    teardownHeadingLinks();
+    activeRoot = root;
+    listenerController = new AbortController();
+    root.querySelectorAll<HTMLElement>(':is(h2,h3,h4,h5)[id]').forEach(attachButton);
+    root.addEventListener('click', onCopyClick, { signal: listenerController.signal });
 }
-
-enhance(document.body);
-document.addEventListener('astro:page-load', () => enhance(document.body));
-
-export {};

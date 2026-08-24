@@ -2,8 +2,10 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleToc from '../../components/ArticleToc.vue';
 import Icon from '../../components/Icon.vue';
+import ReadingControls from '../../components/ReadingControls.vue';
 import { formatPostDateLabel } from '../../lib/post-model';
 import { getPostStaticPaths, type PostPageProps } from '../../lib/posts';
+import { createArticleSeoMetadata } from '../../lib/seo';
 import { siteConfig } from '../../data/site';
 
 export { getPostStaticPaths as getStaticPaths };
@@ -12,9 +14,22 @@ const { frontmatter, Content, readingMinutes, prev, next } = Astro.props as Post
 const pub = formatPostDateLabel(frontmatter.pubDate);
 const updated = formatPostDateLabel(frontmatter.updatedDate);
 const siteUrl = Astro.site ?? new URL('https://www.wakusei.top');
-const ogImage = frontmatter.cover
-    ? new URL(frontmatter.cover, siteUrl).toString()
-    : new URL(siteConfig.profile.avatar, siteUrl).toString();
+const siteHomeUrl = new URL('/', siteUrl).toString();
+const articleImage = frontmatter.cover ? new URL(frontmatter.cover, siteUrl).toString() : undefined;
+const ogImage = articleImage ?? new URL(siteConfig.profile.avatar, siteUrl).toString();
+const articleSeo = createArticleSeoMetadata({
+    publishedTime: frontmatter.pubDate,
+    updatedTime: frontmatter.updatedDate,
+    author: frontmatter.author,
+    fallbackAuthor: {
+        name: siteConfig.profile.name,
+        url: siteHomeUrl
+    },
+    image: articleImage,
+    language: frontmatter.language ?? siteConfig.lang,
+    section: frontmatter.category,
+    tags: frontmatter.tags
+});
 ---
 
 <BaseLayout
@@ -23,25 +38,12 @@ const ogImage = frontmatter.cover
     title={frontmatter.title}
     description={frontmatter.description}
     ogImage={ogImage}
+    ogImageAlt={articleImage ? frontmatter.title : undefined}
+    articleSeo={articleSeo}
 >
     <div class="reading-progress" aria-hidden="true">
         <div class="reading-progress__fill"></div>
     </div>
-    <button type="button" class="back-to-top" aria-label="返回顶部">
-        <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-        >
-            <path d="M12 19V5M6 11l6-6 6 6"></path>
-        </svg>
-    </button>
     <article class="post-container">
         <div class="post-lead">
             <header class="post-header">
@@ -126,7 +128,8 @@ const ogImage = frontmatter.cover
             }
         </nav>
     </article>
-    <ArticleToc client:load />
+    <ArticleToc client:idle={{ timeout: 500 }} />
+    <ReadingControls client:idle />
 </BaseLayout>
 
 <script>

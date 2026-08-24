@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.npm-cache/
 
 # Build output
 dist/
@@ -36,5 +37,9 @@ tmp/
 terminals/
 agent-tools/
 .playwright-cli/
-.codex/*.log
+.codex/
+.agents/
+.claude/
+.trellis/
+reasonix.toml
 *.tsbuildinfo

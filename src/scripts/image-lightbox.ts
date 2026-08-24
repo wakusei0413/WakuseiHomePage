@@ -1,8 +1,4 @@
-/**
- * 文章图片灯箱 —— 点击 .post-body 内、不在链接中的图片放大查看。
- * 支持点击遮罩/ESC 关闭、左右键或按钮切换。监听 astro:page-load，
- * view transitions 切页后重新装饰。
- */
+/** 文章图片灯箱：由 article-runtime 在空闲阶段装饰。 */
 
 const CLOSE_ICON =
     '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" ' +
@@ -19,6 +15,10 @@ const NEXT_ICON =
     'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
     '<path d="M9 6l6 6-6 6"/></svg>';
 
+const TRANSITION = 220;
+
+let activeRoot: HTMLElement | null = null;
+let listenerController: AbortController | null = null;
 let images: HTMLImageElement[] = [];
 let overlay: HTMLElement | null = null;
 let overlayImg: HTMLImageElement | null = null;
@@ -26,9 +26,10 @@ let captionEl: HTMLElement | null = null;
 let prevBtn: HTMLButtonElement | null = null;
 let nextBtn: HTMLButtonElement | null = null;
 let currentIndex = 0;
-let keyHandler: ((e: KeyboardEvent) => void) | null = null;
-let closeTimer: ReturnType<typeof setTimeout> | null = null;
-const TRANSITION = 220;
+let closeTimer: number | null = null;
+let openFrame: number | null = null;
+let lockedBody: HTMLElement | null = null;
+let previousBodyOverflow = '';
 
 function ensureOverlay(): HTMLElement {
     if (overlay) {
@@ -78,16 +79,15 @@ function ensureOverlay(): HTMLElement {
         });
     }
 
-    keyHandler = (e: KeyboardEvent) => {
-        if (!overlay || overlay.style.display === 'none') return;
-        if (e.key === 'Escape') close();
-        else if (e.key === 'ArrowLeft') prev();
-        else if (e.key === 'ArrowRight') next();
-    };
-    document.addEventListener('keydown', keyHandler);
-
     document.body.appendChild(overlay);
     return overlay;
+}
+
+function restoreBodyOverflow(): void {
+    if (!lockedBody) return;
+    lockedBody.style.overflow = previousBodyOverflow;
+    lockedBody = null;
+    previousBodyOverflow = '';
 }
 
 function showAt(index: number): void {
@@ -107,22 +107,34 @@ function open(index: number): void {
     if (!images.length) return;
     const el = ensureOverlay();
     if (closeTimer) {
-        clearTimeout(closeTimer);
+        window.clearTimeout(closeTimer);
         closeTimer = null;
     }
+    if (openFrame !== null) window.cancelAnimationFrame(openFrame);
     el.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    if (!lockedBody) {
+        lockedBody = document.body;
+        previousBodyOverflow = lockedBody.style.overflow;
+    }
+    lockedBody.style.overflow = 'hidden';
     showAt(index);
-    // Force a frame so the opacity transition fires.
-    requestAnimationFrame(() => el.classList.add('article-lightbox--visible'));
+    openFrame = window.requestAnimationFrame(() => {
+        openFrame = null;
+        if (el.style.display !== 'none') el.classList.add('article-lightbox--visible');
+    });
 }
 
 function close(): void {
+    if (openFrame !== null) {
+        window.cancelAnimationFrame(openFrame);
+        openFrame = null;
+    }
+    restoreBodyOverflow();
     if (!overlay) return;
     overlay.classList.remove('article-lightbox--visible');
-    document.body.style.overflow = '';
-    if (closeTimer) clearTimeout(closeTimer);
-    closeTimer = setTimeout(() => {
+    if (closeTimer) window.clearTimeout(closeTimer);
+    closeTimer = window.setTimeout(() => {
+        closeTimer = null;
         if (overlay) overlay.style.display = 'none';
     }, TRANSITION);
 }
@@ -135,22 +147,51 @@ function next(): void {
     showAt(currentIndex + 1);
 }
 
-function enhance(): void {
-    close();
-    const body = document.querySelector('.post-body');
-    images = body ? Array.from(body.querySelectorAll<HTMLImageElement>('img')).filter((img) => !img.closest('a')) : [];
-    images.forEach((img, i) => {
-        if (img.dataset.lightboxReady === '1') return;
-        img.dataset.lightboxReady = '1';
-        img.classList.add('lightbox-eligible');
-        img.addEventListener('click', (e) => {
-            e.preventDefault();
-            open(i);
-        });
-    });
+function onRootClick(event: MouseEvent): void {
+    const target = event.target;
+    if (!(target instanceof HTMLImageElement) || !activeRoot || !activeRoot.contains(target)) return;
+    if (!target.classList.contains('lightbox-eligible')) return;
+
+    const index = images.indexOf(target);
+    if (index < 0) return;
+    event.preventDefault();
+    open(index);
 }
 
-enhance();
-document.addEventListener('astro:page-load', enhance);
+function onKeydown(event: KeyboardEvent): void {
+    if (!overlay || overlay.style.display === 'none') return;
+    if (event.key === 'Escape') close();
+    else if (event.key === 'ArrowLeft') prev();
+    else if (event.key === 'ArrowRight') next();
+}
 
-export {};
+export function teardownImageLightbox(): void {
+    listenerController?.abort();
+    listenerController = null;
+    activeRoot = null;
+    images = [];
+    if (closeTimer) {
+        window.clearTimeout(closeTimer);
+        closeTimer = null;
+    }
+    if (openFrame !== null) {
+        window.cancelAnimationFrame(openFrame);
+        openFrame = null;
+    }
+    restoreBodyOverflow();
+    overlay?.classList.remove('article-lightbox--visible');
+    if (overlay) overlay.style.display = 'none';
+}
+
+export function enhanceImageLightbox(root: HTMLElement): void {
+    if (activeRoot === root && listenerController) return;
+
+    teardownImageLightbox();
+    activeRoot = root;
+    images = Array.from(root.querySelectorAll<HTMLImageElement>('img')).filter((image) => !image.closest('a'));
+    images.forEach((image) => image.classList.add('lightbox-eligible'));
+
+    listenerController = new AbortController();
+    root.addEventListener('click', onRootClick, { signal: listenerController.signal });
+    document.addEventListener('keydown', onKeydown, { signal: listenerController.signal });
+}

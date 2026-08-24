@@ -54,12 +54,8 @@ describe('logic guardrails', () => {
         expect(navigationRuntime).not.toContain('function dispatchShellState');
     });
 
-    it('resets the shared page scroller after Astro swaps content', () => {
-        const afterSwapStart = navigationRuntime.indexOf("document.addEventListener('astro:after-swap'");
-        const afterSwapBlock = navigationRuntime.slice(afterSwapStart);
-
-        expect(afterSwapStart).toBeGreaterThanOrEqual(0);
-        expect(afterSwapBlock).toContain("document.getElementById('pageScroller')");
-        expect(afterSwapBlock).toContain('scrollTo({ top: 0 })');
+    it('does not force nested-scroll layout during Astro swap events', () => {
+        expect(navigationRuntime).not.toContain('scroller.scrollTop = 0');
+        expect(navigationRuntime).not.toContain('scroller.scrollTo({ top: 0 })');
     });
 });

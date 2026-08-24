@@ -11,6 +11,7 @@ import {
     type TocItem
 } from '../lib/toc';
 import Icon from './Icon.vue';
+import { ARTICLE_START_THRESHOLD } from '../lib/article-scroll';
 
 interface FlatEntry {
     item: TocItem;
@@ -23,14 +24,15 @@ const tree = ref<TocItem[]>([]);
 const activeId = ref<string>('');
 const panelFits = ref(false);
 const bodyActive = ref(false);
+// True once the reader has scrolled past the article header (the post body has
+// entered the top band). Gates the capsule so the reading dock + capsule stay
+// hidden at the very top and only appear once reading actually starts.
+const capsuleVisible = ref(false);
 const userOpened = ref(false);
 const userClosed = ref(false);
 // True when the centered side panel would overlap the site footer, so the TOC
 // auto-collapses into its capsule form just before colliding with it.
 const panelNearFooter = ref(false);
-// Integer reading progress shown in the capsule. Keeping this quantized avoids
-// rerendering the whole TOC on every fractional scroll tick.
-const progressPct = ref(0);
 // Scroll-driven accordion: h3 children stay collapsed by default and only the
 // section the reader is currently in auto-expands (see activeSectionId). This
 // map holds temporary manual overrides set by clicking a chevron — h2 id ->
@@ -47,7 +49,7 @@ const autoExpanded = computed(() => bodyActive.value && panelFits.value && !user
 const expanded = computed(() => autoExpanded.value || userOpened.value);
 const showFixedPanel = computed(() => expanded.value && panelFits.value && !panelNearFooter.value);
 const showDrawer = computed(() => expanded.value && (!panelFits.value || panelNearFooter.value));
-const showCapsule = computed(() => !showFixedPanel.value && !showDrawer.value);
+const showCapsule = computed(() => capsuleVisible.value && !showFixedPanel.value && !showDrawer.value);
 
 let headingObserver: IntersectionObserver | null = null;
 let scrollCleanup: (() => void) | null = null;
@@ -57,6 +59,8 @@ let scrollerElement: HTMLElement | null = null;
 let bodyElement: HTMLElement | null = null;
 let footerElement: HTMLElement | null = null;
 let scrollFrame: number | null = null;
+let layoutMeasured = false;
+let layoutMeasureCancel: (() => void) | null = null;
 // Cached height of the expanded side panel; used to estimate its bottom edge on
 // frames where the panel is unmounted (capsule form) so we can still predict a
 // footer collision.
@@ -288,6 +292,33 @@ function updateLayout() {
     }
 }
 
+function scheduleLayoutMeasure() {
+    layoutMeasureCancel?.();
+    layoutMeasureCancel = null;
+
+    const measure = () => {
+        layoutMeasureCancel = null;
+        if (!scrollerElement) return;
+        updateLayout();
+        measurePanelHeight();
+        layoutMeasured = true;
+        updateScrollState();
+    };
+
+    const idleWindow = window as Window & {
+        requestIdleCallback?: (callback: () => void) => number;
+        cancelIdleCallback?: (handle: number) => void;
+    };
+    if (idleWindow.requestIdleCallback) {
+        const handle = idleWindow.requestIdleCallback(measure);
+        layoutMeasureCancel = () => idleWindow.cancelIdleCallback?.(handle);
+        return;
+    }
+
+    const timer = window.setTimeout(measure, 80);
+    layoutMeasureCancel = () => window.clearTimeout(timer);
+}
+
 function measurePanelHeight() {
     const panelEl = document.querySelector('.article-toc__panel--fixed') as HTMLElement | null;
     if (panelEl) lastPanelHeight = panelEl.getBoundingClientRect().height;
@@ -298,8 +329,8 @@ function updateScrollState() {
     const body = bodyElement;
     if (!(scroller instanceof HTMLElement) || !(body instanceof HTMLElement)) {
         bodyActive.value = false;
+        capsuleVisible.value = false;
         panelNearFooter.value = false;
-        progressPct.value = 0;
         return;
     }
     const sRect = scroller.getBoundingClientRect();
@@ -310,20 +341,7 @@ function updateScrollState() {
     // only while the reader is actually inside the article, and collapses both
     // when scrolling back up to the header and when scrolling past the body end.
     bodyActive.value = bRect.top <= 100 && bRect.bottom > 100;
-
-    const vh = sRect.height;
-    let nextProgressPct = 0;
-    if (vh > 0) {
-        const start = bRect.top - sRect.top + scroller.scrollTop;
-        const end = bRect.bottom - sRect.top + scroller.scrollTop - vh;
-        if (end <= start) {
-            nextProgressPct = 100;
-        } else {
-            const p = (scroller.scrollTop - start) / (end - start);
-            nextProgressPct = Number.isFinite(p) ? Math.round(Math.max(0, Math.min(1, p)) * 100) : 0;
-        }
-    }
-    if (progressPct.value !== nextProgressPct) progressPct.value = nextProgressPct;
+    capsuleVisible.value = bRect.top <= ARTICLE_START_THRESHOLD;
 
     const footer = footerElement;
     if (!(footer instanceof HTMLElement)) {
@@ -343,6 +361,11 @@ function scheduleScrollStateUpdate() {
     if (scrollFrame !== null) return;
     scrollFrame = window.requestAnimationFrame(() => {
         scrollFrame = null;
+        if (!layoutMeasured) {
+            updateScrollState();
+            if (bodyActive.value && !layoutMeasureCancel) scheduleLayoutMeasure();
+            return;
+        }
         updateScrollState();
     });
 }
@@ -351,8 +374,10 @@ function onResize() {
     if (resizeTimer) clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
         resolveArticleElements();
+        if (!layoutMeasured && !bodyActive.value && !scrollerElement?.scrollTop) return;
         updateLayout();
         measurePanelHeight();
+        layoutMeasured = true;
         updateScrollState();
     }, 100);
 }
@@ -365,7 +390,7 @@ function attachScrollListener() {
     if (!(scroller instanceof HTMLElement)) return;
     const handleScroll = scheduleScrollStateUpdate;
     scroller.addEventListener('scroll', handleScroll, { passive: true });
-    updateScrollState();
+    if (scroller.scrollTop > 0) scheduleScrollStateUpdate();
     scrollCleanup = () => scroller.removeEventListener('scroll', handleScroll);
 }
 
@@ -401,17 +426,19 @@ function teardownObservers() {
     scrollerElement = null;
     bodyElement = null;
     footerElement = null;
+    layoutMeasured = false;
+    layoutMeasureCancel?.();
+    layoutMeasureCancel = null;
     bodyActive.value = false;
+    capsuleVisible.value = false;
 }
 
 function reinit() {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
     teardownObservers();
     scan();
-    updateLayout();
-    measurePanelHeight();
-    updateScrollState();
     startObservers();
+    if (scrollerElement?.scrollTop) scheduleScrollStateUpdate();
     if (expanded.value) scrollActiveIntoView();
 }
 
@@ -511,7 +538,6 @@ onUnmounted(() => {
     if (resizeTimer) clearTimeout(resizeTimer);
     if (scrollFrame !== null) window.cancelAnimationFrame(scrollFrame);
     lastPanelHeight = 0;
-    progressPct.value = 0;
     document.documentElement.style.removeProperty('--toc-panel-left');
     document.documentElement.style.removeProperty('--toc-panel-width');
 });
@@ -529,7 +555,6 @@ onUnmounted(() => {
                 @click="expandAndLock"
             >
                 <Icon name="bars-staggered" size="16px" />
-                <span v-if="progressPct > 0" class="article-toc__capsule-progress">{{ progressPct }}%</span>
                 <span class="article-toc__capsule-text">{{ capsuleLabel }}</span>
             </button>
         </Transition>

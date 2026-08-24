@@ -9,6 +9,7 @@ import {
     type PostFrontmatter,
     type PostListItem,
     type PostNavEntry,
+    type PublishedPostFrontmatter,
     type TaxonomyKind,
     type TaxonomyPageProps,
     type TaxonomyTerm
@@ -24,7 +25,7 @@ interface PostEntry {
 }
 
 export interface PostPageProps {
-    frontmatter: PostFrontmatter;
+    frontmatter: PublishedPostFrontmatter;
     Content: AstroComponentFactory;
     readingMinutes: number;
     prev: PostNavEntry | null;
@@ -59,7 +60,7 @@ async function resolveCoverUrl(
     return image.src;
 }
 
-function serializeFrontmatter(data: BlogEntry['data'], coverUrl?: string): PostFrontmatter {
+function serializeFrontmatter(data: BlogEntry['data'], coverUrl?: string): PublishedPostFrontmatter {
     return {
         title: data.title,
         description: data.description,
@@ -68,8 +69,9 @@ function serializeFrontmatter(data: BlogEntry['data'], coverUrl?: string): PostF
         language: data.language,
         category: data.category,
         tags: data.tags,
+        author: data.author ? { ...data.author } : undefined,
         draft: data.draft,
-        pubDate: toIsoString(data.pubDate),
+        pubDate: data.pubDate.toISOString(),
         updatedDate: toIsoString(data.updatedDate)
     };
 }

@@ -21,8 +21,14 @@ const blog = defineCollection({
             language: z.enum(['zh-CN', 'en', 'ja']).optional(),
             category: z.string().min(1).optional(),
             tags: z.array(z.string().min(1)).optional(),
+            author: z
+                .object({
+                    name: z.string().trim().min(1),
+                    url: z.url().optional()
+                })
+                .optional(),
             draft: z.boolean().default(false),
-            pubDate: z.coerce.date().optional(),
+            pubDate: z.coerce.date(),
             updatedDate: z.coerce.date().optional()
         })
 });

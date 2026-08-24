@@ -81,7 +81,10 @@ function bind() {
     resizeHandler = scheduleProgress;
     scrollerEl.addEventListener('scroll', scrollHandler, { passive: true });
     window.addEventListener('resize', resizeHandler, { passive: true });
-    applyProgress();
+    // CSS already initializes the bar at scaleX(0). Avoid forcing layout for
+    // the entire article during navigation; restored non-zero positions still
+    // get an rAF measurement before the next paint.
+    if (scrollerEl.scrollTop > 0) scheduleProgress();
 }
 
 bind();
