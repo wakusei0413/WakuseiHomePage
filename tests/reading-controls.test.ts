@@ -124,7 +124,7 @@ describe('reading controls: wiring', () => {
     });
 
     it('drives .post-body font/line-height and .post-container width via CSS variables', () => {
-        expect(articleCss).toContain('font-size: calc(1.0625rem * var(--article-font-scale, 1));');
+        expect(articleCss).toContain('font-size: calc(1.16875rem * var(--article-font-scale, 1));');
         expect(articleCss).toContain('line-height: var(--article-line-height, 1.8);');
         expect(articleCss).toContain('max-width: min(var(--article-width, 840px), 100%);');
     });

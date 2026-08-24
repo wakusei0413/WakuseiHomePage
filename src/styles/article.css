@@ -159,7 +159,7 @@
 /* ===== 正文容器 ===== */
 .post-body {
     font-family: var(--font-serif);
-    font-size: calc(1.0625rem * var(--article-font-scale, 1));
+    font-size: calc(1.16875rem * var(--article-font-scale, 1));
     line-height: var(--article-line-height, 1.8);
     color: var(--fg);
     overflow-wrap: break-word;
@@ -676,7 +676,7 @@
     }
 
     .post-body {
-        font-size: calc(1rem * var(--article-font-scale, 1));
+        font-size: calc(1.1rem * var(--article-font-scale, 1));
         line-height: var(--article-line-height, 1.8);
     }
 
