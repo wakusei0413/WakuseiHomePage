@@ -5,6 +5,41 @@ import sitemap from '@astrojs/sitemap';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 
+import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
+import path from 'node:path';
+
+function cloudflareRocketLoaderSafety() {
+    return {
+        name: 'cloudflare-rocket-loader-safety',
+        hooks: {
+            'astro:build:done': async ({ dir }) => {
+                const outDir = dir instanceof URL ? fileURLToPath(dir) : String(dir);
+                function patchHtmlFiles(currentDir) {
+                    if (!fs.existsSync(currentDir)) return;
+                    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+                    for (const entry of entries) {
+                        const fullPath = path.join(currentDir, entry.name);
+                        if (entry.isDirectory()) {
+                            patchHtmlFiles(fullPath);
+                        } else if (entry.isFile() && entry.name.endsWith('.html')) {
+                            const content = fs.readFileSync(fullPath, 'utf8');
+                            const patched = content.replace(
+                                /<script(?![^>]*data-cfasync)/gi,
+                                '<script data-cfasync="false"'
+                            );
+                            if (patched !== content) {
+                                fs.writeFileSync(fullPath, patched, 'utf8');
+                            }
+                        }
+                    }
+                }
+                patchHtmlFiles(outDir);
+            }
+        }
+    };
+}
+
 export default defineConfig({
     site: 'https://www.wakusei.top',
     compressHTML: true,
@@ -27,7 +62,8 @@ export default defineConfig({
         }),
         sitemap({
             filter: (page) => !page.includes('/404')
-        })
+        }),
+        cloudflareRocketLoaderSafety()
     ],
     output: 'static',
     outDir: './dist',

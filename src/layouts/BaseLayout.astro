@@ -127,7 +127,7 @@ const googleFontsUrl =
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={ogImageUrl} />
         <link rel="icon" href="/res/img/logo.png" type="image/png" />
-        <link rel="preload" href={siteConfig.profile.avatar} as="image" fetchpriority="high" />
+        {isHomePage && <link rel="preload" href={siteConfig.profile.avatar} as="image" fetchpriority="high" />}
         <style is:inline>
             :root {
                 --bg: #fffef7;
@@ -161,6 +161,7 @@ const googleFontsUrl =
         {wallpaperOrigins.map((origin) => <link rel="preconnect" href={origin} media="(min-width: 901px)" />)}
         <script
             is:inline
+            data-cfasync="false"
             define:vars={{
                 wallpaperDefault: siteConfig.wallpaper.defaultImage ?? '',
                 wallpaperApi: siteConfig.wallpaper.apis[0] ?? ''
@@ -190,12 +191,13 @@ const googleFontsUrl =
                 } catch (e) {}
             })();
         </script>
-        <link href={googleFontsUrl} rel="preload" as="style" onload={"this.onload=null;this.rel='stylesheet'"} />
-        <noscript>
-            <link href={googleFontsUrl} rel="stylesheet" />
-        </noscript>
+        <link href={googleFontsUrl} rel="stylesheet" />
         <ClientRouter />
-        <script is:inline define:vars={{ darkBg: DARK_THEME_BG, validLocales: siteConfig.i18n.locales }}>
+        <script
+            is:inline
+            data-cfasync="false"
+            define:vars={{ darkBg: DARK_THEME_BG, validLocales: siteConfig.i18n.locales }}
+        >
             (function () {
                 var theme = localStorage.getItem('theme');
                 if (theme === 'dark' || theme === 'light') {
@@ -218,7 +220,7 @@ const googleFontsUrl =
         </script>
     </head>
     <body class:list={[isHomePage && 'is-home']}>
-        <script is:inline>
+        <script is:inline data-cfasync="false">
             (function () {
                 function reveal() {
                     requestAnimationFrame(function () {
