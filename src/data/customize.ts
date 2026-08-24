@@ -198,14 +198,6 @@ export const editableSiteConfig: SiteConfig = {
                     icon: 'fa-solid fa-magnifying-glass',
                     i18nKey: 'dock.search'
                 }
-            },
-            {
-                type: 'link',
-                href: '#',
-                display: {
-                    icon: 'fa-solid fa-gear',
-                    i18nKey: 'dock.settings'
-                }
             }
         ]
     },
