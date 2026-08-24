@@ -764,7 +764,7 @@
 }
 
 .post-card:hover {
-    transform: var(--lift);
+    transform: translateY(-5px);
     box-shadow: var(--shadow-lift);
 }
 
