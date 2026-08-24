@@ -136,6 +136,11 @@ describe('reading controls: wiring', () => {
         expect(readingControlsCss).toContain('html.is-focus-mode .post-container');
     });
 
+    it('renders popover with solid background for readability', () => {
+        expect(readingControlsCss).toContain('.article-dock__popover');
+        expect(readingControlsCss).toContain('background: var(--bg);');
+    });
+
     it('renders native buttons with aria labels, pressed state and focus-visible styles', () => {
         expect(readingControlsComponent).toContain('type="button"');
         expect(readingControlsComponent).toContain('aria-pressed');

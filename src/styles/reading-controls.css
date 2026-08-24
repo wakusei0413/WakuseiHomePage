@@ -122,9 +122,7 @@ html.is-focus-mode .post-container {
     padding: 16px;
     border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
     border-radius: 16px;
-    background: color-mix(in srgb, var(--bg) 90%, transparent);
-    backdrop-filter: var(--panel-blur);
-    -webkit-backdrop-filter: var(--panel-blur);
+    background: var(--bg);
     box-shadow: var(--article-dock-shadow);
     color: var(--fg);
     font-family: var(--font-ui);
