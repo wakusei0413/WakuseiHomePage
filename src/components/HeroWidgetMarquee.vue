@@ -84,8 +84,6 @@ const defocusShellStyle = computed(() => ({
 
 let mediaQuery: MediaQueryList | null = null;
 let onMotionChange: ((event: MediaQueryListEvent) => void) | null = null;
-let revealTimer: ReturnType<typeof setTimeout> | undefined;
-let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
 let sloganRotationTimer: ReturnType<typeof setTimeout> | undefined;
 let playbackRateFrame: number | undefined;
 
@@ -258,17 +256,7 @@ function resume() {
 
 function revealMarquee() {
     if (revealed.value) return;
-    clearTimeout(revealTimer);
-    revealTimer = setTimeout(
-        () => {
-            revealed.value = true;
-        },
-        reducedMotion.value ? 0 : 520
-    );
-}
-
-function isShellAlreadyReady() {
-    return Boolean(document.querySelector('.container.visible'));
+    revealed.value = true;
 }
 
 function onShellReady() {
@@ -299,16 +287,10 @@ onMounted(() => {
     document.addEventListener('visibilitychange', onVisibility);
 
     window.addEventListener('wakusei:shell-ready', onShellReady);
-    if (isShellAlreadyReady()) {
-        revealMarquee();
-    } else {
-        fallbackTimer = setTimeout(revealMarquee, 2200);
-    }
+    revealMarquee();
 });
 
 onUnmounted(() => {
-    clearTimeout(revealTimer);
-    clearTimeout(fallbackTimer);
     clearTimeout(sloganRotationTimer);
     if (playbackRateFrame !== undefined) cancelAnimationFrame(playbackRateFrame);
     if (mediaQuery && onMotionChange) {

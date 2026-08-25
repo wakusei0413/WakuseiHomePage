@@ -45,4 +45,10 @@ describe('UI/UX overhaul and accessibility enhancements', () => {
     it('uses crisp 2D translateY for post cards to prevent 3D text blur', () => {
         expect(articleCss).toMatch(/\.post-card:hover\s*\{[\s\S]*?transform:\s*translateY\(-5px\);/);
     });
+
+    it('ensures TOC panel has solid opaque background and direct active indicator', () => {
+        expect(tocCss).toContain('--toc-panel-bg: var(--bg);');
+        expect(tocCss).toContain('.article-toc__item--active');
+        expect(tocCss).toContain('.article-toc__item--active::before');
+    });
 });

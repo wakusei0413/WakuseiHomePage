@@ -1,12 +1,12 @@
 /* Article TOC styles - glass card, capsule, drawer */
 
 :root {
-    --toc-panel-bg: rgba(255, 254, 247, 0.88);
+    --toc-panel-bg: var(--bg);
     --toc-panel-width: 220px;
 }
 
 [data-theme='dark'] {
-    --toc-panel-bg: var(--panel-glass);
+    --toc-panel-bg: var(--bg);
 }
 
 .article-toc {
@@ -22,9 +22,7 @@
 .article-toc__panel {
     pointer-events: auto;
     border-radius: var(--radius-xl);
-    background: var(--toc-panel-bg);
-    backdrop-filter: var(--panel-blur);
-    -webkit-backdrop-filter: var(--panel-blur);
+    background: var(--bg);
     border: 1px solid var(--panel-border);
     box-shadow: var(--panel-shadow);
     color: var(--fg);
@@ -71,12 +69,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 14px;
-    /* One piece with the card, but translucent + blurred so list content
-       scrolling beneath the header reads as a frosted strip — not a separate
-       board sitting on top. */
-    background: color-mix(in srgb, var(--toc-panel-bg) 72%, transparent);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: var(--bg);
     border-bottom: 1px solid color-mix(in srgb, var(--panel-border) 50%, transparent);
 }
 
@@ -126,32 +119,7 @@
 }
 
 .article-toc__active-marker {
-    position: absolute;
-    top: 0;
-    left: 8px;
-    right: 8px;
-    height: var(--toc-active-marker-height, 0);
-    border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--accent-blue) 10%, transparent);
-    opacity: var(--toc-active-marker-opacity, 0);
-    pointer-events: none;
-    transform: translateY(var(--toc-active-marker-y, 0));
-    transition:
-        transform 0.22s var(--curve-snap),
-        height 0.22s var(--curve-snap),
-        opacity 0.14s var(--curve-snap);
-    will-change: transform, height;
-}
-
-.article-toc__active-marker::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 4px;
-    bottom: 4px;
-    width: 3px;
-    border-radius: 2px;
-    background: var(--accent-blue);
+    display: none;
 }
 
 .article-toc__item {
@@ -216,6 +184,22 @@
     transition: transform 240ms var(--curve-snap);
 }
 
+.article-toc__item--active {
+    background: color-mix(in srgb, var(--accent-blue) 12%, transparent);
+    opacity: 1;
+}
+
+.article-toc__item--active::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--accent-blue);
+}
+
 .article-toc__item--active .article-toc__link {
     font-weight: 700;
     color: var(--accent-blue);
@@ -252,9 +236,7 @@
     padding: 0 16px;
     border-radius: 22px;
     border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
-    background: var(--toc-panel-bg);
-    backdrop-filter: var(--panel-blur);
-    -webkit-backdrop-filter: var(--panel-blur);
+    background: var(--bg);
     box-shadow: var(--article-dock-shadow, var(--panel-shadow));
     color: var(--fg);
     font-family: var(--font-ui);
