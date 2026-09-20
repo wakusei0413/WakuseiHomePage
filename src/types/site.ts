@@ -1,13 +1,15 @@
 export type SocialColorScheme = 'cycle' | 'same';
 export type SloganMode = 'random' | 'sequence';
 export type ClockFormat = '12h' | '24h';
-export type CursorStyle = 'block' | 'line';
 export type Locale = 'zh-CN' | 'en' | 'ja';
+export type DockRenderMode = 'icon' | 'text' | 'both';
+
 export interface DockDisplayConfig {
     icon: string;
     iconActive?: string;
     text?: string;
     i18nKey?: string;
+    renderMode?: DockRenderMode;
 }
 
 export interface DockActionItem {
@@ -57,6 +59,11 @@ export interface SocialLinksConfig {
     links: SocialLink[];
 }
 
+export interface GithubConfig {
+    username: string;
+    url: string;
+}
+
 export interface FooterConfig {
     text: string;
 }
@@ -64,7 +71,6 @@ export interface FooterConfig {
 export interface SlogansConfig {
     list: string[];
     mode: SloganMode;
-    typeSpeed: number;
     pauseDuration: number;
     loop: boolean;
 }
@@ -81,23 +87,18 @@ export interface LoadingConfig {
     textSwitchInterval: number;
 }
 
-export interface WallpaperInfiniteScrollConfig {
+export interface WallpaperRotationConfig {
     enabled: boolean;
-    speed: number;
-    batchSize: number;
-    maxImages: number;
+    interval: number;
 }
 
 export interface WallpaperConfig {
+    /** Local image shown instantly on first paint while the external rotation API loads. */
+    defaultImage?: string;
     apis: string[];
     raceTimeout: number;
     maxRetries: number;
-    preloadCount: number;
-    infiniteScroll: WallpaperInfiniteScrollConfig;
-}
-
-export interface AnimationConfig {
-    cursorStyle: CursorStyle;
+    rotation: WallpaperRotationConfig;
 }
 
 export interface ContentProtectionConfig {
@@ -131,12 +132,12 @@ export interface SiteConfig {
     themeColor: string;
     profile: ProfileConfig;
     socialLinks: SocialLinksConfig;
+    github: GithubConfig;
     footer: FooterConfig;
     slogans: SlogansConfig;
     time: TimeConfig;
     loading: LoadingConfig;
     wallpaper: WallpaperConfig;
-    animation: AnimationConfig;
     contentProtection: ContentProtectionConfig;
     debug: DebugConfig;
     effects: EffectsConfig;

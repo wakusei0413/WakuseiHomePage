@@ -1,0 +1,1617 @@
+/* ========================================
+   粗放主义 - 组件层：按钮、头像、卡片等
+   ======================================== */
+
+/* ===== 批量过渡应用（解耦） ===== */
+/* 字体大小过渡 */
+.name,
+.weekday,
+.clock,
+.date-display {
+    transition: font-size var(--transition-normal);
+}
+
+/* 噪点叠加层 */
+.noise-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    z-index: var(--z-noise, 9999);
+    opacity: 0.03;
+    contain: strict;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* When loading overlay is visible, push noise behind it */
+html:not(.is-loaded) .noise-overlay {
+    z-index: 9997;
+    opacity: 0.01;
+}
+
+/* ===== 加载遮罩层 ===== */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #fffef7;
+    background: var(--bg, #fffef7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+    z-index: var(--z-loading, 9998);
+    transition:
+        opacity 0.4s var(--curve-snap),
+        visibility 0.4s var(--curve-snap);
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loading-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 3rem;
+    border: var(--border-width) solid var(--panel-border);
+    background: var(--bg);
+    box-shadow: var(--panel-shadow);
+    border-radius: var(--radius-sm);
+    animation: loading-fade-in 0.8s var(--curve-delicate);
+}
+
+@keyframes loading-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* IE11 flexbox gap fallback */
+.loading-panel > * + * {
+    margin-top: 1.5rem;
+}
+
+@supports (gap: 1.5rem) {
+    .loading-panel > * + * {
+        margin-top: 0;
+    }
+}
+
+/* 旋转方块 - 粗野主义风格 */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #0a0a0a;
+    border: var(--border-width, 4px) solid var(--fg, #0a0a0a);
+    background: #fffef7;
+    background: var(--bg, #fffef7);
+    animation:
+        loading-rotate 1s linear infinite,
+        loading-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes loading-rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* 加载文字 */
+.loading-text {
+    font-family: 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    font-family: var(--font-display, 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif);
+    font-size: 1.25rem;
+    font-weight: 400;
+    font-style: normal;
+    letter-spacing: 0.04em;
+    color: #0a0a0a;
+    color: var(--fg, #0a0a0a);
+    min-height: 1.5em;
+}
+
+/* 像素进度条 */
+.loading-progress {
+    width: 200px;
+    height: 12px;
+    border: 3px solid #0a0a0a;
+    border: 3px solid var(--fg, #0a0a0a);
+    background: #fffef7;
+    background: var(--bg, #fffef7);
+    position: relative;
+    overflow: hidden;
+}
+
+.loading-bar {
+    height: 100%;
+    background: #0a0a0a;
+    background: var(--fg, #0a0a0a);
+    width: 0%;
+    transition: width 0.3s var(--curve-snap);
+    position: relative;
+    overflow: hidden;
+}
+
+.loading-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    transform: translateX(-100%);
+    animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.loading-percent {
+    font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace);
+    font-size: 0.875rem;
+    color: #666666;
+    color: var(--muted, #666666);
+}
+
+/* ===== 头像 ===== */
+.avatar-box {
+    width: 150px;
+    width: clamp(100px, 12vw, 150px);
+    height: 150px;
+    height: clamp(100px, 12vw, 150px);
+    margin: 0 0 2rem 0;
+    margin: 0 0 var(--space-lg, 2rem) 0;
+    border: 1px solid var(--avatar-border);
+    border-radius: var(--radius-sm);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #111;
+
+    /* 初始状态：几乎隐形的微光 */
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.1),
+        0 0 5px color-mix(in srgb, var(--avatar-glow) 5%, transparent);
+
+    /* 细腻的关键：属性分离。位移要快（带 3D 回弹），光晕要慢，产生“光跟不上影”的生动感 */
+    transition:
+        transform 0.45s var(--curve-lift),
+        box-shadow 1.2s var(--curve-delicate),
+        border-color 0.8s var(--curve-snap);
+
+    cursor: pointer;
+    overflow: hidden;
+    will-change: transform, box-shadow;
+}
+
+.avatar-box:hover {
+    transform: var(--lift);
+
+    /* 六层色散光晕：由深至浅，层层递进，消除边缘感 */
+    box-shadow:
+        0 10px 20px rgba(0, 0, 0, 0.1),
+        /* 1. 基础接地感 */ 0 0 15px color-mix(in srgb, var(--avatar-glow) 30%, transparent),
+        /* 2. 核心热点 */ 0 0 30px color-mix(in srgb, var(--avatar-glow) 15%, transparent),
+        /* 3. 内场渲染 */ 0 0 60px color-mix(in srgb, var(--avatar-glow) 8%, transparent),
+        /* 4. 中场散射 */ 0 0 100px color-mix(in srgb, var(--avatar-glow) 4%, transparent),
+        /* 5. 远场氛围 */ 0 0 150px color-mix(in srgb, var(--avatar-glow) 2%, transparent),
+        /* 6. 无边际消散 */ inset 0 0 12px color-mix(in srgb, var(--avatar-glow) 10%, transparent); /* 7. 内部浸润 */
+}
+
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ===== 名称 ===== */
+.name {
+    font-family: 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    font-family: var(--font-display, 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif);
+    font-size: 3.5rem;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: -0.03em;
+    color: #0a0a0a;
+    color: var(--fg, #0a0a0a);
+    margin-bottom: 1rem;
+    margin-bottom: var(--space-sm, 1rem);
+}
+
+.name-latin {
+    font-family: 'Times New Roman', serif;
+    font-weight: 700;
+    font-style: italic;
+}
+
+/* ===== 状态栏 ===== */
+/* ===== 简介区域 ===== */
+.bio-container {
+    margin-bottom: 3rem;
+    margin-bottom: var(--space-xl, 3rem);
+    padding: 1.5rem;
+    padding: var(--space-md, 1.5rem);
+    border: 1px solid rgba(240, 238, 230, 0.6);
+    background-color: rgba(255, 254, 247, 0.4);
+    text-align: left;
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.25),
+        0 2px 12px rgba(0, 0, 0, 0.08);
+    min-height: 100px;
+}
+
+/* ===== 社交链接 ===== */
+.social-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    gap: var(--space-sm, 1rem);
+}
+
+@supports (display: grid) {
+    .social-links {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+}
+
+.social-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    gap: var(--space-xs, 0.5rem);
+    padding: 1.5rem;
+    padding: var(--space-md, 1.5rem);
+    background-color: var(--panel-glass);
+    color: var(--fg);
+    text-decoration: none;
+    position: relative;
+    flex: 0 0 calc(33.333% - 0.67rem);
+    max-width: calc(33.333% - 0.67rem);
+    width: 100%;
+    height: 100%;
+    /* 统一勾线：使用 border 确保在所有模式下几何尺寸一致 */
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--panel-shadow);
+    border-radius: var(--radius-sm);
+
+    transition:
+        transform 0.5s var(--curve-lift),
+        box-shadow 0.8s var(--curve-delicate),
+        background-color 0.6s var(--curve-snap),
+        border-color 0.6s var(--curve-snap);
+}
+
+@supports (display: grid) {
+    .social-link {
+        flex: none;
+        max-width: none;
+    }
+}
+
+.social-link-slot {
+    position: relative;
+    display: flex;
+    padding-top: 6px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.social-link > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* IE11 flexbox gap fallback */
+.social-link > * + * {
+    margin-top: 0.5rem;
+    margin-top: var(--space-xs, 0.5rem);
+}
+
+@supports (gap: 0.5rem) {
+    .social-link > * + * {
+        margin-top: 0;
+    }
+}
+
+/* 社交链接颜色（统一使用 --custom-color） */
+.social-link--custom {
+    --custom-color: #ffe600;
+}
+
+.social-link-slot.is-hovered .social-link--custom,
+.social-link-slot:hover .social-link--custom,
+.social-link-slot:focus-within .social-link--custom,
+.social-link-slot:active .social-link--custom {
+    transform: var(--lift-sm); /* 悬浮：放大 + 微升 */
+    box-shadow:
+        0 0 70px 10px color-mix(in srgb, var(--custom-color, #ffe600) 12%, transparent),
+        0 0 36px 4px color-mix(in srgb, var(--custom-color, #ffe600) 22%, transparent),
+        0 0 14px 2px color-mix(in srgb, var(--custom-color, #ffe600) 38%, transparent);
+    filter: brightness(1.06) saturate(1.5);
+    backdrop-filter: brightness(1.15) saturate(2) contrast(1.05);
+    background-color: color-mix(in srgb, var(--custom-color, #ffe600) 74%, transparent);
+}
+
+.link-label {
+    font-family: 'IBM Plex Mono', 'Noto Sans SC', monospace;
+    font-family: var(--font-mono, 'IBM Plex Mono', 'Noto Sans SC', monospace);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* ===== 时间组件 ===== */
+.time-widget {
+    text-align: left;
+}
+
+.weekday {
+    font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    font-size: 5rem;
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fffef7;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-xs, 0.5rem);
+}
+
+.date-display {
+    font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    font-size: 1.5rem;
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    color: rgba(255, 254, 247, 0.7);
+    margin-bottom: 2px;
+}
+
+.clock {
+    font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace);
+    font-size: 3rem;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 600;
+    color: #ffe600;
+    color: var(--accent-yellow, #ffe600);
+    letter-spacing: 0.05em;
+}
+
+/* ===== 交互特效 ===== */
+
+/* 滚动触发动画 */
+.scroll-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition:
+        opacity 0.6s var(--curve-snap),
+        transform 0.6s var(--curve-snap);
+}
+
+.scroll-reveal--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 性能优化 */
+/* GPU 加速：提前创建合成层，避免 hover 时延迟 */
+.avatar-box,
+.social-link {
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+/* 防止 hover 位移导致的边缘闪烁：
+   ::before 作为静止悬停热区，反向 translate 与父元素 transition 同步，
+   确保 ::before 在动画每一帧都精确停留在原位 */
+.avatar-box::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    bottom: -15px;
+    left: -15px;
+    pointer-events: auto;
+    transition: transform 0.08s var(--curve-press);
+}
+
+.avatar-box:hover::before {
+    transform: translate(5px, 5px);
+}
+
+.container,
+.left-panel,
+.right-panel {
+    backface-visibility: hidden;
+}
+
+/* ===== Loading Overlay ===== */
+[data-theme='dark'] .loading-overlay {
+    background: var(--bg);
+}
+[data-theme='dark'] .loading-panel {
+    border-color: var(--glass-border);
+    background: var(--glass-bg);
+    box-shadow: var(--glass-shadow);
+}
+[data-theme='dark'] .loading-spinner {
+    border-color: var(--glass-border);
+    background: var(--bg);
+}
+[data-theme='dark'] .loading-progress {
+    border-color: var(--glass-border);
+    background: var(--bg);
+}
+[data-theme='dark'] .loading-bar {
+    background: var(--fg);
+}
+[data-theme='dark'] .loading-bar::after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+/* ===== Status Bar ===== */
+.status-bar {
+    font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    gap: var(--space-xs, 0.5rem);
+    padding: 0.5rem 1rem;
+    padding: var(--space-xs, 0.5rem) var(--space-sm, 1rem);
+    border: 1px solid var(--panel-border);
+    background-color: var(--panel-glass);
+    margin-bottom: 2rem;
+    margin-bottom: var(--space-lg, 2rem);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    box-shadow: var(--panel-shadow);
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    background-color: var(--accent-yellow, #ffe600);
+    border: 1px solid var(--fg);
+    animation: pulse 2s ease-in-out infinite;
+    margin-right: 0.5rem;
+    margin-right: var(--space-xs, 0.5rem);
+}
+
+@supports (gap: 0.5rem) {
+    .status-dot {
+        margin-right: 0;
+    }
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.status-text {
+    font-weight: 500;
+    color: var(--fg);
+}
+
+[data-theme='dark'] .status-dot {
+    border-color: var(--glass-border);
+}
+
+/* ===== Bio Container ===== */
+[data-theme='dark'] .bio-container {
+    border-color: var(--glass-border);
+    background-color: var(--glass-bg);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.2),
+        0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== GitHub 贡献图（左侧面板 bio 区域） ===== */
+.github-contrib {
+    --github-cell-gap: 2px;
+    --github-l0: rgba(0, 0, 0, 0.07);
+    --github-l1: #9be9a8;
+    --github-l2: #40c463;
+    --github-l3: #30a14e;
+    --github-l4: #216e39;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    min-height: 64px;
+    color: var(--fg);
+    text-decoration: none;
+    outline-offset: 4px;
+}
+
+.github-contrib:hover .github-contrib__total,
+.github-contrib:focus-visible .github-contrib__total {
+    color: var(--accent-blue);
+}
+
+.github-contrib__label {
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.github-contrib__message {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--muted);
+}
+
+.github-contrib__graph {
+    display: flex;
+    gap: var(--github-cell-gap);
+    width: 100%;
+    max-width: 340px;
+}
+
+.github-contrib__week {
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    gap: var(--github-cell-gap);
+}
+
+.github-contrib__cell {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 1.5px;
+    background: var(--github-l0);
+    transition: transform 0.2s var(--curve-snap);
+}
+
+.github-contrib:hover .github-contrib__cell {
+    transform: scale(1.12);
+}
+
+.github-contrib__cell--l1 {
+    background: var(--github-l1);
+}
+
+.github-contrib__cell--l2 {
+    background: var(--github-l2);
+}
+
+.github-contrib__cell--l3 {
+    background: var(--github-l3);
+}
+
+.github-contrib__cell--l4 {
+    background: var(--github-l4);
+}
+
+.github-contrib__total {
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    font-size: 0.76rem;
+    line-height: 1.3;
+    color: var(--muted);
+    transition: color 0.2s var(--curve-snap);
+}
+
+[data-theme='dark'] .github-contrib {
+    --github-l0: rgba(255, 255, 255, 0.08);
+    --github-l1: #0e4429;
+    --github-l2: #006d32;
+    --github-l3: #26a641;
+    --github-l4: #39d353;
+}
+
+/* ===== Social Links ===== */
+[data-theme='dark'] .social-link {
+    border-color: var(--glass-border);
+    background-color: var(--glass-bg);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.2),
+        0 2px 12px rgba(0, 0, 0, 0.3);
+}
+[data-theme='dark'] .social-link--custom {
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.2),
+        0 2px 12px rgba(0, 0, 0, 0.3);
+}
+/* Social link hover glow is unified — same CSS in both modes, driven by --custom-color */
+
+/* ===== Social Links Pagination ===== */
+.social-links-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: visible;
+    cursor: grab;
+    touch-action: pan-y;
+}
+
+.social-links-wrapper:active {
+    cursor: grabbing;
+}
+
+.social-links-page {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm, 1rem);
+    align-content: start;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+    will-change: transform, opacity, filter;
+}
+
+.social-links-page.is-swap-fade {
+    animation: social-page-fade 0.28s var(--curve-delicate);
+}
+
+.social-links-page.is-swap-fade.is-animation-alt {
+    animation: social-page-fade-alt 0.28s var(--curve-delicate);
+}
+
+.social-links-page .social-link-slot {
+    min-width: 0;
+    padding-top: 0;
+}
+
+.social-links-page .social-link {
+    flex: none;
+    max-width: none;
+    padding: 1.25rem 0.5rem;
+    height: auto;
+    aspect-ratio: 1;
+}
+
+.social-link-slot--placeholder {
+    visibility: hidden;
+    pointer-events: none;
+    width: 100%;
+    aspect-ratio: 1;
+}
+
+@keyframes social-page-fade {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 0, 0);
+        filter: blur(1px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+        filter: blur(0);
+    }
+}
+
+@keyframes social-page-fade-alt {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 0, 0);
+        filter: blur(1px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+        filter: blur(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .social-links-page.is-swap-fade,
+    .social-links-page.is-swap-fade.is-animation-alt {
+        animation: none;
+    }
+}
+
+@media (max-width: 900px) {
+    .social-links-page {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .social-links-page .social-link {
+        aspect-ratio: auto;
+        min-height: 120px;
+    }
+
+    .social-link-slot--placeholder {
+        aspect-ratio: auto;
+        min-height: 120px;
+    }
+}
+
+/* Dots indicator */
+.social-links-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: var(--space-xl, 3rem);
+    padding-bottom: 2px;
+}
+
+.social-link-dot {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    background: var(--fg);
+    opacity: 0.25;
+    cursor: pointer;
+    transition:
+        opacity 0.3s var(--curve-delicate),
+        transform 0.3s var(--curve-delicate);
+}
+
+/* 扩展可触摸热区至 44px 满足 WCAG 规范 */
+.social-link-dot::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+}
+
+.social-link-dot.active {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.social-link-dot:hover {
+    opacity: 0.6;
+}
+
+/* ===== 搜索模态框 ===== */
+.search-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 80px 20px 20px;
+    overflow-y: auto;
+}
+
+.search-modal-dialog {
+    background: var(--bg);
+    border: var(--border-width) solid var(--panel-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--panel-shadow);
+    width: 100%;
+    max-width: 700px;
+    max-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    animation: search-modal-enter 0.2s var(--curve-delicate);
+}
+
+@keyframes search-modal-enter {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.search-modal-header {
+    padding: 24px;
+    border-bottom: var(--border-width) solid var(--panel-border);
+    flex-shrink: 0;
+}
+
+.search-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    min-height: 0;
+}
+
+.search-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    color: var(--fg-muted);
+    font-size: 0.875rem;
+}
+
+.search-modal-body .search-results {
+    display: grid;
+    gap: 16px;
+}
+
+.search-modal-body .search-result {
+    cursor: pointer;
+    outline: none;
+}
+
+.search-modal-body .search-result .post-card {
+    pointer-events: none;
+}
+
+.search-modal-body .search-result:focus-visible,
+.search-modal-body .search-result--selected {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 3px;
+    border-radius: var(--radius-md);
+}
+
+.search-modal-body .search-result .post-card--overlay {
+    min-height: 220px;
+}
+
+.search-modal-body .search-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0 0 16px;
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.search-modal-body .search-summary span:first-child {
+    color: var(--fg);
+}
+
+.search-modal-body .search-summary .search-view-all-link {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--accent-blue) 45%, transparent);
+    color: var(--accent-blue);
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition:
+        background-color var(--transition-fast),
+        color var(--transition-fast),
+        border-color var(--transition-fast);
+}
+
+.search-modal-body .search-summary .search-view-all-link:hover,
+.search-modal-body .search-summary .search-view-all-link:focus-visible {
+    background: color-mix(in srgb, var(--accent-blue) 12%, transparent);
+    border-color: var(--accent-blue);
+}
+
+.search-modal-body .search-snippet {
+    margin-top: 10px;
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    padding: 10px 12px;
+    background: color-mix(in srgb, var(--accent-blue) 7%, var(--panel-glass));
+    color: var(--muted);
+}
+
+.search-modal-body .search-snippet__label {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--accent-blue);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.search-modal-body .search-snippet p {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.65;
+}
+
+.search-modal-body .search-empty {
+    display: grid;
+    width: min(520px, 100%);
+    gap: 14px;
+    margin: 0;
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    background: var(--panel-glass);
+    box-shadow: var(--panel-shadow);
+    color: var(--muted);
+    backdrop-filter: var(--panel-blur);
+}
+
+.search-modal-header .search-control {
+    display: flex;
+    min-height: 52px;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid color-mix(in srgb, var(--panel-border) 70%, transparent);
+    border-radius: var(--radius-lg);
+    padding: 0 12px;
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+}
+
+.search-modal-header .search-control:focus-within {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-blue) 18%, transparent);
+}
+
+.search-modal-header .search-control__icon {
+    color: var(--accent-blue);
+    font-size: 1.05rem;
+    flex-shrink: 0;
+}
+
+.search-modal-header .search-input {
+    min-width: 0;
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--fg);
+    font: 600 1.05rem / 1.4 var(--font-ui);
+}
+
+.search-modal-header .search-input::placeholder {
+    color: color-mix(in srgb, var(--muted) 76%, transparent);
+}
+
+.search-modal-header .search-clear {
+    min-height: 32px;
+    border: 1px solid color-mix(in srgb, var(--accent-blue) 45%, transparent);
+    border-radius: var(--radius-pill);
+    padding: 0 12px;
+    background: color-mix(in srgb, var(--accent-blue) 8%, transparent);
+    color: var(--accent-blue);
+    font: 700 0.85rem / 1 var(--font-ui);
+    cursor: pointer;
+}
+
+.search-modal-header .search-help {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+    .search-modal-overlay {
+        padding: 0;
+        align-items: stretch;
+    }
+
+    .search-modal-dialog {
+        max-width: none;
+        max-height: none;
+        height: 100vh;
+        border-radius: 0;
+    }
+}
+
+[data-theme='dark'] .search-modal-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* ===== Hero marquee =====
+   Both layers are children of .hero-content and span the complete first screen.
+   Their z-index keeps them above the wallpaper and beneath the left panel. */
+:root {
+    --marquee-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    --ticket-height: 7.5rem;
+    --marquee-defocus-height: calc(var(--ticket-height) + 5.5rem);
+}
+
+.hero-marquee {
+    --ticket-fg: rgba(18, 18, 18, 0.88);
+    --ticket-muted: rgba(18, 18, 18, 0.68);
+    /* Slightly more opaque than the original live-blur paper: the ground-glass
+       bed is now a static pre-blurred snapshot, so a touch of extra paper keeps
+       the tickets crisp without losing the frosted depth. */
+    --ticket-paper: rgba(255, 254, 247, 0.72);
+    --ticket-line: rgba(255, 254, 247, 0.55);
+    --ticket-ink: rgba(0, 0, 0, 0.08);
+    --ticket-shadow: 0 0 0 1px var(--ticket-ink), 0 2px 10px rgba(0, 0, 0, 0.05);
+    --ticket-shadow-hover: 0 0 0 1px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.07);
+    --ticket-radius: 4px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: var(--marquee-bottom);
+    z-index: 5;
+    pointer-events: none;
+    padding: 0 1.75rem 0 1rem;
+}
+
+.hero-marquee--revealed .hero-marquee__viewport {
+    pointer-events: auto;
+    opacity: 0.92;
+}
+
+.hero-marquee--revealed:hover .hero-marquee__viewport,
+.hero-marquee--revealed:focus-within .hero-marquee__viewport {
+    opacity: 0.98;
+}
+
+.hero-marquee__viewport {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+    background: transparent;
+    opacity: 0;
+    transition: opacity 0.35s var(--curve-delicate);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 3.5%, #000 96.5%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 3.5%, #000 96.5%, transparent 100%);
+}
+
+/*
+  Progressive ground-glass bed inside the first-screen scene.
+  Fade the child layers in place; .hero-content owns all position and 3D motion.
+
+  Performance note: the layers used to carry backdrop-filter blurs (12/32/48px)
+  sampled from the *constantly animating* wallpaper, so every Ken Burns frame
+  forced a full-width re-blur of the live backdrop — a major jank source. Each
+  layer now paints a flat tint sampled from the current wallpaper
+  (--glass-bed-tint, written by SiteShell on every wallpaper change). A tint
+  has no geometry, so it can never drift out of sync with the wallpaper, and it
+  costs nothing per frame; a wallpaper change is a compositor-only
+  background-color transition in sync with the wallpaper's own crossfade.
+*/
+.hero-marquee-defocus {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--marquee-defocus-height);
+    z-index: 4;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.hero-marquee-defocus--scrolled-away {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.hero-marquee-defocus__layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition:
+        opacity 0.85s var(--curve-delicate),
+        background-color 0.9s var(--curve-fade);
+    /* Flat tint sampled from the wallpaper's bottom band; the three layers
+       stack the same color through their masks, so the band deepens toward
+       the bottom. */
+    background-color: rgb(var(--glass-bed-tint, 255 254 247) / 0.3);
+    /* Shared darkening gradient over the tint. */
+    background-image: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(8, 8, 10, 0.04) 38%,
+        rgba(8, 8, 10, 0.1) 70%,
+        rgba(8, 8, 10, 0.14) 100%
+    );
+}
+
+/* Enable the bed only when fully opaque so the reveal reads as a single fade. */
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer {
+    opacity: var(--marquee-defocus-opacity, 1);
+}
+
+/* Far: light vignette, falls off upward into sharp wallpaper */
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--far {
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 46%, #000 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 46%, #000 100%);
+}
+
+/* Mid: glass body around the ticket row */
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--mid {
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 12%, rgba(0, 0, 0, 0.65) 50%, #000 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, transparent 12%, rgba(0, 0, 0, 0.65) 50%, #000 100%);
+}
+
+/* Near: strongest ground-glass right under the cards */
+.hero-marquee-defocus--revealed .hero-marquee-defocus__layer--near {
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 24%, rgba(0, 0, 0, 0.8) 56%, #000 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, transparent 24%, rgba(0, 0, 0, 0.8) 56%, #000 100%);
+}
+
+.hero-marquee__track {
+    display: flex;
+    width: max-content;
+    align-items: stretch;
+    gap: 0.85rem;
+    background: transparent;
+    will-change: transform;
+    animation: hero-marquee-scroll var(--marquee-duration, 80s) linear infinite;
+}
+
+.hero-marquee--paused .hero-marquee__track {
+    animation-play-state: paused;
+}
+
+.hero-marquee--static .hero-marquee__viewport {
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.hero-marquee--static .hero-marquee__viewport::-webkit-scrollbar {
+    display: none;
+}
+
+.hero-marquee--static .hero-marquee__track {
+    animation: none;
+    will-change: auto;
+}
+
+.hero-marquee--static .hero-ticket {
+    scroll-snap-align: start;
+}
+
+@keyframes hero-marquee-scroll {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+
+    to {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+/* Large quiet tickets — soft paper, no accent bars, no lift. */
+.hero-ticket {
+    flex: 0 0 auto;
+    width: 18rem;
+    height: var(--ticket-height);
+    border-radius: var(--ticket-radius);
+    border: 1px solid var(--ticket-line);
+    background: var(--ticket-paper);
+    box-shadow: var(--ticket-shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    color: var(--ticket-fg);
+    transition:
+        background 0.4s var(--curve-snap),
+        box-shadow 0.45s var(--curve-delicate),
+        border-color 0.35s var(--curve-snap);
+}
+
+.hero-ticket:hover,
+.hero-ticket:focus-within {
+    background: color-mix(in srgb, var(--ticket-paper) 88%, #fff 12%);
+    border-color: color-mix(in srgb, var(--ticket-line) 70%, #fff 30%);
+    box-shadow: var(--ticket-shadow-hover);
+}
+
+.hero-ticket--clock {
+    width: 14.5rem;
+}
+
+.hero-ticket--search,
+.hero-ticket--archive {
+    width: 14.25rem;
+}
+
+.hero-ticket--slogan {
+    width: 19rem;
+}
+
+.hero-ticket--stats {
+    width: 19.25rem;
+}
+
+.hero-ticket--post,
+.hero-ticket--updated {
+    width: 20.5rem;
+}
+
+.hero-ticket__pad,
+.hero-ticket__hit {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.28rem;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0.85rem 1.05rem 0.9rem;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    font: inherit;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.hero-ticket__hit {
+    cursor: pointer;
+}
+
+.hero-ticket__hit:focus-visible {
+    outline: 1.5px solid color-mix(in srgb, var(--ticket-fg) 35%, transparent);
+    outline-offset: -3px;
+}
+
+.hero-ticket__hit--stats {
+    gap: 0.4rem;
+}
+
+.hero-ticket__hit--post {
+    display: grid;
+    grid-template-columns: 5rem minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+}
+
+.hero-ticket__hit--post:not(:has(.hero-ticket__cover)) {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0;
+}
+
+.hero-ticket__label {
+    display: block;
+    flex: 0 0 auto;
+    max-width: 100%;
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ticket-muted);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hero-ticket__label:has(.hero-ticket__icon) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+}
+
+.hero-ticket__icon {
+    flex: 0 0 auto;
+    opacity: 0.55;
+}
+
+.hero-ticket__title {
+    margin: 0;
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 100%;
+    font-family: var(--font-display, 'Times New Roman', 'Noto Serif SC', serif);
+    font-size: 1.08rem;
+    font-weight: 600;
+    line-height: 1.32;
+    letter-spacing: -0.015em;
+    color: var(--ticket-fg);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.hero-ticket__meta {
+    margin: 0;
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 100%;
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    font-size: 0.76rem;
+    line-height: 1.3;
+    color: var(--ticket-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hero-ticket__meta--mono {
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
+    letter-spacing: 0.04em;
+    font-size: 0.72rem;
+}
+
+.hero-ticket__quote {
+    margin: 0;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    font-family: var(--font-display, 'Times New Roman', 'Noto Serif SC', serif);
+    font-size: 1.02rem;
+    font-weight: 500;
+    font-style: italic;
+    line-height: 1.42;
+    color: var(--ticket-fg);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.hero-ticket-quote-enter-active,
+.hero-ticket-quote-leave-active {
+    transition:
+        opacity 0.24s var(--curve-snap),
+        transform 0.24s var(--curve-delicate);
+}
+
+.hero-ticket-quote-enter-from {
+    opacity: 0;
+    transform: translateY(0.35rem);
+}
+
+.hero-ticket-quote-leave-to {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+}
+
+.hero-ticket__stat-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+    min-width: 0;
+}
+
+.hero-ticket__stat {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.14rem;
+    min-width: 0;
+    padding: 0 0.7rem;
+    border-left: 1px solid rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.hero-ticket__stat:first-child {
+    padding-left: 0;
+    border-left: 0;
+}
+
+.hero-ticket__stat-value {
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
+    font-size: 1.45rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--ticket-fg);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hero-ticket__stat-label {
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ticket-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hero-ticket__cover {
+    min-width: 0;
+    min-height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-color: rgba(0, 0, 0, 0.04);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    filter: grayscale(0.2) saturate(0.85) contrast(0.98);
+    opacity: 0.88;
+}
+
+.hero-ticket__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.8rem 1rem 0.85rem;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+/* Post cards: title may drop to 1 line when space is tight with cover + meta. */
+.hero-ticket--post .hero-ticket__title,
+.hero-ticket--updated .hero-ticket__title {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.hero-ticket--post .hero-ticket__body:has(.hero-ticket__meta) .hero-ticket__title,
+.hero-ticket--updated .hero-ticket__body:has(.hero-ticket__meta) .hero-ticket__title {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+/* Compact clock — same ink weight as body, no highlighter badge. */
+.time-widget--compact {
+    text-align: left;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.time-widget--compact .weekday {
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.1;
+    margin-bottom: 0.1rem;
+    letter-spacing: -0.02em;
+    color: var(--ticket-fg);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.time-widget--compact .date-display {
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    font-size: 0.78rem;
+    margin-bottom: 0.2rem;
+    color: var(--ticket-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.time-widget--compact .clock {
+    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1.1;
+    color: var(--ticket-fg);
+    background: transparent;
+    display: block;
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    font-variant-numeric: tabular-nums;
+    box-shadow: none;
+    text-shadow: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+[data-theme='dark'] .hero-marquee {
+    --ticket-fg: rgba(255, 254, 247, 0.92);
+    --ticket-muted: rgba(255, 254, 247, 0.68);
+    --ticket-paper: rgba(18, 18, 20, 0.68);
+    --ticket-line: rgba(255, 255, 255, 0.08);
+    --ticket-ink: rgba(255, 255, 255, 0.06);
+    --ticket-shadow: 0 0 0 1px var(--ticket-ink), 0 4px 18px rgba(0, 0, 0, 0.22);
+    --ticket-shadow-hover: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 6px 22px rgba(0, 0, 0, 0.28);
+}
+
+/* Dark theme: the darkening gradients live on the layer (the texture pseudos
+   are theme-agnostic and crossfade between --glass-* / --glass-*-next). */
+[data-theme='dark'] .hero-marquee-defocus__layer--far {
+    background-image: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(0, 0, 0, 0.06) 35%,
+        rgba(0, 0, 0, 0.14) 70%,
+        rgba(0, 0, 0, 0.22) 100%
+    );
+}
+
+[data-theme='dark'] .hero-marquee-defocus__layer--mid {
+    background-image: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(0, 0, 0, 0.1) 40%,
+        rgba(0, 0, 0, 0.24) 78%,
+        rgba(0, 0, 0, 0.34) 100%
+    );
+}
+
+[data-theme='dark'] .hero-marquee-defocus__layer--near {
+    background-image: linear-gradient(
+        180deg,
+        transparent 0%,
+        transparent 38%,
+        rgba(0, 0, 0, 0.18) 68%,
+        rgba(0, 0, 0, 0.4) 100%
+    );
+}
+
+[data-theme='dark'] .hero-ticket:hover,
+[data-theme='dark'] .hero-ticket:focus-within {
+    background: color-mix(in srgb, var(--ticket-paper) 86%, #fff 6%);
+}
+
+[data-theme='dark'] .hero-ticket__stat {
+    border-left-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='dark'] .hero-ticket__cover {
+    border-right-color: rgba(255, 255, 255, 0.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-marquee {
+        transition: none;
+    }
+
+    .hero-marquee__track {
+        animation: none;
+    }
+
+    .hero-ticket {
+        transition: none;
+    }
+
+    .hero-ticket-quote-enter-active,
+    .hero-ticket-quote-leave-active {
+        transition: none;
+    }
+}

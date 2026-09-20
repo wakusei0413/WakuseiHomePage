@@ -1,0 +1,45 @@
+/* ========================================
+   Footer - compact copyright bar
+   ======================================== */
+
+.site-footer {
+    background-color: var(--panel-bg-solid);
+    border-top: 1px solid var(--panel-border);
+    color: var(--fg);
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    padding: 1.5rem 3rem;
+    position: relative;
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.footer-copyright {
+    font-size: 0.875rem;
+    color: var(--muted);
+}
+
+.footer-tagline {
+    font-size: 0.875rem;
+    color: var(--muted);
+    opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+    .site-footer {
+        padding: 1.25rem 1.5rem;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+    }
+}

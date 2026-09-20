@@ -1,536 +1,209 @@
 # Wakusei HomePage
 
-![Version](https://img.shields.io/badge/version-1.9.0-9a0a0a?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-2.0.0-9a0a0a?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-ffe600?style=for-the-badge)
-![Astro](https://img.shields.io/badge/Astro-5-ff5d01?style=for-the-badge&logo=astro&logoColor=white)
-![SolidJS](https://img.shields.io/badge/SolidJS-1.9-2c4f7c?style=for-the-badge&logo=solid&logoColor=white)
+![Astro](https://img.shields.io/badge/Astro-7-ff5d01?style=for-the-badge&logo=astro&logoColor=white)
+![Vue](https://img.shields.io/badge/Vue-3-42b883?style=for-the-badge&logo=vuedotjs&logoColor=white)
 ![Cloudflare Pages](https://img.shields.io/badge/Cloudflare%20Pages-static-f38020?style=for-the-badge&logo=cloudflarepages&logoColor=white)
 
-这是一个基于 `Astro + SolidJS + TypeScript` 的单页静态个人主页，继续以纯静态资源方式部署到 `Cloudflare Pages`。
+Wakusei HomePage 是一个专为个人开发者、博主和技术爱好者打造的**高颜值、极致流畅、开箱即用**的现代化静态个人主页与博客模板。
+
+基于 **Astro 7 + Vue 3 + Pinia + TypeScript** 构建，兼具原生 App 般的丝滑切页质感与静态站点的极速加载体验，无需服务器，可零成本一键部署至 Cloudflare Pages、Vercel 等平台。
 
 ![主页截图](docs/assets/screenshots/homepage-01.png)
 
+---
 
-## 1.9.0 更新：性能优化与修复
+## ✨ 核心亮点
 
-- 优化了壁纸加载流程：手机布局首次进入时跳过 wallpaper 组件，直接进入主页，减少等待时间
-- 桌面布局仍会正常加载壁纸，并由加载页实时显示图片预加载进度
-- 支持手机 / 电脑布局切换时重新进入加载界面，自动按当前布局重建壁纸加载流程
-- 性能优化：移除运行时加载完整 Font Awesome CSS / Webfont，改为 `src/components/Icon.tsx` 内联 SVG 图标，减少首屏额外资源请求。
-- 性能优化：减少 Google Fonts 请求的字重数量，并为头像图片添加 preload，提升首屏资源优先级。
-- 性能优化：为壁纸 API 域名添加 `dns-prefetch` / 桌面端 `preconnect`，降低首次连接延迟。
-- 性能优化：桌面 Dock 鼠标悬停放大逻辑改为 `requestAnimationFrame` 节流，减少高频鼠标事件计算。
-- 性能优化：打字机文案动画改为 `requestAnimationFrame` 调度，降低定时器抖动和后台消耗。
-- 加载修复：修复 loading 提前隐藏导致首屏壁纸闪一下的问题；现在会等待初始壁纸批次加载完成或失败，并在显示前执行图片 decode 与短暂显影缓冲。
-- 图标修复：修复手机侧边栏切换主题后图标不跟随变化的问题；`Icon` 组件现在会响应 `name` 变化。
-- Dock 修复：手机侧边栏改为直接读取 `dock.items` 渲染，后续新增 Dock 项、`iconActive`、链接项、分隔线都能自动同步到手机侧边栏。
-- 主题同步：新增主题变化事件订阅，桌面 Dock 与手机侧边栏的主题状态保持同步。
-- 视觉修复：统一 Dock / 手机侧边栏分隔线粗细，并在手机侧边栏最后一个选项后自动补充分隔线，保持视觉平衡。
-- 视觉修复：黑夜模式下主页头像框改为独立变量控制，避免被全局暗色主题细边框/零阴影影响。
-- 视觉修复：调整手机左侧边栏头像结构，使用独立 `.sidebar-avatar-frame` 承载边框和投影，避免透明头像变成大面积白色方块，并与主页黑夜模式头像框风格保持一致。
-- 资源修复：为主页头像和移动侧边栏头像补充宽高与加载策略，减少布局抖动。
-- 回滚支持：新增 `backups/pre-optimization-2026-05-06/README.md`，记录本轮优化与回滚命令。
+- 🚀 **像原生 App 一样丝滑**：基于 Astro 原生 View Transitions 深度调优，页面跳转不白屏、不闪烁，背景与常驻顶栏跨页无缝衔接。
+- 📖 **超贴心的长文阅读器**：
+  - 支持**字号多档缩放**与**版面宽度自由调节**，适应不同屏幕与阅读习惯。
+  - 支持**一键沉浸阅读**与深浅模式自由切换，专注内容本身。
+  - 纯色高对比度悬浮**目录（TOC）**，滚动自动高亮当前章节；内置图片点击灯箱与代码一键复制。
+- 🖼️ **会呼吸的动态壁纸**：
+  - 支持本地高清壁纸，也支持接入必应或第三方壁纸 API 自动轮播。
+  - 搭载 Web Animations 电影级 Ken Burns 呼吸缩放微动效，切页时缩放相位平滑接管无跳变。
+- 🔍 **顺手好用的即时搜索**：全局快捷键唤出，毫秒级响应；支持键盘 `↑` `↓` `Enter` `Esc` 全流程操作，手机端大触控区防误触。
+- 📊 **GitHub 动态贡献热力图**：构建期自动抓取 53 周提交矩阵，无需配置个人 Token，在首页展示你的极客贡献轨迹，离线或接口异常时优雅降级。
+- 🌗 **双色主题 & 三语国际化**：预设精致的深色与浅色模式，首屏内联脚本防闪烁；内置简体中文、英语、日语（`zh-CN` / `en` / `ja`）随时切换。
+- 📱 **全平台响应式 & 无障碍优化**：移动端专属抽屉导航、严格遵循 WCAG 交互触控热区与高对比度规范，全面支持系统级“减少动态效果（prefers-reduced-motion）”。
+- ⚡ **首屏秒开**：无任何阻塞式全屏 Loading 菊花遮罩，首屏内容与标语瞬间呈现。
 
-## 技术栈
+---
 
-- `Astro 5`
-- `SolidJS`
-- `TypeScript`
-- `Zod`
-- `ESLint`
-- `Prettier`
+## 🟢 3 分钟快速上手
 
-## 本地开发
+### 1. 准备环境
+
+确保电脑已安装 **Node.js**（推荐 `>= 22.12.0`）及 npm。可在终端运行 `node -v` 查看版本。
+
+### 2. 获取代码与安装
 
 ```bash
+# 克隆项目到本地
+git clone https://github.com/wakusei0413/WakuseiHomePage.git
+cd WakuseiHomePage
+
+# 安装依赖
 npm install
+```
+
+### 3. 启动本地预览
+
+```bash
 npm run dev
 ```
 
-默认开发地址：
+终端会输出本地预览地址：`http://localhost:4321`，在浏览器打开即可实时查看效果。
 
-```text
-http://localhost:4321
+---
+
+## 🎨 怎么改成我的个人主页？
+
+**你不需要改动复杂的页面代码！** 所有的个人信息、文案、链接、壁纸与导航，都统一存放在一个文件：
+
+👉 **`src/data/customize.ts`**
+
+打开该文件，里面有极其详尽的中文注释，按需修改以下内容即可：
+
+| 想修改的内容 | 对应字段 | 说明与示例 |
+|---|---|---|
+| **网站名称与描述** | `title` / `description` | 浏览器标签页标题与搜索引擎描述（SEO） |
+| **个人信息与头像** | `profile` | `name`（昵称）、`avatar`（头像路径，如 `/res/img/logo.png`）、`status`（状态） |
+| **首页跑马灯标语** | `slogans` | `list: ['第一句', '第二句']`，支持按顺序或随机播放，支持自定义停留时长 |
+| **社交媒体按钮** | `socialLinks` | GitHub、Bilibili、X、邮箱等链接与图标颜色，可自由增删 |
+| **壁纸设置** | `wallpaper` | `defaultImage`（默认本地壁纸）、`apis`（壁纸轮播接口）、`rotation`（轮播间隔） |
+| **GitHub 贡献图** | `github` | 填入你的 `username`，首页自动生成提交绿格子；`url` 填你的主页链接 |
+| **顶栏导航按钮** | `dock.items` | 支持页面链接、内置功能（搜索、主题切换、语言选择）与分割线 |
+| **页脚信息** | `footer` | 备案号、版权声明文字等 |
+
+> 💡 **更换默认壁纸**：直接将你的 WebP 格式图片覆盖保存到 `public/res/img/wallpaper/default.webp` 即可。
+
+---
+
+## 📝 如何写一篇新博客？
+
+文章以 Markdown 格式保存在 `src/content/blog/` 目录下：
+
+### 1. 创建文章目录
+
+在 `src/content/blog/` 下新建一个文件夹（例如 `my-first-post`），在里面放入：
+- `index.md`（文章正文）
+- `cover.webp`（可选：文章封面图，放在文章同一目录下以便自动压缩优化）
+
+### 2. 编写 Frontmatter 头信息
+
+在 `index.md` 顶部添加如下配置：
+
+```markdown
+---
+title: '我的第一篇博客'
+description: '这是文章的摘要，会显示在博客列表卡片以及搜索引擎结果中。'
+cover: './cover.webp'       # 文章封面，推荐相对路径
+coverLayout: overlay        # 封面样式：overlay（文字覆盖在封面上）或 below（封面在文字下方）
+category: '生活'            # 分类
+tags: ['随笔', '生活']       # 标签列表
+language: 'zh-CN'           # 文章语言
+pubDate: '2026-09-20'       # 发布日期（必填，格式 YYYY-MM-DD）
+updatedDate: '2026-09-21'   # 更新日期（可选）
+author:                     # 作者信息（可选，默认使用站点作者）
+  name: '你的名字'
+  url: 'https://example.com'
+draft: false                # 是否为草稿（设为 true 则不会在任何列表和搜索中显示）
+---
+
+这里开始写 Markdown 正文内容…
 ```
 
-## 常用命令
+保存后，本地开发服务器会自动刷新，在首页文章列表中就能看到刚刚发布的文章！
+
+---
+
+## ☁️ 免费发布上线（Cloudflare Pages 推荐）
+
+本项目为纯静态站点，推荐部署在 **Cloudflare Pages**（全球 CDN 加速、无限流量、自动配置 HTTPS、完全免费）：
+
+1. 将你的代码推送到你的 GitHub 个人仓库。
+2. 打开 [Cloudflare Dashboard](https://dash.cloudflare.com/)，进入 **Workers 与 Pages** > **创建应用程序** > **Pages** > **连接到 Git**。
+3. 选中你的 GitHub 仓库，在构建设置中填写：
+   - **框架预设**：`Astro`
+   - **构建命令**：`npm run build`
+   - **构建输出目录**：`dist`
+   - **环境变量**（可选推荐）：添加 `NODE_VERSION`，值设为 `22.12.0`。
+4. 点击 **保存并部署**，几分钟后即完成部署，并获得专属的 `*.pages.dev` 访问域名。
+
+---
+
+## 🛠️ 开发者进阶指南
+
+### 技术栈构成
+
+| 模块 | 选型 | 说明 |
+|---|---|---|
+| **核心框架** | Astro 7 | 静态站点生成（`output: 'static'`），高性能 HTML 优先 |
+| **交互组件** | Vue 3 + Pinia | `<script setup>` 组合式 API + Pinia 状态管理，多岛屿运行时单例去重 |
+| **内容管理** | Astro Content Collections + Zod | 严格类型校验与 Schema 约束 |
+| **样式体系** | 手写现代化原生 CSS | CSS 变量设计令牌（`--panel-*`, `--glass-*`）、3D Lift 微浮动动效 |
+| **代码质量** | ESLint + Prettier + Vitest | jsdom 单元测试覆盖核心逻辑 |
+| **部署环境** | Cloudflare Pages | 纯静态资源托管，安全 HTTP 响应头防护 |
+
+### 常用开发命令
 
 ```bash
-npm run lint
-npm run format:check
-npm test
-npm run check
-npm run build
-npm run serve
+# 启动本地开发
+npm run dev
+
+# 代码格式化与质量检查
+npm run audit         # 阻断 Critical / High 依赖漏洞
+npm run lint          # ESLint 检查
+npm run lint:fix      # ESLint 自动修复
+npm run format        # Prettier 格式化
+npm run format:check  # Prettier 格式校验
+
+# 单元测试与类型检查
+npm test              # 运行 Vitest 测试套件
+npm run check         # 运行 astro check 类型与模板检查
+
+# 生产打包与本地静态预览
+npm run build         # 打包生成 dist/ 静态文件
+npm run check:dist    # 校验公开产物、草稿隔离和 Cloudflare 标记
+npm run serve         # 启动轻量静态服务器预览 dist/
+npm run preview       # 使用 astro preview 预览打包产物
 ```
 
-- `npm run dev`：启动 Astro 开发服务器
-- `npm run lint`：检查 TypeScript、Solid 组件和配置文件
-- `npm run format:check`：检查代码格式
-- `npm test`：运行单元测试和样式回归测试
-- `npm run check`：运行 Astro 类型检查
-- `npm run build`：构建静态产物到 `dist/`
-- `npm run serve`：预览 `dist/` 静态产物
+> 💡 **完整质量门禁**：与 CI 保持一致，在提交重要改动前推荐依次运行：
+> `npm run audit && npm run lint && npm run format:check && npm test && npm run check && npm run build && npm run check:dist`
 
-## 部署说明
+### 路由与端点一览
 
-Cloudflare Pages 仍然按静态站点方式部署：
+| 路径 | 说明 |
+|---|---|
+| `/` | 首页（英雄区 + 文章卡片瀑布流） |
+| `/page/[page]` | 首页文章列表静态分页（第 2 页起） |
+| `/posts/[...slug]` | 文章正文详情页 |
+| `/archives` | 按年份时间线汇总归档 |
+| `/topics`、`/categories`、`/tags` | 话题、分类与标签聚合浏览 |
+| `/search` | 独立搜索页面（同时支持弹窗快速搜索） |
+| `/rss.xml`、`/atom.xml` | RSS 与 Atom 订阅源 |
+| `/search-index.json` | 客户端毫秒级搜索索引（构建时生成） |
+| `/github-contributions.json` | GitHub 提交热力图静态数据快照（构建时生成） |
+| `/featured-posts.json` | 精选文章静态 JSON 数据 |
+| `/404` | 友好的 404 错误页面 |
 
-- 构建命令：`npm run build`
-- 输出目录：`dist`
+### 深入文档索引
 
-当前项目不依赖 `Astro SSR`、`Cloudflare Functions` 或额外后端服务。
+详细的底层设计文档可参阅 [`docs/`](docs/) 目录：
 
-## 配置指南
-
-日常改内容主要编辑 `src/data/customize.ts`。以下按配置区域逐一说明，每个区域均附完整示例。
+- 🏛️ [架构设计 (docs/architecture.md)](docs/architecture.md)：常驻 Shell、Vue 单例、客户端安全助手等底层设计。
+- ⚙️ [配置链详解 (docs/configuration.md)](docs/configuration.md)：配置流向、高级定制与扩展指南。
+- 📚 [内容管理规范 (docs/content.md)](docs/content.md)：文章 Schema、封面优化机制与排版建议。
+- 🧭 [路由与页面生命周期 (docs/routes.md)](docs/routes.md)：详细路由职责与静态生成策略。
+- 🎨 [CSS 与动效规范 (docs/css.md)](docs/css.md)：设计令牌、加载顺序与无障碍动效。
+- 🧹 [仓库卫生与规范 (docs/hygiene.md)](docs/hygiene.md)：提交规范、图标内联与迁移指南。
 
 ---
 
-### `version` — 版本号
+## 📄 开源协议
 
-```typescript
-version: '1.8.5'
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `version` | `string` | 项目版本号，当前仅用于版本标识，不在页面中显示 |
-
----
-
-### 页面元数据 — `title`、`description`、`lang`、`themeColor`
-
-```typescript
-title: '遊星Wakusei的个人小屋',
-description: 'Wakusei - 个人主页',
-lang: 'zh-CN',
-themeColor: '#fffef7'
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `title` | `string` | 页面标题，显示在浏览器标签和 OG 标签 |
-| `description` | `string` | 页面描述，用于 SEO 和 OG 标签 |
-| `lang` | `string` | HTML `lang` 属性，影响浏览器和搜索引擎的语言识别 |
-| `themeColor` | `string` | 亮色模式下的页面背景色，同时作为移动端浏览器地址栏颜色（CSS 色值如 `#fffef7`）。暗色模式会自动切换为 `#0a0a1a` |
-
-`themeColor` 通过 CSS 变量 `--theme-color` 注入页面。亮色模式下 `--bg` 取此值，暗色模式下 `--bg` 由主题 CSS 覆盖，不受 `themeColor` 影响。
-
----
-
-### `profile` — 头像、名字、状态
-
-```typescript
-profile: {
-    name: '遨星 Wakusei',
-    status: '正在武装保卫开源社区！',
-    avatar: '/res/img/logo.png'
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `name` | `string` | 主页显示的名字 |
-| `status` | `string` | 名字下方的状态文案 |
-| `avatar` | `string` | 头像图片路径（放在 `public/` 下，如 `/res/img/logo.png`） |
-
-头像建议尺寸：正方形、透明背景 PNG，显示时保持 1:1 比例。
-
----
-
-### `socialLinks` — 社交按钮
-
-```typescript
-socialLinks: {
-    colorScheme: 'cycle',  // 'cycle' 每个按钮颜色不同；'same' 全部统一
-    links: [
-        {
-            name: 'GITHUB',
-            url: 'https://github.com/wakusei0413',
-            icon: 'fab fa-github',
-            color: '#ffe600'
-        },
-        {
-            name: 'EMAIL',
-            url: 'mailto:wakusei0413@outlook.com',
-            icon: 'fas fa-envelope',
-            color: '#3e59ff'
-        }
-    ]
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `colorScheme` | `'cycle' \| 'same'` | `cycle` 每个按钮独立颜色；`same` 用统一颜色 |
-| `links[].name` | `string` | 按钮上显示的名称 |
-| `links[].url` | `string` | 跳转链接（支持 `mailto:`） |
-| `links[].icon` | `string` | Font Awesome 图标类，如 `fab fa-github` |
-| `links[].color` | `string` | 按钮背景色，CSS 色值如 `#3e59ff` |
-
----
-
-### `slogans` — 打字机文案
-
-```typescript
-slogans: {
-    list: [
-        '安静，我在用锤子TNT vibe coding！',
-        '武装保卫开源社区！',
-        '说得好！我完全同意。'
-    ],
-    mode: 'sequence',        // 'sequence' 顺序播放；'random' 随机
-    typeSpeed: 60,           // 每个字符输入间隔（毫秒）
-    pauseDuration: 5000,     // 打完一条后停顿多久（毫秒）
-    loop: true               // 是否循环播放
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `list` | `string[]` | 所有可播放的文案 |
-| `mode` | `'random' \| 'sequence'` | 播放顺序：随机或顺序 |
-| `typeSpeed` | `number` | 打字速度，越小越快 |
-| `pauseDuration` | `number` | 每条文案打完后停留时间 |
-| `loop` | `boolean` | 是否循环播放列表 |
-
----
-
-### `time` — 时间面板
-
-```typescript
-time: {
-    format: '24h',         // '12h' 或 '24h'
-    showWeekday: true,     // 是否显示星期
-    showDate: true,        // 是否显示日期
-    updateInterval: 1000   // 刷新间隔（毫秒）
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `format` | `'12h' \| '24h'` | 时间显示格式 |
-| `showWeekday` | `boolean` | 是否显示星期几 |
-| `showDate` | `boolean` | 是否显示月-日 |
-| `updateInterval` | `number` | 刷新周期（毫秒），默认 1000 |
-
-星期和月份的翻译自动根据当前语言切换。翻译文件在 `src/data/i18n.ts`。
-
----
-
-### `footer` — 页脚文案
-
-```typescript
-footer: {
-    text: '咕咕嘎嘎！-遨星 Wakusei'
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `text` | `string` | 页脚显示的文案，自动拼接当前年份 |
-
----
-
-### `loading` — 加载页文案
-
-```typescript
-loading: {
-    texts: [
-        '少女祈祷中...',
-        '正在给服务器喂猫粮...',
-        '正在连接异次元...'
-    ],
-    textSwitchInterval: 2000   // 文案轮换间隔（毫秒）
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `texts` | `string[]` | 加载页轮播的文案列表 |
-| `textSwitchInterval` | `number` | 每条文案显示多久后切换 |
-
----
-
-### `wallpaper` — 壁纸轮播
-
-```typescript
-wallpaper: {
-    apis: [
-        'https://www.loliapi.com/bg/',
-        'https://www.dmoe.cc/random.php'
-    ],
-    raceTimeout: 10000,     // 单次请求超时（毫秒）
-    maxRetries: 5,          // 最大重试次数
-    preloadCount: 3,      // 预加载图片数量
-    infiniteScroll: {
-        enabled: true,    // 是否启用无限滚动
-        speed: 2,         // 滚动速度（像素/帧）
-        batchSize: 5,     // 每次加载多少张
-        maxImages: 50     // 页面最多保留多少张
-    }
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `apis` | `string[]` | 壁纸图片来源接口，可配置多个并行加载 |
-| `raceTimeout` | `number` | 单次请求超时时间 |
-| `maxRetries` | `number` | 接口失败时的最大重试次数 |
-| `preloadCount` | `number` | 提前加载多少张图片到内存 |
-| `infiniteScroll.enabled` | `boolean` | 是否启用无限滚动 |
-| `infiniteScroll.speed` | `number` | 滚动速度，越大越快 |
-| `infiniteScroll.batchSize` | `number` | 每批加载图片数量 |
-| `infiniteScroll.maxImages` | `number` | DOM 中最大保留图片数，超出自动清理 |
-
----
-
-### `animation` — 打字机光标
-
-```typescript
-animation: {
-    cursorStyle: 'block'   // 'block' 或 'line'
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `cursorStyle` | `'block' \| 'line'` | 打字机光标样式：方块或竖线 |
-
----
-
-### `contentProtection` — 交互限制
-
-```typescript
-contentProtection: {
-    preventCopyAndDrag: true   // 是否禁止复制和拖拽
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `preventCopyAndDrag` | `boolean` | `true` 时拦截右键菜单、文本选中、图片拖拽 |
-
----
-
-### `effects` — 页面动效
-
-```typescript
-effects: {
-    scrollReveal: {
-        enabled: true,    // 是否启用滚动浮现效果
-        offset: 50,       // 元素进入视口前多少像素开始触发动画
-        delay: 50          // 元素间动画延迟（毫秒）
-    }
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `scrollReveal.enabled` | `boolean` | 是否启用滚动浮现效果 |
-| `scrollReveal.offset` | `number` | 触发动画的视口偏移量 |
-| `scrollReveal.delay` | `number` | 多元素依次浮现的间隔 |
-
----
-
-### `debug` — 调试开关
-
-```typescript
-debug: {
-    consoleLog: false   // 是否在控制台输出调试日志
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `consoleLog` | `boolean` | `true` 时在浏览器控制台输出运行时日志（如壁纸加载状态） |
-
----
-
-### `i18n` — 国际化
-
-```typescript
-i18n: {
-    defaultLocale: 'zh-CN',           // 默认语言
-    locales: ['zh-CN', 'en', 'ja']    // 支持的语言列表
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `defaultLocale` | `'zh-CN' \| 'en' \| 'ja'` | 首次访问时使用的语言 |
-| `locales` | `('zh-CN' \| 'en' \| 'ja')[]` | 支持切换的语言列表 |
-
-所有翻译内容在 `src/data/i18n.ts` 中维护。新增语言时需要同时更新此处的 `locales` 和 `i18n.ts`。
-
----
-
-### `dock` — 导航栏（1.8.5+）
-
-导航栏（页面底部 Dock）的所有内容都在 `dock.items` 数组中定义，数组顺序即为导航栏从左到右的渲染顺序：
-
-```typescript
-dock: {
-    items: [
-        // action：执行内置行为
-        {
-            type: 'action',
-            action: 'toggleTheme',           // 内置：切换明暗主题
-            display: {
-                icon: 'fa-solid fa-moon',  // 默认图标
-                iconActive: 'fa-solid fa-sun', // 激活时图标（可选，如主题切换后显示太阳）
-                i18nKey: 'dock.theme'        // 从 src/data/i18n.ts 读取标签
-            }
-        },
-
-        // divider：视觉分隔线
-        { type: 'divider' },
-
-        // panel：打开弹出面板
-        {
-            type: 'panel',
-            panel: 'language',                // 内置：语言选择面板
-            display: {
-                icon: 'fa-solid fa-globe',
-                i18nKey: 'dock.language'
-            }
-        },
-
-        // link：跳转链接
-        {
-            type: 'link',
-            href: 'https://example.com',
-            openInNewTab: true,              // 可选，默认 false
-            display: {
-                icon: 'fa-solid fa-link',
-                i18nKey: 'dock.settings'     // 或直接用 text: '设置'
-            }
-        }
-    ]
-}
-```
-
-**四种 `type`：**
-
-| type | 说明 | 必填字段 |
-|---|---|---|
-| `action` | 执行内置或自定义行为 | `action`（行为 ID） |
-| `panel` | 打开弹出面板 | `panel`（面板 ID） |
-| `link` | 页面跳转 | `href`（目标地址） |
-| `divider` | 垂直分隔线 | 无 |
-
-**`display` 字段：**
-
-| 字段 | 说明 | 优先级 |
-|---|---|---|
-| `icon` | Font Awesome 图标类（如 `fa-solid fa-moon`） | 必填 |
-| `iconActive` | 激活态图标（如主题高亮后切到太阳） | 可选 |
-| `text` | 硬编码文案文字 | 次选（无 `i18nKey` 时生效） |
-| `i18nKey` | `src/data/i18n.ts` 中的翻译键 | **优先** |
-
-**内置保留行为：**
-
-| 类型 | 键值 | 说明 |
-|---|---|---|
-| `action` | `toggleTheme` | 切换浅/深色主题，自动保存到 localStorage |
-| `panel` | `language` | 打开语言选择面板（桌面端 popup / 移动端 bottom sheet） |
-
-任何未知的 `action` 或 `panel` 不会 crash，而是输出 `console.warn`，并保留为扩展接口。
-
----
-
-### 配置运行链路
-
-- `src/data/customize.ts`：主要人工编辑入口
-- `src/data/site.ts`：应用实际读取的校验后配置
-- `src/data/schema.ts`：`Zod` 配置结构校验
-- `src/types/site.ts`：配置类型定义
-
-### 修改建议
-
-- 改文案、链接、颜色、壁纸接口时，优先只改 `src/data/customize.ts`
-- 改页面背景色时，修改 `customize.ts` 中的 `themeColor`，暗色模式背景由 `css/base.css` 中 `[data-theme='dark']` 独立控制
-- 改 dock 标签翻译、星期月份翻译时，编辑 `src/data/i18n.ts`
-- 改字段结构时，同时更新 `src/data/schema.ts` 和 `src/types/site.ts`
-- 改页面表现或交互时，优先看 `src/components/` 和 `src/lib/`
-- 改社交按钮弹起手感时，看 `src/components/SocialLinks.tsx` 和 `css/components.css`
-
-## 页面结构
-
-主要入口和组件：
-
-- `src/pages/index.astro`：首页入口
-- `src/layouts/BaseLayout.astro`：基础 HTML、SEO、字体和全局样式入口
-- `src/components/HomepageApp.tsx`：主页主交互容器
-- `src/components/NavigationDock.tsx`：导航栏（主题、语言、设置）
-- `src/components/SocialLinks.tsx`：社交导航按钮
-- `src/components/TypewriterSlogan.tsx`：打字机文案
-- `src/components/ClockPanel.tsx`：右侧时间面板
-- `src/components/LoadingOverlay.tsx`：加载遮罩
-
-主要逻辑工具：
-
-- `src/lib/wallpaper-scroller.ts`：壁纸加载、预加载、滚动和清理
-- `src/lib/i18n.ts`：国际化运行时（语言/主题切换）
-- `src/lib/runtime-effects.ts`：页面运行时交互效果
-- `src/lib/font-awesome.ts`：图标字体延迟加载
-- `src/lib/slogan-selector.ts`：标语顺序和随机选择
-- `src/lib/time.ts`：时间格式化（支持多语言）
-
-## 样式说明
-
-样式集中在 `css/` 目录：
-
-- `css/base.css`：变量、重置、全局基础样式
-- `css/layout.css`：左右面板和壁纸区域布局
-- `css/components.css`：头像、社交按钮、加载页、时间面板等组件样式
-- `css/responsive.css`：移动端和窄屏适配
-- `src/styles/dock.css`：导航栏（NavigationDock）完整样式
-
-社交导航按钮的弹起手感主要由这两处控制：
-
-- `src/components/SocialLinks.tsx`：通过指针事件切换即时悬浮状态
-- `css/components.css`：控制按钮上浮方向、阴影和颜色
-
-当前社交按钮保持“碰到后向左上弹起”的视觉方向，同时用固定按钮槽位避免鼠标位于按钮缝隙时反复闪烁。
-
-## 静态资源
-
-静态资源放在：
-
-- `public/res/`
-
-头像路径保持为：
-
-```text
-/res/img/logo.png
-```
-
-这样部署后的公开访问路径不会因为迁移到 Astro 而改变。
-
-## 测试覆盖
-
-当前测试位于 `tests/`：
-
-- 配置结构校验
-- 标语选择逻辑
-- 时间格式化
-- 壁纸滚动和图片属性
-- Font Awesome 延迟加载
-- 社交按钮样式和即时指针交互
-- i18n 配置校验、翻译数据完整性和运行时切换
-
-完整验证建议使用：
-
-```bash
-npm run lint
-npm run format:check
-npm test
-npm run check
-npm run build
-```
-
-## 开源协议
-
-本项目使用 `MIT License`，详见 [LICENSE](LICENSE)。
+本项目基于 [MIT License](LICENSE) 开源，欢迎自由使用、修改与分享。

@@ -1,40 +1,53 @@
 {
     "name": "wakusei-homepage",
-    "version": "1.9.0",
+    "version": "2.0.0",
     "private": true,
-    "description": "Wakusei 个人主页 - Astro + SolidJS static site",
+    "description": "Wakusei 个人主页 - Astro + Vue static site",
     "engines": {
         "node": ">=22.12.0",
         "npm": ">=9.6.5"
     },
     "scripts": {
         "dev": "astro dev",
-        "lint": "eslint \"src/**/*.{ts,tsx}\" \"tests/**/*.test.ts\" astro.config.mjs",
-        "lint:fix": "eslint \"src/**/*.{ts,tsx}\" \"tests/**/*.test.ts\" astro.config.mjs --fix",
-        "format": "prettier --write \"src/**/*.{ts,tsx,astro}\" \"tests/**/*.test.ts\" css/**/*.css astro.config.mjs tsconfig.json package.json",
-        "format:check": "prettier --check \"src/**/*.{ts,tsx,astro}\" \"tests/**/*.test.ts\" css/**/*.css astro.config.mjs tsconfig.json package.json",
+        "postinstall": "node scripts/patch-esbuild-sandbox.cjs",
+        "audit": "npm audit --audit-level=high",
+        "lint": "eslint \"src/**/*.{ts,vue}\" \"tests/**/*.test.ts\" \"scripts/**/*.mjs\" astro.config.mjs",
+        "lint:fix": "eslint \"src/**/*.{ts,vue}\" \"tests/**/*.test.ts\" \"scripts/**/*.mjs\" astro.config.mjs --fix",
+        "format": "prettier --write \"src/**/*.{ts,vue,astro}\" \"tests/**/*.test.ts\" \"scripts/**/*.mjs\" \"src/styles/**/*.css\" astro.config.mjs tsconfig.json package.json",
+        "format:check": "prettier --check \"src/**/*.{ts,vue,astro}\" \"tests/**/*.test.ts\" \"scripts/**/*.mjs\" \"src/styles/**/*.css\" astro.config.mjs tsconfig.json package.json",
         "build": "astro build",
         "check": "astro check",
+        "check:dist": "node scripts/check-dist.mjs",
         "serve": "npx serve dist",
         "preview": "astro preview",
-        "test": "node --import tsx --test tests/*.test.ts"
+        "test": "vitest run"
     },
     "devDependencies": {
-        "@astrojs/check": "^0.9.9",
-        "@astrojs/solid-js": "^6.0.1",
-        "@types/node": "^22.14.1",
-        "@typescript-eslint/eslint-plugin": "^7.18.0",
-        "@typescript-eslint/parser": "^7.18.0",
-        "astro": "^6.2.2",
-        "eslint": "^8.56.0",
-        "prettier": "^3.2.0",
+        "@astrojs/check": "^0.9.10",
+        "@astrojs/markdown-remark": "^7.3.1",
+        "@eslint/js": "^10.0.1",
+        "@types/node": "^26.1.1",
+        "@typescript-eslint/eslint-plugin": "^8.65.0",
+        "@typescript-eslint/parser": "^8.65.0",
+        "astro": "^7.3.3",
+        "esbuild-wasm": "0.28.1",
+        "eslint": "^10.7.0",
+        "eslint-plugin-vue": "^10.10.0",
+        "globals": "^17.7.0",
+        "jsdom": "^29.1.1",
+        "prettier": "^3.9.6",
         "prettier-plugin-astro": "^0.14.1",
-        "solid-js": "^1.9.5",
-        "tsx": "^4.19.3",
-        "typescript": "^5.8.3",
-        "zod": "^3.24.4"
+        "rehype-autolink-headings": "^7.1.0",
+        "rehype-slug": "^6.0.0",
+        "sharp": "^0.35.4",
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.11",
+        "zod": "^4.4.3"
     },
     "dependencies": {
-        "@fortawesome/fontawesome-free": "^7.2.0"
+        "@astrojs/sitemap": "^3.7.4",
+        "@astrojs/vue": "^7.0.3",
+        "pinia": "^4.0.3",
+        "vue": "^3.5.43"
     }
 }

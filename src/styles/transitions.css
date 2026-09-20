@@ -1,0 +1,215 @@
+/* ========================================
+    博客转场动画 — 连续自然滚动
+    Sticky Hero + 文档流 Blog
+    ======================================== */
+
+/* 页面滚动根容器 */
+.page-scroller {
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--bg, #fffef7);
+    scrollbar-width: none;
+}
+
+.page-scroller::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hero 粘顶层：滚动时钉在视口顶部，通过 transform 沉入 3D 空间 */
+.hero-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: var(--z-content, 50);
+    perspective: 1500px;
+    transform-style: preserve-3d;
+    overflow: hidden;
+}
+
+.hero-content {
+    position: absolute;
+    inset: 0;
+    /* No permanent will-change: the 3D sink transform (translateZ inside the
+       perspective on .hero-sticky) promotes this to its own layer on demand,
+       and a permanent full-viewport layer with `will-change: filter` kept the
+       browser tracking expensive filter rasterization forever. */
+    backface-visibility: hidden;
+}
+
+/* ===== View Transitions — 页面导航动画 ===== */
+
+@keyframes vt-content-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes vt-content-out {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+}
+
+.page-transition-surface {
+    min-height: 100vh;
+    padding: 4.5rem 2rem;
+    background: var(--bg, #fffef7);
+    position: relative;
+    z-index: var(--z-content, 50);
+}
+
+::view-transition-old(page-content) {
+    animation: vt-content-out 0.18s var(--curve-snap) both;
+}
+
+::view-transition-new(page-content) {
+    animation: vt-content-in 0.32s var(--curve-delicate) both;
+}
+
+::view-transition-old(site-shell),
+::view-transition-new(site-shell) {
+    animation: none;
+}
+
+::view-transition-old(top-bar),
+::view-transition-new(top-bar),
+::view-transition-old(top-bar-popup),
+::view-transition-new(top-bar-popup) {
+    animation: none;
+}
+
+::view-transition-group(top-bar),
+::view-transition-group(top-bar-popup) {
+    animation-duration: 0s;
+}
+
+/* ===== Top navigation progress ===== */
+
+.navigation-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: calc(var(--z-loading, 9998) + 2);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-3px);
+    transition:
+        opacity 0.16s var(--curve-snap),
+        transform 0.16s var(--curve-snap);
+}
+
+.navigation-progress--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.navigation-progress__bar {
+    width: 100%;
+    height: 100%;
+    transform: scaleX(0);
+    transform-origin: left center;
+    background: linear-gradient(90deg, var(--accent-blue, #3e59ff), var(--accent-yellow, #ffe600));
+    box-shadow: 0 0 18px color-mix(in srgb, var(--accent-blue, #3e59ff) 55%, transparent);
+    transition: transform 0.18s var(--curve-snap);
+}
+
+.navigation-progress--done .navigation-progress__bar {
+    transition-duration: 0.12s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .navigation-progress,
+    .navigation-progress__bar {
+        transition: none;
+    }
+
+    html.is-entering .left-panel,
+    html.is-entering .top-bar {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.left-panel-content-leave-active {
+    transition:
+        opacity 0.18s var(--curve-snap),
+        transform 0.18s var(--curve-snap);
+}
+
+.left-panel-content-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
+}
+
+/* 客户端切页时为新标题提供细腻的浮现与微位移过渡；首屏（html.is-entering）则由 layout.css 中的错峰入场接管 */
+html:not(.is-entering) .left-panel-content-enter-active {
+    transition:
+        opacity 0.26s var(--curve-delicate),
+        transform 0.26s var(--curve-delicate);
+}
+
+html:not(.is-entering) .left-panel-content-enter-from {
+    opacity: 0;
+    transform: translateY(6px);
+}
+
+html.is-entering .left-panel-content-enter-active {
+    transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(page-content),
+    ::view-transition-new(page-content) {
+        animation-duration: 0.01ms !important;
+        animation-name: none !important;
+    }
+
+    .left-panel-content-enter-active,
+    .left-panel-content-leave-active {
+        transition: none !important;
+        filter: none !important;
+        transform: none !important;
+    }
+
+    .left-panel-content-enter-from,
+    .left-panel-content-leave-to {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+    }
+
+    html.is-entering .left-panel .hero > .avatar-box,
+    html.is-entering .left-panel .hero > .name,
+    html.is-entering .left-panel .hero > .status-bar,
+    html.is-entering .left-panel .hero > .bio-container,
+    html.is-entering .left-panel .hero > .social-links,
+    html.is-entering .left-panel .hero > .social-links-wrapper {
+        opacity: 1;
+        transform: none;
+    }
+
+    html:not(.is-entering) .left-panel .hero > .avatar-box,
+    html:not(.is-entering) .left-panel .hero > .name,
+    html:not(.is-entering) .left-panel .hero > .status-bar,
+    html:not(.is-entering) .left-panel .hero > .bio-container,
+    html:not(.is-entering) .left-panel .hero > .social-links,
+    html:not(.is-entering) .left-panel .hero > .social-links-wrapper {
+        animation: none;
+    }
+}

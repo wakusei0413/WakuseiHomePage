@@ -1,0 +1,294 @@
+/* ========================================
+   粗放主义 - 布局层：两栏布局、面板结构
+   ======================================== */
+
+/* ===== 主容器：两栏布局 ===== */
+.container {
+    display: flex;
+    flex-wrap: nowrap;
+    height: 100vh;
+    overflow: hidden;
+    opacity: 1;
+    visibility: visible;
+    filter: none;
+    pointer-events: auto;
+}
+
+.container.visible {
+    opacity: 1;
+    visibility: visible;
+    filter: none;
+    pointer-events: auto;
+}
+
+/* ===== 左侧面板 ===== */
+.left-panel {
+    width: 500px;
+    flex-shrink: 0;
+    min-width: 320px;
+    padding: var(--space-xl, 3rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    justify-content: safe center;
+    align-items: center;
+    border-right: 1px solid var(--panel-border);
+    /* Opaque paper so the sharp animated wallpaper never leaks through. The
+       frosted look comes from the static pre-blurred wallpaper copy in
+       .left-panel::before, which is rasterized once and cached by the
+       compositor — the Ken Burns motion behind never re-rasterizes it. */
+    background-color: var(--panel-bg-solid);
+    overflow: hidden;
+    position: relative;
+    z-index: var(--z-content, 50);
+    contain: layout style;
+    box-shadow: none; /* 去掉 PC 端的侧边大投影，改用细腻线条 */
+    transition:
+        width var(--transition-normal),
+        padding var(--transition-normal),
+        border-right-width var(--transition-normal),
+        background-color var(--transition-normal),
+        opacity 0.5s var(--curve-delicate),
+        transform 0.5s var(--curve-delicate);
+}
+
+/* Frosted-glass tint: a flat color sampled from the current wallpaper
+   (--glass-panel-tint, written by SiteShell on every wallpaper change) washed
+   over the opaque paper base. A tint has no geometry, so it can never drift
+   out of sync with the wallpaper, and it costs nothing per frame — the change
+   itself is a compositor-only background-color transition in sync with the
+   wallpaper's own crossfade. */
+.left-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: rgb(var(--glass-panel-tint, 255 254 247) / 0.3);
+    transition: background-color 0.9s var(--curve-fade);
+}
+
+/* Fresh-load entrance: the panel slides/fades in from the left once the page
+   paints. Driven by the html.is-entering class (set in SSR, removed by an inline
+   script after the first painted frame) so it never flickers. */
+html.is-entering .left-panel {
+    opacity: 0;
+    transform: translateX(-24px);
+}
+
+.left-panel .hero {
+    width: 100%;
+    text-align: left;
+}
+
+/* Scroll-driven hero fade: --hero-opacity is bound on each .hero header from
+   SiteShell (replaces the old inline opacity binding) so CSS fully owns opacity
+   and can pre-hide + animate the entrance without fighting inline style. */
+.left-panel .hero .avatar-box,
+.left-panel .hero .name {
+    opacity: var(--hero-opacity, 1);
+}
+
+/* Initial-load entrance: children stay hidden until the inline first-paint
+   script removes html.is-entering (two rAFs after DOMContentLoaded), then rise
+   in with a small stagger. This is deliberately NOT gated on Vue hydration
+   (client:idle): on slow devices hydration is deferred ~2s+, and hiding the
+   hero until then pushes the avatar (the LCP element) render delay past 2.5s.
+   The panel itself reveals on the same first-paint tick, so the two stay in
+   sync and the entrance never flickers. */
+html.is-entering .left-panel .hero > .avatar-box,
+html.is-entering .left-panel .hero > .name,
+html.is-entering .left-panel .hero > .status-bar,
+html.is-entering .left-panel .hero > .bio-container,
+html.is-entering .left-panel .hero > .social-links,
+html.is-entering .left-panel .hero > .social-links-wrapper {
+    opacity: 0;
+    transform: translateY(18px);
+}
+
+html:not(.is-entering) .left-panel .hero > .avatar-box {
+    animation: hero-item-rise 0.62s var(--curve-delicate) backwards;
+    animation-delay: 0.05s;
+}
+
+html:not(.is-entering) .left-panel .hero > .name {
+    animation: hero-item-rise 0.62s var(--curve-delicate) backwards;
+    animation-delay: 0.15s;
+}
+
+html:not(.is-entering) .left-panel .hero > .status-bar {
+    animation: hero-item-rise 0.62s var(--curve-delicate) backwards;
+    animation-delay: 0.25s;
+}
+
+html:not(.is-entering) .left-panel .hero > .bio-container {
+    animation: hero-item-rise 0.62s var(--curve-delicate) backwards;
+    animation-delay: 0.35s;
+}
+
+html:not(.is-entering) .left-panel .hero > .social-links,
+html:not(.is-entering) .left-panel .hero > .social-links-wrapper {
+    animation: hero-item-rise 0.62s var(--curve-delicate) backwards;
+    animation-delay: 0.45s;
+}
+
+@keyframes hero-item-rise {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== 右侧面板 ===== */
+.right-panel {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    background-color: transparent;
+    color: #fffef7;
+    position: relative;
+    z-index: 1;
+}
+
+[data-theme='dark'] .wallpaper-scroll-area {
+    background-color: var(--bg);
+}
+
+.left-panel .hero {
+    background: transparent;
+}
+
+/* ===== 右侧：信息面板 ===== */
+.info-panel {
+    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
+    padding: 1.5rem;
+    padding: var(--space-md, 1.5rem);
+    padding-bottom: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    z-index: var(--z-content, 50);
+}
+
+/* ===== 右侧面板阴影层 - 独立于壁纸 ===== */
+.right-panel-shadow {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 10;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.25) 0%,
+        rgba(0, 0, 0, 0.05) 8%,
+        transparent 15%,
+        transparent 85%,
+        rgba(0, 0, 0, 0.05) 92%,
+        rgba(0, 0, 0, 0.25) 100%
+    );
+}
+
+/* ===== 壁纸容器 ===== */
+.wallpaper-scroll-area {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: var(--z-wallpaper, 0);
+    background-color: #fffef7;
+    background-color: var(--bg, #fffef7);
+    contain: layout style paint;
+
+    /* 禁用用户交互 */
+    pointer-events: none;
+    touch-action: none;
+    user-select: none;
+}
+
+/* 壁纸整体压暗遮罩 */
+.wallpaper-scroll-area::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: 1;
+}
+
+[data-theme='dark'] .wallpaper-scroll-area::after {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.wallpaper-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    display: block;
+    opacity: 0;
+    transform: scale(1);
+    transform-origin: center center;
+    /* Gentle crossfade; the Ken Burns zoom is driven by the
+       WallpaperController (Web Animations API). */
+    transition: opacity 0.9s var(--curve-fade);
+    z-index: 0;
+    will-change: opacity, transform;
+}
+
+.wallpaper-image.active {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wallpaper-image {
+        will-change: opacity;
+        transition-duration: 0.4s;
+    }
+}
+
+.homepage-content {
+    min-height: 60vh;
+    padding: 64px 24px 96px;
+    /* The post list sits below the fold; skip its layout/render until it nears the
+       viewport so initial paint (and the avatar LCP) is not delayed by it. */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1400px;
+}
+
+.homepage-content-inner {
+    width: min(1120px, 100%);
+    margin: 0 auto;
+}
+
+.homepage-section-title {
+    margin: 0 0 1rem;
+    font-size: clamp(2rem, 5vw, 4rem);
+}
+
+/* 首页文章列表区标题：放大、左对齐（覆盖 .blog-title 的居中 2rem） */
+.homepage-content .blog-title {
+    text-align: left;
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    margin: 0 0 1.75rem;
+}
+
+.homepage-section-lead {
+    margin: 0;
+    color: var(--text-secondary, var(--muted, #666));
+    font-size: 1.125rem;
+}
+
+.hero-minimal {
+    text-align: center;
+}

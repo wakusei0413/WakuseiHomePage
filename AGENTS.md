@@ -1,55 +1,48 @@
 # AGENTS
 
-## 项目结构
+Astro 7 **静态站点** + Vue 3（`<script setup>`）+ Pinia + TypeScript。Node `>=22.12.0`。
 
-- Astro 5 静态站点 + SolidJS + TypeScript。入口：`src/pages/index.astro` → `src/layouts/BaseLayout.astro` → `src/components/HomepageApp.tsx`
-- 组件用 SolidJS 响应式 (`createSignal/onMount/onCleanup`)，全部 `client:load` 客户端水合
-- `src/data/customize.ts` 导出 `editableSiteConfig`，日常改内容只改这里
-- `src/data/site.ts` 导入并 Zod 校验后导出 `siteConfig`，组件统一消费
-- `src/types/site.ts` 定义全部 TS 接口，与 `src/data/schema.ts` 必须同步
-- `src/data/i18n.ts` 导出翻译字符串和 `Locale` 类型
-- `src/lib/`：`logger.ts`、`time.ts`、`slogan-selector.ts`、`font-awesome.ts`、`i18n.ts`、`runtime-effects.ts`、`wallpaper-scroller.ts`
-- CSS 层叠顺序：`css/base.css` → `layout.css` → `components.css` → `responsive.css` → `src/styles/dock.css`
-- 首页外所有路由回退到 `src/pages/404.astro`，仅现代浏览器
+**以本文件 + `package.json` / `astro.config.mjs` / CI / README 为准。**
 
 ## 命令
 
-- `npm run dev` 开发 / `npm run build` 构建到 `dist/` / `npm run serve` 预览
-- `npm run lint`  / `npm run lint:fix` / `npm run format:check` / `npm run format`
-- `npm run check` (astro check) / `npm test` (Node 内置 test + tsx)
-- 验证链路：`lint → format:check → test → build`，CI 参考 `.github/workflows/ci.yml`
+```bash
+npm run dev          # localhost:4321
+npm run build        # → dist/
+npm run serve        # 静态预览 dist/
+npm run preview      # astro preview
+npm run audit        # 发布依赖安全门禁
+npm run lint
+npm run lint:fix
+npm run format
+npm run format:check
+npm run check        # astro check
+npm run check:dist   # 校验构建产物、草稿隔离与 Rocket Loader 标记
+npm test             # vitest run (jsdom)
+npm test -- tests/foo.test.ts   # 单文件测试
+```
 
-## 构建 & 部署
+完工前按 CI 顺序跑：`audit → lint → format:check → test → check → build → check:dist`。
 
-- 纯静态输出到 `dist/`，Cloudflare Pages 部署，`dist/` 已 gitignore
-- SolidJS 组件打包为 ESM，Astro devToolbar 已禁用
+## 红线（违反会破坏构建/设计）
 
-## 代码规范
+- 站内导航用 `astro:transitions/client` 的 `navigate`；**不要**重新引入 `@swup/astro`。
+- **不要**从 Vue island 导入 `src/lib/posts.ts`（构建失败）；客户端用 `src/lib/post-model.ts` 等。
+- 封面在文章旁边（`./cover.*`），**不是** `public/` 路径。
+- **不要**手写 `public/sitemap.xml`（由 `@astrojs/sitemap` 生成）。
+- Dock"设置"占位链接已在 `customize.ts` 中移除；没被要求就别发明设置 UI。
 
-- ESLint：`no-var`、`eqeqeq`、`no-trailing-spaces`、强制分号、`@typescript-eslint/recommended`
-- Prettier：4空格缩进、单引号、分号、`printWidth: 120`、`trailingComma: "none"`
-- Astro 文件用 `prettier-plugin-astro`
+## 详情按需读取（索引：[docs/README.md](docs/README.md)）
 
-## 配置链路
+| 主题 | 文档 | 含什么 |
+|------|------|--------|
+| 架构 | [architecture.md](docs/architecture.md) | Shell props 驱动、Islands 默认 `client:idle`、Pinia、跨页状态、客户端助手 |
+| 配置链 | [configuration.md](docs/configuration.md) | 日常只改 `customize.ts`、新字段/新语言改哪几处、壁纸、主题 |
+| 内容 | [content.md](docs/content.md) | frontmatter 字段、`description` 必填、排序、`draft`、封面规则 |
+| 路由 | [routes.md](docs/routes.md) | 路径表、静态资源、Sitemap |
+| CSS | [css.md](docs/css.md) | `BaseLayout` 导入顺序即加载顺序、设计令牌 |
+| 卫生 | [hygiene.md](docs/hygiene.md) | gitignore 清单、别提交截图/Lighthouse |
 
-- `customize.ts`(改这里) → `site.ts`(Zod 校验) → 组件消费
-- 新增配置字段：同步改 `types/site.ts`、`schema.ts`、`customize.ts`
-- 新增语言：改 `i18n.ts` 翻译、`customize.ts` 的 `locales` 数组、`types/site.ts` 的 `Locale` 类型
+## 代码风格
 
-## 组件一览
-
-- `HomepageApp.tsx`：顶层容器，挂载壁纸滚动、i18n、内容保护、滚动动画
-- `NavigationDock.tsx`：桌面底部 Dock，图标放大悬停效果，处理主题切换和语言弹窗
-- `MobileDockSidebar.tsx`：移动端侧边栏（窄屏点头像触发），镜像 Dock 功能 + 语言子菜单
-- `SocialLinks.tsx`：社交按钮，用 pointer 事件 + `.is-hovered` 类控制悬停（非 CSS :hover）
-- `TypewriterSlogan.tsx`：打字机效果
-- `ClockPanel.tsx`：右侧时间面板
-- `LoadingOverlay.tsx`：加载遮罩 + 轮播文案 + 进度条
-
-## 运行时注意
-
-- 组件服务端渲染为静态 HTML，交互在 JS 加载后激活
-- 壁纸依赖外部 API (`wallpaper.apis`)，加载失败不影响核心功能
-- Font Awesome 通过 `requestIdleCallback` 延迟加载(5s 超时)
-- Google Fonts 用 `rel="preload"` + `onload` 切换，`<noscript>` 兜底
-- 主题在内联 `<head>` 脚本中提前应用防闪烁，`<html data-theme>` 驱动所有颜色
+Prettier：4 空格、单引号、分号、`printWidth: 120`、`trailingComma: "none"`（覆盖 `.astro` + CSS）。ESLint 覆盖 `src/**/*.{ts,vue}`、`tests/**/*.test.ts`、`scripts/**/*.mjs`、`astro.config.mjs`（**不含** `.astro` 模板体）。

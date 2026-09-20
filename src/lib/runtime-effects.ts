@@ -4,15 +4,34 @@ export function enableContentProtection(enabled: boolean) {
     }
 
     document.body.classList.add('no-copy');
-    const preventDefault = (event: Event) => event.preventDefault();
+
+    const reapplyNoCopy = () => {
+        document.body.classList.add('no-copy');
+    };
+    document.addEventListener('astro:after-swap', reapplyNoCopy);
+
+    const isEditableTarget = (target: EventTarget | null) => {
+        const element = target as HTMLElement | null;
+        if (!element) return false;
+        const tagName = element.tagName;
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tagName)) return true;
+        return element.isContentEditable;
+    };
+    const isInteractiveTarget = (target: EventTarget | null) => {
+        const element = target as HTMLElement | null;
+        if (!element) return false;
+        const tagName = element.tagName;
+        if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A', 'LABEL'].includes(tagName)) return true;
+        if (element.isContentEditable) return true;
+        return !!element.closest('a, button, [role="button"], label');
+    };
+
+    const preventDefault = (event: Event) => {
+        if (isEditableTarget(event.target)) return;
+        event.preventDefault();
+    };
     const mouseDownHandler = (event: Event) => {
-        const target = event.target as HTMLElement | null;
-        const tagName = target?.tagName;
-
-        if (tagName && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(tagName)) {
-            return;
-        }
-
+        if (isInteractiveTarget(event.target)) return;
         event.preventDefault();
     };
 
@@ -25,6 +44,7 @@ export function enableContentProtection(enabled: boolean) {
 
     return () => {
         document.body.classList.remove('no-copy');
+        document.removeEventListener('astro:after-swap', reapplyNoCopy);
         document.removeEventListener('selectstart', preventDefault);
         document.removeEventListener('contextmenu', preventDefault);
         document.removeEventListener('copy', preventDefault);
@@ -35,7 +55,7 @@ export function enableContentProtection(enabled: boolean) {
 }
 
 export function initScrollAnimations(delay: number, offset: number) {
-    const targets = document.querySelectorAll('.social-link, .info-panel, .avatar-box, .name, .status-bar');
+    const targets = document.querySelectorAll('.social-link, .avatar-box, .name, .status-bar');
 
     targets.forEach((target, index) => {
         const element = target as HTMLElement;
@@ -50,7 +70,6 @@ export function initScrollAnimations(delay: number, offset: number) {
                     const target = entry.target as HTMLElement;
                     target.classList.add('scroll-reveal--visible');
 
-                    let fallbackId: ReturnType<typeof setTimeout>;
                     const cleanup = () => {
                         clearTimeout(fallbackId);
                         target.removeEventListener('transitionend', onTransitionEnd);
@@ -63,8 +82,8 @@ export function initScrollAnimations(delay: number, offset: number) {
                             cleanup();
                         }
                     };
+                    const fallbackId = setTimeout(cleanup, 800);
                     target.addEventListener('transitionend', onTransitionEnd);
-                    fallbackId = setTimeout(cleanup, 800);
 
                     observer.unobserve(entry.target);
                 }
@@ -84,8 +103,10 @@ export function initScrollAnimations(delay: number, offset: number) {
 
 export function initMobileStickyAvatar(container: HTMLElement, avatarBox: HTMLElement) {
     let isMobile = window.matchMedia('(max-width: 900px)').matches;
+    let frame: number | null = null;
 
-    const handleScroll = () => {
+    const applyScrollState = () => {
+        frame = null;
         if (!isMobile) {
             return;
         }
@@ -95,6 +116,12 @@ export function initMobileStickyAvatar(container: HTMLElement, avatarBox: HTMLEl
         } else {
             avatarBox.classList.remove('scrolled');
         }
+    };
+
+    // Coalesce to one pass per animation frame (scrollTop is a layout read).
+    const handleScroll = () => {
+        if (frame !== null) return;
+        frame = window.requestAnimationFrame(applyScrollState);
     };
 
     const handleResize = () => {
@@ -111,5 +138,9 @@ export function initMobileStickyAvatar(container: HTMLElement, avatarBox: HTMLEl
     return () => {
         container.removeEventListener('scroll', handleScroll);
         window.removeEventListener('resize', handleResize);
+        if (frame !== null) {
+            cancelAnimationFrame(frame);
+            frame = null;
+        }
     };
 }

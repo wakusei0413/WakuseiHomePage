@@ -2,9 +2,8 @@
     "extends": "astro/tsconfigs/strict",
     "compilerOptions": {
         "baseUrl": ".",
-        "types": ["node"],
-        "jsx": "preserve",
-        "jsxImportSource": "solid-js"
+        "types": ["node", "vitest/globals"],
+        "jsx": "preserve"
     },
-    "include": ["src/**/*", "tests/**/*.ts", "astro.config.mjs"]
+    "include": [".astro/types.d.ts", "src/**/*", "tests/**/*.ts", "astro.config.mjs", "vitest.config.ts"]
 }

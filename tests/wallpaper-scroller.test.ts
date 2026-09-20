@@ -1,72 +1,20 @@
-import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
-
+import { describe, expect, it, vi } from 'vitest';
 import {
     decorateWallpaperImage,
     prepareWallpaperImageForDisplay,
-    WallpaperScrollerController
+    WallpaperController
 } from '../src/lib/wallpaper-scroller';
 
-function createPlaceholder(index: number) {
-    return {
-        dataset: {
-            index: String(index),
-            loaded: 'true',
-            loading: 'true'
-        },
-        removed: false,
-        remove() {
-            this.removed = true;
-        }
-    };
-}
+const baseConfig = {
+    apis: ['https://example.com/wallpaper'],
+    raceTimeout: 1000,
+    maxRetries: 4,
+    rotation: { enabled: true, interval: 60000 }
+};
 
-describe('WallpaperScrollerController internals', () => {
-    it('cleans up the oldest placeholders when maxImages is exceeded', () => {
-        const controller = new WallpaperScrollerController({
-            apis: ['https://example.com/wallpaper'],
-            raceTimeout: 1000,
-            maxRetries: 2,
-            preloadCount: 2,
-            infiniteScroll: {
-                enabled: true,
-                speed: 1,
-                batchSize: 2,
-                maxImages: 2
-            }
-        });
-
-        const placeholders = [createPlaceholder(0), createPlaceholder(1), createPlaceholder(2), createPlaceholder(3)];
-        const unobserved: unknown[] = [];
-
-        controller.images = placeholders.slice() as unknown as HTMLElement[];
-        controller.observer = {
-            unobserve(target: unknown) {
-                unobserved.push(target);
-            }
-        } as IntersectionObserver;
-
-        controller.cleanupOverflowImages();
-
-        assert.deepStrictEqual(controller.images, placeholders.slice(2));
-        assert.deepStrictEqual(unobserved, placeholders.slice(0, 2));
-        assert.strictEqual(placeholders[0].removed, true);
-        assert.strictEqual(placeholders[1].removed, true);
-    });
-
+describe('WallpaperController internals', () => {
     it('retries loading until raceLoadImage succeeds', async () => {
-        const controller = new WallpaperScrollerController({
-            apis: ['https://example.com/wallpaper'],
-            raceTimeout: 1000,
-            maxRetries: 4,
-            preloadCount: 2,
-            infiniteScroll: {
-                enabled: true,
-                speed: 1,
-                batchSize: 2,
-                maxImages: 10
-            }
-        });
+        const controller = new WallpaperController({ ...baseConfig });
 
         let attempts = 0;
         controller.raceLoadImage = async () => {
@@ -80,10 +28,10 @@ describe('WallpaperScrollerController internals', () => {
         };
         controller.waitForRetry = async () => undefined;
 
-        const result = await controller.loadWithRetry('7');
+        const result = await controller.loadWithRetry(7);
 
-        assert.strictEqual(result.src, 'ok');
-        assert.strictEqual(attempts, 3);
+        expect(result.src).toBe('ok');
+        expect(attempts).toBe(3);
     });
 
     it('marks wallpaper images as decorative for accessibility audits', () => {
@@ -97,8 +45,8 @@ describe('WallpaperScrollerController internals', () => {
 
         decorateWallpaperImage(image as unknown as HTMLImageElement);
 
-        assert.strictEqual(image.alt, '');
-        assert.strictEqual(attributes['aria-hidden'], 'true');
+        expect(image.alt).toBe('');
+        expect(attributes['aria-hidden']).toBe('true');
     });
 
     it('keeps preload images eager before they are inserted into the page', () => {
@@ -114,9 +62,9 @@ describe('WallpaperScrollerController internals', () => {
 
         decorateWallpaperImage(image as unknown as HTMLImageElement);
 
-        assert.strictEqual(image.loading, 'eager');
-        assert.strictEqual(image.decoding, 'sync');
-        assert.strictEqual(attributes['aria-hidden'], 'true');
+        expect(image.loading).toBe('eager');
+        expect(image.decoding).toBe('sync');
+        expect(attributes['aria-hidden']).toBe('true');
     });
 
     it('marks rendered wallpaper images for lazy loading', () => {
@@ -128,7 +76,98 @@ describe('WallpaperScrollerController internals', () => {
 
         prepareWallpaperImageForDisplay(image as unknown as HTMLImageElement);
 
-        assert.strictEqual(image.loading, 'lazy');
-        assert.strictEqual(image.decoding, 'async');
+        expect(image.loading).toBe('lazy');
+        expect(image.decoding).toBe('async');
+    });
+
+    it('fires onWallpaperPreload with the loaded element before activation', async () => {
+        const preloaded: string[] = [];
+        const controller = new WallpaperController(
+            { ...baseConfig },
+            { onWallpaperPreload: (img) => preloaded.push(img.src) }
+        );
+        const container = { innerHTML: '', appendChild() {} } as unknown as HTMLElement;
+        controller.attach(container);
+
+        controller.loadWithRetry = async () =>
+            ({
+                src: 'frame-X',
+                className: '',
+                setAttribute() {},
+                remove() {},
+                classList: { remove() {}, add() {} },
+                get offsetWidth() {
+                    return 1;
+                },
+                animate() {
+                    return { currentTime: 0, play() {}, cancel() {}, playState: 'idle' };
+                },
+                style: {}
+            }) as unknown as HTMLImageElement;
+
+        await (controller as unknown as { loadIntoLayer(slot: number): Promise<boolean> }).loadIntoLayer(0);
+
+        expect(preloaded).toEqual(['frame-X']);
+    });
+
+    it('swaps as soon as a late preload lands (readiness-driven rotation)', async () => {
+        vi.useFakeTimers();
+        try {
+            const activeSrcs: string[] = [];
+            const controller = new WallpaperController(
+                { ...baseConfig, rotation: { enabled: true, interval: 100 } },
+                { onWallpaperChange: (img) => activeSrcs.push(img.src) }
+            );
+            const container = { innerHTML: '', appendChild() {} } as unknown as HTMLElement;
+            controller.attach(container);
+
+            const makeImage = (src: string) =>
+                ({
+                    src,
+                    className: '',
+                    setAttribute() {},
+                    remove() {},
+                    classList: { remove() {}, add() {} },
+                    get offsetWidth() {
+                        return 1;
+                    },
+                    animate() {
+                        return { currentTime: 0, play() {}, cancel() {}, playState: 'idle' };
+                    },
+                    style: {}
+                }) as unknown as HTMLImageElement;
+
+            let resolveSecond!: (img: HTMLImageElement) => void;
+            const secondLoad = new Promise<HTMLImageElement>((resolve) => {
+                resolveSecond = resolve;
+            });
+            let firstCall = true;
+            controller.loadWithRetry = async () => {
+                if (firstCall) {
+                    firstCall = false;
+                    return makeImage('frame-A');
+                }
+                return secondLoad;
+            };
+
+            // First frame loads instantly; the second (hidden) frame stays
+            // in-flight while the interval fires.
+            controller.init();
+            await vi.advanceTimersByTimeAsync(0);
+            expect(activeSrcs).toEqual(['frame-A']);
+
+            // Interval fires at 100ms while the preload is still in flight:
+            // the current frame must stay on screen.
+            await vi.advanceTimersByTimeAsync(100);
+            expect(activeSrcs).toEqual(['frame-A']);
+
+            // The preload lands 50ms later — the swap must happen immediately,
+            // not wait for the next interval tick.
+            resolveSecond(makeImage('frame-B'));
+            await vi.advanceTimersByTimeAsync(50);
+            expect(activeSrcs).toEqual(['frame-A', 'frame-B']);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 });

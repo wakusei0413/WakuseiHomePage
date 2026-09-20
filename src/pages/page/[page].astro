@@ -1,0 +1,37 @@
+---
+import type { GetStaticPaths } from 'astro';
+import HomepageApp from '../../components/HomepageApp.vue';
+import { siteConfig } from '../../data/site';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { createHomepagePage, homepagePageCount, homepagePagePath, type HomepagePage } from '../../lib/home-pagination';
+import { loadPublishedPosts } from '../../lib/posts';
+
+export const getStaticPaths = (async () => {
+    const posts = await loadPublishedPosts();
+    const totalPages = homepagePageCount(posts.length);
+
+    return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => {
+        const currentPage = index + 2;
+        return {
+            params: { page: String(currentPage) },
+            props: createHomepagePage(posts, currentPage)
+        };
+    });
+}) satisfies GetStaticPaths;
+
+const { posts, pagination } = Astro.props as HomepagePage;
+const title = `最新文章 · 第 ${pagination.currentPage} 页 | ${siteConfig.title}`;
+const paginationPrev = homepagePagePath(pagination.currentPage - 1);
+const paginationNext =
+    pagination.currentPage < pagination.totalPages ? homepagePagePath(pagination.currentPage + 1) : undefined;
+---
+
+<BaseLayout
+    shellMode="home"
+    shellTitle={siteConfig.profile.name}
+    title={title}
+    paginationPrev={paginationPrev}
+    paginationNext={paginationNext}
+>
+    <HomepageApp client:idle posts={posts} pagination={pagination} />
+</BaseLayout>

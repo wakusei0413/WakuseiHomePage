@@ -15,7 +15,8 @@ const dockItemSchema = z.union([
             icon: z.string().min(1),
             iconActive: z.string().min(1).optional(),
             text: z.string().min(1).optional(),
-            i18nKey: z.string().optional()
+            i18nKey: z.string().optional(),
+            renderMode: z.enum(['icon', 'text', 'both']).optional()
         })
     }),
     z.object({
@@ -25,7 +26,8 @@ const dockItemSchema = z.union([
             icon: z.string().min(1),
             iconActive: z.string().min(1).optional(),
             text: z.string().min(1).optional(),
-            i18nKey: z.string().optional()
+            i18nKey: z.string().optional(),
+            renderMode: z.enum(['icon', 'text', 'both']).optional()
         })
     }),
     z.object({
@@ -36,7 +38,8 @@ const dockItemSchema = z.union([
             icon: z.string().min(1),
             iconActive: z.string().min(1).optional(),
             text: z.string().min(1).optional(),
-            i18nKey: z.string().optional()
+            i18nKey: z.string().optional(),
+            renderMode: z.enum(['icon', 'text', 'both']).optional()
         })
     }),
     z.object({
@@ -53,7 +56,7 @@ const i18nSchema = z.object({
     locales: z.array(z.enum(['zh-CN', 'en', 'ja'])).min(1)
 });
 
-export const siteConfigSchema = z.object({
+const siteConfigSchema = z.object({
     version: z.string().min(1),
     title: z.string().min(1),
     description: z.string().min(1),
@@ -68,13 +71,16 @@ export const siteConfigSchema = z.object({
         colorScheme: z.enum(['cycle', 'same']),
         links: z.array(socialLinkSchema).min(1)
     }),
+    github: z.object({
+        username: z.string().min(1),
+        url: z.string().min(1)
+    }),
     footer: z.object({
         text: z.string().min(1)
     }),
     slogans: z.object({
         list: z.array(z.string().min(1)).min(1),
         mode: z.enum(['random', 'sequence']),
-        typeSpeed: z.number().positive(),
         pauseDuration: z.number().positive(),
         loop: z.boolean()
     }),
@@ -89,19 +95,14 @@ export const siteConfigSchema = z.object({
         textSwitchInterval: z.number().positive()
     }),
     wallpaper: z.object({
+        defaultImage: z.string().optional(),
         apis: z.array(z.string().min(1)).min(1),
         raceTimeout: z.number().positive(),
         maxRetries: z.number().positive(),
-        preloadCount: z.number().positive(),
-        infiniteScroll: z.object({
+        rotation: z.object({
             enabled: z.boolean(),
-            speed: z.number().positive(),
-            batchSize: z.number().positive(),
-            maxImages: z.number().positive()
+            interval: z.number().positive()
         })
-    }),
-    animation: z.object({
-        cursorStyle: z.enum(['block', 'line'])
     }),
     contentProtection: z.object({
         preventCopyAndDrag: z.boolean()

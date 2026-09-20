@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.npm-cache/
 
 # Build output
 dist/
@@ -16,7 +17,30 @@ Thumbs.db
 # Local git worktrees
 .worktrees/
 
+# Reasonix tool local state
+.reasonix/
+
+# Codex tool state (logs already covered by .codex/*.log)
+.codex/environments/
+
+# OpenCode tool local install
+.opencode/
+
 .superpowers/
 
 # Backups
 backups/
+
+# Local temp / tool output
+output/
+tmp/
+terminals/
+agent-tools/
+.playwright-cli/
+.codex/
+.agents/
+.claude/
+.trellis/
+.zcode/
+reasonix.toml
+*.tsbuildinfo

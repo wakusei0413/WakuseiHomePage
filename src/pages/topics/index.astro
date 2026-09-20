@@ -1,0 +1,16 @@
+---
+import TopicsPage from '../../components/TopicsPage.vue';
+import { siteConfig } from '../../data/site';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { loadPublishedPosts, loadTaxonomyTerms } from '../../lib/posts';
+
+const categories = await loadTaxonomyTerms('category');
+const tags = await loadTaxonomyTerms('tag');
+const postCount = (await loadPublishedPosts()).length;
+const title = '归档';
+const description = `按 ${categories.length} 个分类和 ${tags.length} 个标签浏览所有文章。`;
+---
+
+<BaseLayout shellMode="blog" shellTitle={title} title={`${title} | ${siteConfig.title}`} description={description}>
+    <TopicsPage client:idle categories={categories} tags={tags} postCount={postCount} />
+</BaseLayout>
