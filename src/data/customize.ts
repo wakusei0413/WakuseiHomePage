@@ -66,7 +66,7 @@ export const editableSiteConfig: SiteConfig = {
         text: '© 2026 遊星 Wakusei'
     },
 
-    // 打字机与首页速览文案。
+    // 首页跑马灯标语与速览文案。
     slogans: {
         list: [
             '安静，我在用锤子TNT vibe coding！',
@@ -76,7 +76,6 @@ export const editableSiteConfig: SiteConfig = {
             '用冰冷的理性温暖世界。'
         ],
         mode: 'sequence',
-        typeSpeed: 60,
         pauseDuration: 5000,
         loop: true
     },
@@ -119,18 +118,13 @@ export const editableSiteConfig: SiteConfig = {
         }
     },
 
-    // 打字机光标。
-    animation: {
-        cursorStyle: 'block'
-    },
-
     // 可选的内容交互限制。
     contentProtection: {
         preventCopyAndDrag: false
     },
 
     debug: {
-        consoleLog: true
+        consoleLog: false
     },
 
     // 页面轻量动效。
@@ -143,7 +137,7 @@ export const editableSiteConfig: SiteConfig = {
     },
     // 顶栏与移动菜单共用此顺序。类型：link / action / panel / divider。
     // 内置 action：toggleTheme、openSearch；内置 panel：language。
-    // 文案优先使用 i18nKey；设置入口当前保持 href: '#' 占位。
+    // 文案优先使用 i18nKey。
     dock: {
         items: [
             {

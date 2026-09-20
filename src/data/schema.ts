@@ -81,7 +81,6 @@ const siteConfigSchema = z.object({
     slogans: z.object({
         list: z.array(z.string().min(1)).min(1),
         mode: z.enum(['random', 'sequence']),
-        typeSpeed: z.number().positive(),
         pauseDuration: z.number().positive(),
         loop: z.boolean()
     }),
@@ -104,9 +103,6 @@ const siteConfigSchema = z.object({
             enabled: z.boolean(),
             interval: z.number().positive()
         })
-    }),
-    animation: z.object({
-        cursorStyle: z.enum(['block', 'line'])
     }),
     contentProtection: z.object({
         preventCopyAndDrag: z.boolean()

@@ -11,16 +11,18 @@ npm run dev          # localhost:4321
 npm run build        # → dist/
 npm run serve        # 静态预览 dist/
 npm run preview      # astro preview
+npm run audit        # 发布依赖安全门禁
 npm run lint
 npm run lint:fix
 npm run format
 npm run format:check
 npm run check        # astro check
+npm run check:dist   # 校验构建产物、草稿隔离与 Rocket Loader 标记
 npm test             # vitest run (jsdom)
 npm test -- tests/foo.test.ts   # 单文件测试
 ```
 
-完工前按 CI 顺序跑：`lint → format:check → test → check → build`。
+完工前按 CI 顺序跑：`audit → lint → format:check → test → check → build → check:dist`。
 
 ## 红线（违反会破坏构建/设计）
 
@@ -28,7 +30,7 @@ npm test -- tests/foo.test.ts   # 单文件测试
 - **不要**从 Vue island 导入 `src/lib/posts.ts`（构建失败）；客户端用 `src/lib/post-model.ts` 等。
 - 封面在文章旁边（`./cover.*`），**不是** `public/` 路径。
 - **不要**手写 `public/sitemap.xml`（由 `@astrojs/sitemap` 生成）。
-- Dock"设置"是占位——没被要求就别发明设置 UI。
+- Dock"设置"占位链接已在 `customize.ts` 中移除；没被要求就别发明设置 UI。
 
 ## 详情按需读取（索引：[docs/README.md](docs/README.md)）
 
@@ -43,4 +45,4 @@ npm test -- tests/foo.test.ts   # 单文件测试
 
 ## 代码风格
 
-Prettier：4 空格、单引号、分号、`printWidth: 120`、`trailingComma: "none"`（覆盖 `.astro` + CSS）。ESLint 覆盖 `src/**/*.{ts,vue}`、`tests/**/*.test.ts`、`astro.config.mjs`（**不含** `.astro` 模板体）。
+Prettier：4 空格、单引号、分号、`printWidth: 120`、`trailingComma: "none"`（覆盖 `.astro` + CSS）。ESLint 覆盖 `src/**/*.{ts,vue}`、`tests/**/*.test.ts`、`scripts/**/*.mjs`、`astro.config.mjs`（**不含** `.astro` 模板体）。

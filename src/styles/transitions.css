@@ -43,7 +43,7 @@
 @keyframes vt-content-in {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(8px);
     }
 
     to {
@@ -53,9 +53,14 @@
 }
 
 @keyframes vt-content-out {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
     to {
         opacity: 0;
-        transform: translateY(-6px);
+        transform: translateY(-3px);
     }
 }
 
@@ -68,11 +73,11 @@
 }
 
 ::view-transition-old(page-content) {
-    animation: vt-content-out 0.16s var(--curve-snap) both;
+    animation: vt-content-out 0.18s var(--curve-snap) both;
 }
 
 ::view-transition-new(page-content) {
-    animation: vt-content-in 0.22s var(--curve-snap) both;
+    animation: vt-content-in 0.32s var(--curve-delicate) both;
 }
 
 ::view-transition-old(site-shell),
@@ -143,34 +148,50 @@
 
 .left-panel-content-leave-active {
     transition:
-        filter 0.18s var(--curve-snap),
-        opacity 0.18s var(--curve-snap);
+        opacity 0.18s var(--curve-snap),
+        transform 0.18s var(--curve-snap);
 }
 
 .left-panel-content-leave-to {
     opacity: 0;
-    filter: blur(8px);
+    transform: translateY(-4px);
 }
 
-/* The entrance itself is driven by the html.is-entering child stagger defined
-   in layout.css, so the Vue Transition keeps its enter phase a no-op to avoid
-   double-animating opacity over the stagger. The leave phase still fades the
-   outgoing header out cleanly. */
-.left-panel-content-enter-active {
+/* 客户端切页时为新标题提供细腻的浮现与微位移过渡；首屏（html.is-entering）则由 layout.css 中的错峰入场接管 */
+html:not(.is-entering) .left-panel-content-enter-active {
+    transition:
+        opacity 0.26s var(--curve-delicate),
+        transform 0.26s var(--curve-delicate);
+}
+
+html:not(.is-entering) .left-panel-content-enter-from {
+    opacity: 0;
+    transform: translateY(6px);
+}
+
+html.is-entering .left-panel-content-enter-active {
     transition: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .left-panel-content-enter-active,
-    .left-panel-content-leave-active {
-        transition: none;
-        filter: none;
-        transform: none;
+    ::view-transition-old(page-content),
+    ::view-transition-new(page-content) {
+        animation-duration: 0.01ms !important;
+        animation-name: none !important;
     }
 
+    .left-panel-content-enter-active,
+    .left-panel-content-leave-active {
+        transition: none !important;
+        filter: none !important;
+        transform: none !important;
+    }
+
+    .left-panel-content-enter-from,
     .left-panel-content-leave-to {
-        transform: none;
-        filter: none;
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
     }
 
     html.is-entering .left-panel .hero > .avatar-box,

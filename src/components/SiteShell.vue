@@ -108,7 +108,7 @@ const heroStyle = computed(() => {
 });
 
 function startWallpaperLoading() {
-    const wref = wallpaperRef.value ?? (document.querySelector('.wallpaper-scroll-area') as HTMLElement | null);
+    const wref = wallpaperRef.value;
     if (!wref) {
         logger.warn('Wallpaper ref not available');
         ready.value = true;
@@ -315,7 +315,7 @@ onUnmounted(() => {
 });
 
 function syncShellVisibility(isReady: boolean) {
-    const container = containerRef.value ?? (document.querySelector('.container') as HTMLElement | null);
+    const container = containerRef.value;
     if (container) {
         container.classList.toggle('visible', isReady);
     }

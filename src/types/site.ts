@@ -1,7 +1,6 @@
 export type SocialColorScheme = 'cycle' | 'same';
 export type SloganMode = 'random' | 'sequence';
 export type ClockFormat = '12h' | '24h';
-export type CursorStyle = 'block' | 'line';
 export type Locale = 'zh-CN' | 'en' | 'ja';
 export type DockRenderMode = 'icon' | 'text' | 'both';
 
@@ -72,7 +71,6 @@ export interface FooterConfig {
 export interface SlogansConfig {
     list: string[];
     mode: SloganMode;
-    typeSpeed: number;
     pauseDuration: number;
     loop: boolean;
 }
@@ -101,10 +99,6 @@ export interface WallpaperConfig {
     raceTimeout: number;
     maxRetries: number;
     rotation: WallpaperRotationConfig;
-}
-
-export interface AnimationConfig {
-    cursorStyle: CursorStyle;
 }
 
 export interface ContentProtectionConfig {
@@ -144,7 +138,6 @@ export interface SiteConfig {
     time: TimeConfig;
     loading: LoadingConfig;
     wallpaper: WallpaperConfig;
-    animation: AnimationConfig;
     contentProtection: ContentProtectionConfig;
     debug: DebugConfig;
     effects: EffectsConfig;

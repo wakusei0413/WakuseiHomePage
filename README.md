@@ -6,204 +6,204 @@
 ![Vue](https://img.shields.io/badge/Vue-3-42b883?style=for-the-badge&logo=vuedotjs&logoColor=white)
 ![Cloudflare Pages](https://img.shields.io/badge/Cloudflare%20Pages-static-f38020?style=for-the-badge&logo=cloudflarepages&logoColor=white)
 
-基于 **Astro 7 + Vue 3 + Pinia + TypeScript** 的静态个人主页与博客，部署到 Cloudflare Pages（纯静态，无 SSR / Functions）。
+Wakusei HomePage 是一个专为个人开发者、博主和技术爱好者打造的**高颜值、极致流畅、开箱即用**的现代化静态个人主页与博客模板。
+
+基于 **Astro 7 + Vue 3 + Pinia + TypeScript** 构建，兼具原生 App 般的丝滑切页质感与静态站点的极速加载体验，无需服务器，可零成本一键部署至 Cloudflare Pages、Vercel 等平台。
 
 ![主页截图](docs/assets/screenshots/homepage-01.png)
 
-## 功能概览
+---
 
-- 持久壳（`SiteShell` / TopBar / Footer）+ Astro View Transitions
-- 博客：Content Collections、文章页（TOC / 进度条 / 灯箱 / 代码复制）、归档·分类·标签·搜索
-- 明暗主题、zh-CN / en / ja 三语 UI
-- 壁纸默认图 + 外部 API 轮换；构建期封面优化（Sharp / WebP）
-- RSS / Atom、自动 sitemap、客户端搜索索引
-- 首屏直接渲染内容，不使用阻塞式 loading overlay
+## ✨ 核心亮点
 
-## 技术栈
+- 🚀 **像原生 App 一样丝滑**：基于 Astro 原生 View Transitions 深度调优，页面跳转不白屏、不闪烁，背景与常驻顶栏跨页无缝衔接。
+- 📖 **超贴心的长文阅读器**：
+  - 支持**字号多档缩放**与**版面宽度自由调节**，适应不同屏幕与阅读习惯。
+  - 支持**一键沉浸阅读**与深浅模式自由切换，专注内容本身。
+  - 纯色高对比度悬浮**目录（TOC）**，滚动自动高亮当前章节；内置图片点击灯箱与代码一键复制。
+- 🖼️ **会呼吸的动态壁纸**：
+  - 支持本地高清壁纸，也支持接入必应或第三方壁纸 API 自动轮播。
+  - 搭载 Web Animations 电影级 Ken Burns 呼吸缩放微动效，切页时缩放相位平滑接管无跳变。
+- 🔍 **顺手好用的即时搜索**：全局快捷键唤出，毫秒级响应；支持键盘 `↑` `↓` `Enter` `Esc` 全流程操作，手机端大触控区防误触。
+- 📊 **GitHub 动态贡献热力图**：构建期自动抓取 53 周提交矩阵，无需配置个人 Token，在首页展示你的极客贡献轨迹，离线或接口异常时优雅降级。
+- 🌗 **双色主题 & 三语国际化**：预设精致的深色与浅色模式，首屏内联脚本防闪烁；内置简体中文、英语、日语（`zh-CN` / `en` / `ja`）随时切换。
+- 📱 **全平台响应式 & 无障碍优化**：移动端专属抽屉导航、严格遵循 WCAG 交互触控热区与高对比度规范，全面支持系统级“减少动态效果（prefers-reduced-motion）”。
+- ⚡ **首屏秒开**：无任何阻塞式全屏 Loading 菊花遮罩，首屏内容与标语瞬间呈现。
 
-| 类别 | 选型 |
-|------|------|
-| 框架 | Astro 7（`output: 'static'`） |
-| UI | Vue 3（`<script setup>` islands）+ Pinia |
-| 内容 | Astro Content Collections + Zod（`astro/zod`） |
-| 校验 / 类型 | Zod、TypeScript（`astro check`） |
-| 样式 | 手写 CSS（`src/styles/*`） |
-| 质量 | ESLint、Prettier、Vitest（jsdom） |
-| 集成 | `@astrojs/vue`、`@astrojs/sitemap` |
+---
 
-Node `>=22.12.0`，npm `>=9.6.5`。
+## 🟢 3 分钟快速上手
 
-## 本地开发
+### 1. 准备环境
+
+确保电脑已安装 **Node.js**（推荐 `>= 22.12.0`）及 npm。可在终端运行 `node -v` 查看版本。
+
+### 2. 获取代码与安装
 
 ```bash
+# 克隆项目到本地
+git clone https://github.com/wakusei0413/WakuseiHomePage.git
+cd WakuseiHomePage
+
+# 安装依赖
 npm install
+```
+
+### 3. 启动本地预览
+
+```bash
 npm run dev
 ```
 
-开发地址：`http://localhost:4321`
+终端会输出本地预览地址：`http://localhost:4321`，在浏览器打开即可实时查看效果。
 
-### 常用命令
-
-```bash
-npm run lint
-npm run lint:fix
-npm run format
-npm run format:check
-npm test
-npm test -- tests/foo.test.ts   # 单文件
-npm run check                   # astro check
-npm run build                   # → dist/
-npm run serve                   # 预览 dist/
-npm run preview                 # astro preview
-```
-
-完整验证（与 CI 一致，`.github/workflows/ci.yml`，Node 22.12.0）：
-
-```bash
-npm run lint
-npm run format:check
-npm test
-npm run check
-npm run build
-```
-
-## 部署
-
-Cloudflare Pages（静态站点）：
-
-| 项 | 值 |
-|----|-----|
-| 构建命令 | `npm run build` |
-| 输出目录 | `dist` |
-| 环境 | Node 22.12+ 推荐 |
-
-不依赖 Astro SSR、Cloudflare Functions 或后端服务。
-
-## 配置
-
-日常改文案 / 链接 / 颜色 / 壁纸 / 导航：只编辑 **`src/data/customize.ts`**。
-
-```
-customize.ts  →  site.ts（Zod：schema.ts）  →  siteConfig
-```
-
-- 新增配置字段：同步改 `src/types/site.ts`、`src/data/schema.ts`、`customize.ts`
-- UI 翻译：`src/data/i18n.ts`（与 `customize.ts` 的 `i18n.locales`、类型 `Locale` 保持一致）
-- 主题：`<html data-theme="light|dark">`，head 内联脚本读 `localStorage.theme` 防闪烁
-- `customize.ts` 只导出 `editableSiteConfig`，不维护第二套快捷映射
-
-### 常用字段速查
-
-| 区域 | 说明 |
-|------|------|
-| `title` / `description` / `lang` / `themeColor` | SEO 与主题色 |
-| `profile` | 头像、名字、状态 |
-| `socialLinks` | 社交按钮（FA 类名 + 颜色） |
-| `slogans` | 打字机文案 |
-| `wallpaper.defaultImage` | 首屏本地壁纸，默认 `/res/img/wallpaper/default.webp` |
-| `wallpaper.apis` / `rotation` | 外部壁纸源与轮换间隔 |
-| `dock.items` | TopBar 导航：`link` / `action` / `panel` / `divider` |
-| `i18n` | 默认语言与可用语言列表 |
-| `footer` / `effects` / `contentProtection` / `debug` | 页脚、动效、交互限制、日志 |
-| `loading` | 预留配置；当前默认布局不渲染阻塞式加载层 |
-
-内置 dock 行为：`toggleTheme`、`language` 面板、`openSearch`。未知 `action` / `panel` 仅 `console.warn`，不崩溃。设置入口目前可为占位（`href: '#'`）。
-
-### 壁纸示例
-
-```typescript
-wallpaper: {
-    defaultImage: '/res/img/wallpaper/default.webp',
-    apis: ['https://www.loliapi.com/bg/'],
-    raceTimeout: 10000,
-    maxRetries: 5,
-    rotation: {
-        enabled: true,
-        interval: 60000
-    }
-}
-```
-
-更换默认壁纸：用 WebP 覆盖 `public/res/img/wallpaper/default.webp`（或改 `defaultImage` 路径）。
-
-## 博客内容
-
-文章目录：`src/content/blog/<slug>/index.md`
-
-- Schema：`src/content.config.ts`（Content Collections + Zod）
-- 列表 / 渲染适配：`src/lib/posts.ts`（**仅服务端**；Vue 侧用 `post-model.ts` 等）
-- 封面：放在文章目录内，frontmatter 写相对路径，例如 `cover: './cover.webp'`（走 `image()` + `getImage` 优化）
-- `draft: true` 不出现在列表、搜索、feeds、静态路径
-- `pubDate` 必填；`author` 可按文章覆盖，未填写时结构化 SEO 使用站点 profile
-- 列表按 `pubDate` **新→旧**排序
-
-### Frontmatter 示例
-
-```yaml
----
-title: '文章标题'
-description: '摘要，用于列表与 SEO'
-cover: './cover.webp'
-coverLayout: overlay   # 或 below
-language: 'zh-CN'
-category: '生活'
-tags: ['Astro', '笔记']
-author:                 # 可选；转载内容应填写真实作者
-  name: '作者名'
-  url: 'https://example.com/author'
-draft: false
-pubDate: '2026-06-20'
-updatedDate: '2026-06-21'
 ---
 
-正文 Markdown…
+## 🎨 怎么改成我的个人主页？
+
+**你不需要改动复杂的页面代码！** 所有的个人信息、文案、链接、壁纸与导航，都统一存放在一个文件：
+
+👉 **`src/data/customize.ts`**
+
+打开该文件，里面有极其详尽的中文注释，按需修改以下内容即可：
+
+| 想修改的内容 | 对应字段 | 说明与示例 |
+|---|---|---|
+| **网站名称与描述** | `title` / `description` | 浏览器标签页标题与搜索引擎描述（SEO） |
+| **个人信息与头像** | `profile` | `name`（昵称）、`avatar`（头像路径，如 `/res/img/logo.png`）、`status`（状态） |
+| **首页跑马灯标语** | `slogans` | `list: ['第一句', '第二句']`，支持按顺序或随机播放，支持自定义停留时长 |
+| **社交媒体按钮** | `socialLinks` | GitHub、Bilibili、X、邮箱等链接与图标颜色，可自由增删 |
+| **壁纸设置** | `wallpaper` | `defaultImage`（默认本地壁纸）、`apis`（壁纸轮播接口）、`rotation`（轮播间隔） |
+| **GitHub 贡献图** | `github` | 填入你的 `username`，首页自动生成提交绿格子；`url` 填你的主页链接 |
+| **顶栏导航按钮** | `dock.items` | 支持页面链接、内置功能（搜索、主题切换、语言选择）与分割线 |
+| **页脚信息** | `footer` | 备案号、版权声明文字等 |
+
+> 💡 **更换默认壁纸**：直接将你的 WebP 格式图片覆盖保存到 `public/res/img/wallpaper/default.webp` 即可。
+
+---
+
+## 📝 如何写一篇新博客？
+
+文章以 Markdown 格式保存在 `src/content/blog/` 目录下：
+
+### 1. 创建文章目录
+
+在 `src/content/blog/` 下新建一个文件夹（例如 `my-first-post`），在里面放入：
+- `index.md`（文章正文）
+- `cover.webp`（可选：文章封面图，放在文章同一目录下以便自动压缩优化）
+
+### 2. 编写 Frontmatter 头信息
+
+在 `index.md` 顶部添加如下配置：
+
+```markdown
+---
+title: '我的第一篇博客'
+description: '这是文章的摘要，会显示在博客列表卡片以及搜索引擎结果中。'
+cover: './cover.webp'       # 文章封面，推荐相对路径
+coverLayout: overlay        # 封面样式：overlay（文字覆盖在封面上）或 below（封面在文字下方）
+category: '生活'            # 分类
+tags: ['随笔', '生活']       # 标签列表
+language: 'zh-CN'           # 文章语言
+pubDate: '2026-09-20'       # 发布日期（必填，格式 YYYY-MM-DD）
+updatedDate: '2026-09-21'   # 更新日期（可选）
+author:                     # 作者信息（可选，默认使用站点作者）
+  name: '你的名字'
+  url: 'https://example.com'
+draft: false                # 是否为草稿（设为 true 则不会在任何列表和搜索中显示）
+---
+
+这里开始写 Markdown 正文内容…
 ```
 
-## 路由
+保存后，本地开发服务器会自动刷新，在首页文章列表中就能看到刚刚发布的文章！
+
+---
+
+## ☁️ 免费发布上线（Cloudflare Pages 推荐）
+
+本项目为纯静态站点，推荐部署在 **Cloudflare Pages**（全球 CDN 加速、无限流量、自动配置 HTTPS、完全免费）：
+
+1. 将你的代码推送到你的 GitHub 个人仓库。
+2. 打开 [Cloudflare Dashboard](https://dash.cloudflare.com/)，进入 **Workers 与 Pages** > **创建应用程序** > **Pages** > **连接到 Git**。
+3. 选中你的 GitHub 仓库，在构建设置中填写：
+   - **框架预设**：`Astro`
+   - **构建命令**：`npm run build`
+   - **构建输出目录**：`dist`
+   - **环境变量**（可选推荐）：添加 `NODE_VERSION`，值设为 `22.12.0`。
+4. 点击 **保存并部署**，几分钟后即完成部署，并获得专属的 `*.pages.dev` 访问域名。
+
+---
+
+## 🛠️ 开发者进阶指南
+
+### 技术栈构成
+
+| 模块 | 选型 | 说明 |
+|---|---|---|
+| **核心框架** | Astro 7 | 静态站点生成（`output: 'static'`），高性能 HTML 优先 |
+| **交互组件** | Vue 3 + Pinia | `<script setup>` 组合式 API + Pinia 状态管理，多岛屿运行时单例去重 |
+| **内容管理** | Astro Content Collections + Zod | 严格类型校验与 Schema 约束 |
+| **样式体系** | 手写现代化原生 CSS | CSS 变量设计令牌（`--panel-*`, `--glass-*`）、3D Lift 微浮动动效 |
+| **代码质量** | ESLint + Prettier + Vitest | jsdom 单元测试覆盖核心逻辑 |
+| **部署环境** | Cloudflare Pages | 纯静态资源托管，安全 HTTP 响应头防护 |
+
+### 常用开发命令
+
+```bash
+# 启动本地开发
+npm run dev
+
+# 代码格式化与质量检查
+npm run audit         # 阻断 Critical / High 依赖漏洞
+npm run lint          # ESLint 检查
+npm run lint:fix      # ESLint 自动修复
+npm run format        # Prettier 格式化
+npm run format:check  # Prettier 格式校验
+
+# 单元测试与类型检查
+npm test              # 运行 Vitest 测试套件
+npm run check         # 运行 astro check 类型与模板检查
+
+# 生产打包与本地静态预览
+npm run build         # 打包生成 dist/ 静态文件
+npm run check:dist    # 校验公开产物、草稿隔离和 Cloudflare 标记
+npm run serve         # 启动轻量静态服务器预览 dist/
+npm run preview       # 使用 astro preview 预览打包产物
+```
+
+> 💡 **完整质量门禁**：与 CI 保持一致，在提交重要改动前推荐依次运行：
+> `npm run audit && npm run lint && npm run format:check && npm test && npm run check && npm run build && npm run check:dist`
+
+### 路由与端点一览
 
 | 路径 | 说明 |
-|------|------|
-| `/` | 主页 + 文章列表（`#posts`） |
-| `/page/[page]` | 首页文章静态分页（从第 2 页开始生成） |
-| `/posts/[...slug]` | 文章 |
-| `/archives`、`/topics`、`/categories`、`/tags`、`/search` | 归档 / 话题 / 分类 / 标签 / 搜索 |
-| `/rss.xml`、`/atom.xml` | Feeds |
-| `/search-index.json` | 客户端搜索索引（构建生成） |
-| `/404` | 错误页 |
+|---|---|
+| `/` | 首页（英雄区 + 文章卡片瀑布流） |
+| `/page/[page]` | 首页文章列表静态分页（第 2 页起） |
+| `/posts/[...slug]` | 文章正文详情页 |
+| `/archives` | 按年份时间线汇总归档 |
+| `/topics`、`/categories`、`/tags` | 话题、分类与标签聚合浏览 |
+| `/search` | 独立搜索页面（同时支持弹窗快速搜索） |
+| `/rss.xml`、`/atom.xml` | RSS 与 Atom 订阅源 |
+| `/search-index.json` | 客户端毫秒级搜索索引（构建时生成） |
+| `/github-contributions.json` | GitHub 提交热力图静态数据快照（构建时生成） |
+| `/featured-posts.json` | 精选文章静态 JSON 数据 |
+| `/404` | 友好的 404 错误页面 |
 
-Sitemap 由 `@astrojs/sitemap` 在构建时生成（`sitemap-index.xml` / `sitemap-0.xml`）。`public/robots.txt` 指向 index。**不要**再手写 `public/sitemap.xml`。
+### 深入文档索引
 
-## 页面结构（实现向）
+详细的底层设计文档可参阅 [`docs/`](docs/) 目录：
 
-| 路径 | 职责 |
-|------|------|
-| `src/pages/index.astro` 等 | 路由入口，传入 `shellMode` / `shellTitle` |
-| `src/layouts/BaseLayout.astro` | HTML、SEO、主题脚本、CSS、`ClientRouter`、持久壳槽位 |
-| `src/components/SiteShell.vue` | 跨页壳：英雄区、壁纸、滚动进度 |
-| `src/components/TopBar.vue` | 顶栏 / Dock、主题、语言、搜索 |
-| `src/components/HomepageApp.vue` | 首页文章列表（瀑布流卡片） |
-| `src/components/PostCard.vue` 等 | 列表卡片、归档、搜索、文章 TOC |
-| `src/pages/_app.ts` | Vue 入口，注册 Pinia |
-| `src/lib/posts.ts` | 服务端内容加载、图片优化与静态路径生成；Vue island 禁止导入 |
-| `src/lib/post-model.ts`、`archive.ts`、`search.ts` | 客户端安全的数据模型和纯逻辑 |
-| `src/lib/page-shell-context.ts` | 跨页 shell 状态解析、校验与事件分发 |
-| `src/lib/navigation-click.ts`、`section-nav.ts` | 点击增强策略与首页锚点导航 |
-| `src/lib/clipboard.ts`、`text.ts` | 统一剪贴板兼容回退与中西文显示分段 |
-| `src/scripts/*` | 页面 DOM 生命周期绑定；文章增强由 `article-runtime.ts` 汇总 |
-| `src/styles/*` | 全局与组件样式（BaseLayout 中 import 顺序即加载顺序） |
+- 🏛️ [架构设计 (docs/architecture.md)](docs/architecture.md)：常驻 Shell、Vue 单例、客户端安全助手等底层设计。
+- ⚙️ [配置链详解 (docs/configuration.md)](docs/configuration.md)：配置流向、高级定制与扩展指南。
+- 📚 [内容管理规范 (docs/content.md)](docs/content.md)：文章 Schema、封面优化机制与排版建议。
+- 🧭 [路由与页面生命周期 (docs/routes.md)](docs/routes.md)：详细路由职责与静态生成策略。
+- 🎨 [CSS 与动效规范 (docs/css.md)](docs/css.md)：设计令牌、加载顺序与无障碍动效。
+- 🧹 [仓库卫生与规范 (docs/hygiene.md)](docs/hygiene.md)：提交规范、图标内联与迁移指南。
 
-静态资源：`public/res/`（头像等公开路径如 `/res/img/logo.png`）。
+---
 
-## 样式与代码规范
+## 📄 开源协议
 
-- Prettier：4 空格、单引号、分号、`printWidth: 120`、`trailingComma: "none"`
-- ESLint：Vue + TypeScript；lint 范围含 `src/**/*.{ts,vue}`、`tests/**/*.test.ts`、`astro.config.mjs`（不含 `.astro` 文件正文 lint）
-- CSS 设计 token：优先 `--panel-*` / `--glass-*` / 字体变量，见 `src/styles/base.css`
-
-## 测试
-
-测试位于 `tests/`（Vitest + jsdom），覆盖配置校验、i18n 完整性、搜索、归档、feeds、壳布局、导航点击策略、剪贴板回退和组件约束等。
-
-## 开源协议
-
-[MIT License](LICENSE)。
+本项目基于 [MIT License](LICENSE) 开源，欢迎自由使用、修改与分享。

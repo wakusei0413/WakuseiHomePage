@@ -41,5 +41,6 @@ agent-tools/
 .agents/
 .claude/
 .trellis/
+.zcode/
 reasonix.toml
 *.tsbuildinfo

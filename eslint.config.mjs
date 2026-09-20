@@ -80,7 +80,7 @@ export default [
         }
     },
     {
-        files: ['astro.config.mjs', '*.mjs'],
+        files: ['astro.config.mjs', '*.mjs', 'scripts/**/*.mjs'],
         languageOptions: {
             parserOptions: { ecmaVersion: 2022, sourceType: 'module' },
             globals: {

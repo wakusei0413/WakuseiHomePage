@@ -9,6 +9,10 @@ import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
+const astroVueClientEntry = fileURLToPath(new URL('./src/lib/astro-vue-client.ts', import.meta.url));
+const vueRuntimeEntry = fileURLToPath(new URL('./node_modules/vue/dist/vue.runtime.esm-bundler.js', import.meta.url));
+const vueRuntimePackages = ['vue', '@vue/runtime-core', '@vue/runtime-dom', '@vue/reactivity', '@vue/shared', 'pinia'];
+
 function cloudflareRocketLoaderSafety() {
     return {
         name: 'cloudflare-rocket-loader-safety',
@@ -48,14 +52,32 @@ export default defineConfig({
             __VUE_PROD_DEVTOOLS__: false
         },
         resolve: {
-            dedupe: ['vue', 'pinia']
+            alias: [
+                { find: /^@astrojs\/vue\/client\.js$/, replacement: astroVueClientEntry },
+                { find: /^vue$/, replacement: vueRuntimeEntry }
+            ],
+            dedupe: vueRuntimePackages
+        },
+        server: {
+            // Vite marks dependency URLs as immutable even though their rewritten optimizer imports can change.
+            headers: { 'Cache-Control': 'no-cache' }
         },
         // `astro sync` runs a temp Vite server with `optimizeDeps.noDiscovery`,
         // so CommonJS deps in the content-collection loader chain (picomatch,
         // p-limit, …) must be pre-bundled explicitly or they load as raw CJS
         // inside the ESM module runner and throw "require is not defined".
         optimizeDeps: {
-            include: ['vue', 'pinia', 'picomatch', 'p-limit', 'yocto-queue', 'picocolors']
+            noDiscovery: true,
+            include: [
+                '@astrojs/vue/client.js',
+                'vue',
+                'pinia',
+                'zod',
+                'picomatch',
+                'p-limit',
+                'yocto-queue',
+                'picocolors'
+            ]
         }
     },
     integrations: [

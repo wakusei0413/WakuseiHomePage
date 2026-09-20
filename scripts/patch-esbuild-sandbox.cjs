@@ -35,12 +35,16 @@ function writeFile(rel, content) {
     fs.writeFileSync(path.join(root, rel), content, 'utf8');
 }
 
-// Apply `oldText -> newText` to a file unless the marker is already present.
+function packageVersion(packageName) {
+    const packageJson = require.resolve(`${packageName}/package.json`, { paths: [root] });
+    return JSON.parse(fs.readFileSync(packageJson, 'utf8')).version;
+}
+
+// Apply `oldText -> newText` to a required dependency file unless it is already patched.
 function patch(rel, marker, oldText, newText) {
     const abs = path.join(root, rel);
     if (!fs.existsSync(abs)) {
-        console.log(`[patch-esbuild] skip (missing) ${rel}`);
-        return;
+        throw new Error(`[patch-esbuild] required patch target is missing: ${rel}`);
     }
     const content = readFile(rel);
     if (content.includes(marker)) {
@@ -48,8 +52,7 @@ function patch(rel, marker, oldText, newText) {
         return;
     }
     if (!content.includes(oldText)) {
-        console.log(`[patch-esbuild] no match (versions may differ) ${rel}`);
-        return;
+        throw new Error(`[patch-esbuild] required patch no longer matches dependency source: ${rel}`);
     }
     writeFile(rel, content.replace(oldText, newText));
     console.log(`[patch-esbuild] patched ${rel}`);
@@ -61,6 +64,15 @@ if (!isPipeSpawnBlocked()) {
 }
 
 console.log('[patch-esbuild] pipe spawn is blocked (sandbox detected); applying patches');
+
+const esbuildVersion = packageVersion('esbuild');
+const esbuildWasmVersion = packageVersion('esbuild-wasm');
+if (esbuildVersion !== esbuildWasmVersion || esbuildVersion !== '0.28.1') {
+    throw new Error(
+        `[patch-esbuild] unsupported esbuild pair: esbuild=${esbuildVersion}, esbuild-wasm=${esbuildWasmVersion}; ` +
+            'update the sandbox shim and its service protocol version together'
+    );
+}
 
 // ---------------------------------------------------------------------------
 // 1. esbuild → esbuild-wasm (in-process) shim. Full-file replacement.
@@ -154,10 +166,13 @@ module.exports = {
 `;
 
 const esbuildMain = path.join(root, 'node_modules', 'esbuild', 'lib', 'main.js');
-if (fs.existsSync(esbuildMain) && !readFile('node_modules/esbuild/lib/main.js').includes('Sandbox-safe esbuild shim')) {
+if (!fs.existsSync(esbuildMain)) {
+    throw new Error('[patch-esbuild] required esbuild entry is missing: node_modules/esbuild/lib/main.js');
+}
+if (!readFile('node_modules/esbuild/lib/main.js').includes('Sandbox-safe esbuild shim')) {
     writeFile('node_modules/esbuild/lib/main.js', SHIM);
     console.log('[patch-esbuild] wrote esbuild shim');
-} else if (fs.existsSync(esbuildMain)) {
+} else {
     console.log('[patch-esbuild] already patched node_modules/esbuild/lib/main.js');
 }
 
