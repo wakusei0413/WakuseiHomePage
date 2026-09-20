@@ -207,3 +207,4 @@ npm run preview       # 使用 astro preview 预览打包产物
 ## 📄 开源协议
 
 本项目基于 [MIT License](LICENSE) 开源，欢迎自由使用、修改与分享。
+以及感谢由 LinuxDO 社区支持。
