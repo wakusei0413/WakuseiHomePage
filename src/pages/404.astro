@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.vue';
+import LocalizedText from '../components/LocalizedText.vue';
 ---
 
 <BaseLayout
@@ -15,13 +16,16 @@ import Icon from '../components/Icon.vue';
                 <Icon client:idle name="fa-solid fa-triangle-exclamation" size="3.5rem" />
             </div>
             <h2 class="notfound-title">404</h2>
-            <p class="notfound-subtitle">页面不存在</p>
-            <p class="notfound-subtitle-en">Page Not Found</p>
+            <p class="notfound-subtitle">
+                <LocalizedText client:idle textKey="pages.notfound.subtitle" />
+            </p>
             <div class="notfound-divider"></div>
-            <p class="notfound-text">你好像迷路了喵~</p>
-            <p class="notfound-text-secondary">The page you are looking for does not exist or has been moved.</p>
+            <p class="notfound-text">
+                <LocalizedText client:idle textKey="pages.notfound.text" />
+            </p>
             <a href="/" class="notfound-back">
-                <Icon client:idle name="fa-solid fa-arrow-left" size="0.85rem" /> 返回主页 / Back to Home
+                <Icon client:idle name="fa-solid fa-arrow-left" size="0.85rem" />
+                <LocalizedText client:idle textKey="pages.notfound.back" />
             </a>
         </div>
     </div>
@@ -105,17 +109,7 @@ import Icon from '../components/Icon.vue';
         font-size: 1.25rem;
         font-weight: 700;
         color: var(--fg, #0a0a0a);
-        margin: 0 0 4px 0;
-    }
-
-    .notfound-subtitle-en {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--muted, #666666);
         margin: 0 0 24px 0;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
     }
 
     .notfound-divider {
@@ -131,15 +125,8 @@ import Icon from '../components/Icon.vue';
         font-size: 1rem;
         color: var(--fg, #0a0a0a);
         opacity: 0.7;
-        margin: 0 0 8px 0;
-        line-height: 1.6;
-    }
-
-    .notfound-text-secondary {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.875rem;
-        color: var(--muted, #666666);
         margin: 0 0 32px 0;
+        line-height: 1.6;
     }
 
     .notfound-back {

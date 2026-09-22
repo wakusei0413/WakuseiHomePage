@@ -1,19 +1,25 @@
 <script setup lang="ts">
 import type { TaxonomyTerm } from '../lib/post-model';
+import { useI18n } from '../composables/useI18n';
+import { usePageMeta } from '../composables/usePageMeta';
 
-defineProps<{
+const props = defineProps<{
+    titleKey: string;
+    descriptionKey: string;
+    metaParams: Record<string, string | number>;
     categories: TaxonomyTerm[];
     tags: TaxonomyTerm[];
     postCount: number;
 }>();
 
-const archiveTitle = '归档';
-const archiveDescription = '按分类和标签浏览所有文章。';
-const articleLabel = '篇文章';
-const categoryTitle = '分类';
-const categoryLabel = '个分类';
-const tagTitle = '标签';
-const tagLabel = '个标签';
+const { t } = useI18n();
+
+usePageMeta({
+    titleKey: props.titleKey,
+    descriptionKey: props.descriptionKey,
+    params: () => props.metaParams,
+    mode: 'blog'
+});
 </script>
 
 <template>
@@ -21,26 +27,26 @@ const tagLabel = '个标签';
         <div class="taxonomy-page__inner">
             <header class="taxonomy-header topics-header">
                 <p class="taxonomy-kicker topics-kicker">
-                    {{ archiveTitle }}
+                    {{ t(titleKey, metaParams) }}
                 </p>
                 <h2 id="topics-title" class="taxonomy-title">
-                    {{ archiveTitle }}
+                    {{ t(titleKey, metaParams) }}
                 </h2>
                 <p class="taxonomy-description">
-                    {{ archiveDescription }}
+                    {{ t(descriptionKey, metaParams) }}
                 </p>
-                <div class="topics-stats" aria-label="归档统计">
+                <div class="topics-stats" :aria-label="t('topics.stats.aria')">
                     <div class="topics-stat">
                         <span class="topics-stat__value">{{ postCount }}</span>
-                        <span class="topics-stat__label">{{ articleLabel }}</span>
+                        <span class="topics-stat__label">{{ t('topics.article.label') }}</span>
                     </div>
                     <div class="topics-stat">
                         <span class="topics-stat__value">{{ categories.length }}</span>
-                        <span class="topics-stat__label">{{ categoryLabel }}</span>
+                        <span class="topics-stat__label">{{ t('topics.category.label') }}</span>
                     </div>
                     <div class="topics-stat">
                         <span class="topics-stat__value">{{ tags.length }}</span>
-                        <span class="topics-stat__label">{{ tagLabel }}</span>
+                        <span class="topics-stat__label">{{ t('topics.tag.label') }}</span>
                     </div>
                 </div>
             </header>
@@ -49,14 +55,14 @@ const tagLabel = '个标签';
                 <section class="topics-section topics-section--categories" aria-labelledby="topics-categories-title">
                     <div class="topics-section__header">
                         <h3 id="topics-categories-title">
-                            {{ categoryTitle }}
+                            {{ t('taxonomy.categories') }}
                         </h3>
-                        <span>{{ categories.length }} {{ categoryLabel }}</span>
+                        <span>{{ t('taxonomy.count', { count: categories.length }) }}</span>
                     </div>
-                    <div class="taxonomy-grid topics-grid" :aria-label="categoryTitle">
+                    <div class="taxonomy-grid topics-grid" :aria-label="t('taxonomy.categories')">
                         <a v-for="term in categories" :key="term.name" class="taxonomy-chip" :href="term.href">
                             <span class="taxonomy-chip__name">{{ term.name }}</span>
-                            <span class="taxonomy-chip__count">{{ term.count }} 篇</span>
+                            <span class="taxonomy-chip__count">{{ t('taxonomy.count', { count: term.count }) }}</span>
                         </a>
                     </div>
                 </section>
@@ -67,14 +73,14 @@ const tagLabel = '个标签';
                 >
                     <div class="topics-section__header">
                         <h3 id="topics-tags-title">
-                            {{ tagTitle }}
+                            {{ t('taxonomy.tags') }}
                         </h3>
-                        <span>{{ tags.length }} {{ tagLabel }}</span>
+                        <span>{{ t('taxonomy.count', { count: tags.length }) }}</span>
                     </div>
-                    <div class="taxonomy-grid topics-grid" :aria-label="tagTitle">
+                    <div class="taxonomy-grid topics-grid" :aria-label="t('taxonomy.tags')">
                         <a v-for="term in tags" :key="term.name" class="taxonomy-chip" :href="term.href">
                             <span class="taxonomy-chip__name">{{ term.name }}</span>
-                            <span class="taxonomy-chip__count">{{ term.count }} 篇</span>
+                            <span class="taxonomy-chip__count">{{ t('taxonomy.count', { count: term.count }) }}</span>
                         </a>
                     </div>
                 </section>

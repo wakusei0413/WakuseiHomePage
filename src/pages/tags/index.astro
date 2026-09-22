@@ -2,13 +2,22 @@
 import TaxonomyPage from '../../components/TaxonomyPage.vue';
 import { siteConfig } from '../../data/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { translate } from '../../lib/i18n';
 import { loadTaxonomyTerms } from '../../lib/posts';
 
 const terms = await loadTaxonomyTerms('tag');
-const title = '标签';
-const description = `从 ${terms.length} 个标签进入相关文章。`;
+const metaParams = { count: terms.length };
+const title = translate(siteConfig.i18n.defaultLocale, 'pages.tags.title', metaParams);
+const description = translate(siteConfig.i18n.defaultLocale, 'pages.tags.description', metaParams);
 ---
 
 <BaseLayout shellMode="blog" shellTitle={title} title={`${title} | ${siteConfig.title}`} description={description}>
-    <TaxonomyPage client:idle variant="tags" title={title} description={description} terms={terms} />
+    <TaxonomyPage
+        client:idle
+        variant="tags"
+        titleKey="pages.tags.title"
+        descriptionKey="pages.tags.description"
+        metaParams={metaParams}
+        terms={terms}
+    />
 </BaseLayout>

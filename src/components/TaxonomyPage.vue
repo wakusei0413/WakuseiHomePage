@@ -2,23 +2,36 @@
 import { computed } from 'vue';
 import type { PostListItem, TaxonomyTerm } from '../lib/post-model';
 import PostCard from './PostCard.vue';
+import { useI18n } from '../composables/useI18n';
 import { useMasonryOrder } from '../composables/useMasonryOrder';
+import { usePageMeta } from '../composables/usePageMeta';
 
 const props = defineProps<{
     variant: 'categories' | 'tags';
-    title: string;
-    description: string;
+    titleKey: string;
+    descriptionKey: string;
+    metaParams: Record<string, string | number>;
     terms: TaxonomyTerm[];
     activeTerm?: TaxonomyTerm;
     posts?: PostListItem[];
 }>();
 
-const variantLabel = computed(() => (props.variant === 'categories' ? '分类' : '标签'));
-const allLabel = computed(() => (props.variant === 'categories' ? '全部分类' : '全部标签'));
+const { t } = useI18n();
+
+const variantLabel = computed(() => t(props.variant === 'categories' ? 'taxonomy.categories' : 'taxonomy.tags'));
+const allLabel = computed(() => t(props.variant === 'categories' ? 'taxonomy.categories.all' : 'taxonomy.tags.all'));
 const indexHref = '/archives';
 const visiblePosts = computed(() => props.posts ?? []);
 const { orderedItems: displayPosts } = useMasonryOrder(visiblePosts);
-const emptyText = '这里暂时还没有文章。';
+
+usePageMeta({
+    titleKey: props.titleKey,
+    descriptionKey: props.descriptionKey,
+    // The term counts are build-time props, but reading them lazily keeps the
+    // composable's contract uniform across pages.
+    params: () => props.metaParams,
+    mode: 'blog'
+});
 </script>
 
 <template>
@@ -32,21 +45,21 @@ const emptyText = '这里暂时还没有文章。';
                     {{ variantLabel }}
                 </p>
                 <h2 id="taxonomy-title" class="taxonomy-title">
-                    {{ title }}
+                    {{ t(titleKey, metaParams) }}
                 </h2>
                 <p class="taxonomy-description">
-                    {{ description }}
+                    {{ t(descriptionKey, metaParams) }}
                 </p>
-                <div v-if="activeTerm" class="taxonomy-summary" aria-label="文章数量">
+                <div v-if="activeTerm" class="taxonomy-summary" :aria-label="t('taxonomy.summary.aria')">
                     <span class="taxonomy-summary__count">{{ activeTerm.count }}</span>
-                    <span class="taxonomy-summary__label">篇文章</span>
+                    <span class="taxonomy-summary__label">{{ t('taxonomy.article.label') }}</span>
                 </div>
             </header>
 
             <div v-if="!activeTerm" class="taxonomy-grid" :aria-label="allLabel">
                 <a v-for="term in terms" :key="term.name" class="taxonomy-chip" :href="term.href">
                     <span class="taxonomy-chip__name">{{ term.name }}</span>
-                    <span class="taxonomy-chip__count">{{ term.count }} 篇</span>
+                    <span class="taxonomy-chip__count">{{ t('taxonomy.count', { count: term.count }) }}</span>
                 </a>
             </div>
 
@@ -76,7 +89,7 @@ const emptyText = '这里暂时还没有文章。';
                     />
                 </div>
                 <p v-else class="taxonomy-empty">
-                    {{ emptyText }}
+                    {{ t('taxonomy.empty') }}
                 </p>
             </template>
         </div>

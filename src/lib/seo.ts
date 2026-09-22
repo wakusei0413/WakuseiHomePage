@@ -43,6 +43,50 @@ export interface BlogPostingJsonLd {
     keywords?: string[];
 }
 
+export interface WebSiteJsonLd {
+    '@context': 'https://schema.org';
+    '@type': 'WebSite';
+    name: string;
+    url: string;
+    description: string;
+    inLanguage: string;
+    publisher: JsonLdPerson;
+    potentialAction: {
+        '@type': 'SearchAction';
+        target: {
+            '@type': 'EntryPoint';
+            urlTemplate: string;
+        };
+        'query-input': string;
+    };
+}
+
+export interface WebSiteInput {
+    name: string;
+    url: string;
+    description: string;
+    language: string;
+    publisher: PostAuthor & { image?: string };
+    /** Absolute template containing the `{search_term_string}` placeholder. */
+    searchUrlTemplate: string;
+}
+
+export interface BreadcrumbItem {
+    name: string;
+    url: string;
+}
+
+export interface BreadcrumbListJsonLd {
+    '@context': 'https://schema.org';
+    '@type': 'BreadcrumbList';
+    itemListElement: Array<{
+        '@type': 'ListItem';
+        position: number;
+        name: string;
+        item: string;
+    }>;
+}
+
 interface JsonLdPerson {
     '@type': 'Person';
     name: string;
@@ -106,6 +150,46 @@ export function createBlogPostingJsonLd(input: BlogPostingInput): BlogPostingJso
         ...(image ? { image } : {}),
         ...(section ? { articleSection: section } : {}),
         ...(keywords?.length ? { keywords } : {})
+    };
+}
+
+export function createWebSiteJsonLd(input: WebSiteInput): WebSiteJsonLd {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: input.name,
+        url: input.url,
+        description: input.description,
+        inLanguage: input.language,
+        publisher: toJsonLdPerson(input.publisher),
+        potentialAction: {
+            '@type': 'SearchAction',
+            target: {
+                '@type': 'EntryPoint',
+                urlTemplate: input.searchUrlTemplate
+            },
+            'query-input': 'required name=search_term_string'
+        }
+    };
+}
+
+/**
+ * A single-item breadcrumb carries no information, so callers get `null` and
+ * skip emitting the script entirely.
+ */
+export function createBreadcrumbListJsonLd(items: readonly BreadcrumbItem[]): BreadcrumbListJsonLd | null {
+    const usable = items.filter((item) => nonBlank(item.name) && nonBlank(item.url));
+    if (usable.length < 2) return null;
+
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: usable.map((item, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            name: item.name,
+            item: item.url
+        }))
     };
 }
 

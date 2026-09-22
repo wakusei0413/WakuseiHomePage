@@ -15,7 +15,7 @@
 | `/topics` | `src/pages/topics/index.astro` | `shellMode="blog"` | 话题聚合总览与子路由 |
 | `/categories` | `src/pages/categories/index.astro` | `shellMode="blog"` | 分类聚合总览与各分类文章列表 |
 | `/tags` | `src/pages/tags/index.astro` | `shellMode="blog"` | 标签云聚合总览与各标签文章列表 |
-| `/search` | `src/pages/search.astro` | `shellMode="blog"` | 独立搜索页面（与顶栏全局弹窗共用搜索核心） |
+| `/search` | `src/pages/search.astro` | `shellMode="blog"` | 独立搜索页面（与顶栏全局弹窗共用搜索核心）；支持 `?q=关键词` 直达结果 |
 | `/404` | `src/pages/404.astro` | `shellMode="error"` | 自定义 404 错误页面 |
 
 ---
@@ -29,6 +29,7 @@
 | `/search-index.json` | `src/pages/search-index.json.ts` | 客户端毫秒级搜索索引文件，包含文章标题、摘要、分类与标签 |
 | `/github-contributions.json` | `src/pages/github-contributions.json.ts` | GitHub 53 周提交热力图数据快照（构建期由服务端抓取并转为静态 JSON） |
 | `/featured-posts.json` | `src/pages/featured-posts.json.ts` | 站点精选/置顶文章静态 JSON 数据 |
+| `/og-default.jpg` | `src/pages/og-default.jpg.ts` | 构建期用 Sharp 把默认壁纸裁成 1200×630 的社交分享卡，供没有独立封面的页面作为 `og:image` 使用 |
 
 ---
 

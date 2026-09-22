@@ -53,7 +53,7 @@ export function useI18n() {
 
     return {
         locale,
-        t: (key: string) => store.t(key, locale.value),
+        t: (key: string, params?: Record<string, string | number>) => store.t(key, locale.value, params),
         setLocale: (lang: Locale) => {
             // Update this island's ref synchronously (the store watcher below is
             // deferred); the store persists the choice and syncs the document lang.

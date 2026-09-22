@@ -13,6 +13,7 @@ const requiredFiles = [
     'atom.xml',
     'search-index.json',
     'featured-posts.json',
+    'og-default.jpg',
     'sitemap-index.xml',
     '_headers'
 ];

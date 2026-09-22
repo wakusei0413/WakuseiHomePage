@@ -2,22 +2,25 @@
 import TaxonomyPage from '../../components/TaxonomyPage.vue';
 import { siteConfig } from '../../data/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { translate } from '../../lib/i18n';
 import type { TaxonomyPageProps } from '../../lib/post-model';
 import { getTagStaticPaths } from '../../lib/posts';
 
 export { getTagStaticPaths as getStaticPaths };
 
 const { term, terms, posts } = Astro.props as TaxonomyPageProps;
-const title = `标签：${term.name}`;
-const description = `收录 ${term.count} 篇带有「${term.name}」标签的文章。`;
+const metaParams = { name: term.name, count: term.count };
+const title = translate(siteConfig.i18n.defaultLocale, 'pages.tag.title', metaParams);
+const description = translate(siteConfig.i18n.defaultLocale, 'pages.tag.description', metaParams);
 ---
 
 <BaseLayout shellMode="blog" shellTitle={title} title={`${title} | ${siteConfig.title}`} description={description}>
     <TaxonomyPage
         client:idle
         variant="tags"
-        title={title}
-        description={description}
+        titleKey="pages.tag.title"
+        descriptionKey="pages.tag.description"
+        metaParams={metaParams}
         terms={terms}
         activeTerm={term}
         posts={posts}

@@ -30,6 +30,16 @@ export interface PostPageProps {
     readingMinutes: number;
     prev: PostNavEntry | null;
     next: PostNavEntry | null;
+    /** Dimensions of the hero cover, needed for `og:image:width` / `height`. */
+    coverMeta?: CoverImageMeta;
+}
+
+/** The processed cover plus the dimensions the image service actually emitted. */
+export interface CoverImageMeta {
+    src: string;
+    width: number;
+    height: number;
+    format: string;
 }
 
 const COVER_WIDTH_LIST = 800;
@@ -46,18 +56,38 @@ function toIsoString(value?: Date | string): string | undefined {
     return date.toISOString();
 }
 
-async function resolveCoverUrl(
+async function resolveCoverMeta(
     cover: BlogEntry['data']['cover'] | undefined,
     width: number
-): Promise<string | undefined> {
+): Promise<CoverImageMeta | undefined> {
     if (!cover) return undefined;
+
     const image = await getImage({
         src: cover,
         width,
         format: 'webp',
         quality: 80
     });
-    return image.src;
+
+    const attributes = image.attributes as { width?: unknown; height?: unknown; format?: unknown };
+    const resolvedWidth = Number(attributes.width) || cover.width;
+    // Astro preserves the source aspect ratio (`Math.round(width / aspectRatio)`),
+    // so this mirrors the service for the unlikely case the attributes are empty.
+    const resolvedHeight = Number(attributes.height) || Math.round(resolvedWidth / (cover.width / cover.height));
+
+    return {
+        src: image.src,
+        width: resolvedWidth,
+        height: resolvedHeight,
+        format: typeof attributes.format === 'string' ? attributes.format : 'webp'
+    };
+}
+
+async function resolveCoverUrl(
+    cover: BlogEntry['data']['cover'] | undefined,
+    width: number
+): Promise<string | undefined> {
+    return (await resolveCoverMeta(cover, width))?.src;
 }
 
 function serializeFrontmatter(data: BlogEntry['data'], coverUrl?: string): PublishedPostFrontmatter {
@@ -342,8 +372,8 @@ export async function getPostStaticPaths() {
             const prev = index > 0 ? toPostNavEntry(serialized[index - 1]) : null;
             const next = index < serialized.length - 1 ? toPostNavEntry(serialized[index + 1]) : null;
             const { Content } = await render(item.entry);
-            const heroCover = await resolveCoverUrl(item.entry.data.cover, COVER_WIDTH_HERO);
-            const frontmatter = serializeFrontmatter(item.entry.data, heroCover ?? item.data.cover);
+            const coverMeta = await resolveCoverMeta(item.entry.data.cover, COVER_WIDTH_HERO);
+            const frontmatter = serializeFrontmatter(item.entry.data, coverMeta?.src ?? item.data.cover);
 
             return {
                 params: { slug: item.slug },
@@ -352,7 +382,8 @@ export async function getPostStaticPaths() {
                     Content,
                     readingMinutes: estimateReadingTime(countWords(listShape.body)),
                     prev,
-                    next
+                    next,
+                    coverMeta
                 } satisfies PostPageProps
             };
         })

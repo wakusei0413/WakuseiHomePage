@@ -1,4 +1,10 @@
-import { createArticleSeoMetadata, createBlogPostingJsonLd, serializeJsonLd } from '../src/lib/seo';
+import {
+    createArticleSeoMetadata,
+    createBlogPostingJsonLd,
+    createBreadcrumbListJsonLd,
+    createWebSiteJsonLd,
+    serializeJsonLd
+} from '../src/lib/seo';
 
 const defaultAuthor = {
     name: 'Wakusei',
@@ -119,5 +125,59 @@ describe('article structured SEO', () => {
         expect(serialized).toContain('\\u003c/script>');
         expect(serialized).toContain('\\u2028\\u2029');
         expect(JSON.parse(serialized)).toEqual(value);
+    });
+});
+
+describe('site-level structured data', () => {
+    it('describes the site and its search endpoint', () => {
+        const jsonLd = createWebSiteJsonLd({
+            name: 'Wakusei HomePage',
+            url: 'https://www.wakusei.top/',
+            description: 'Wakusei - 个人主页',
+            language: 'zh-CN',
+            publisher: { ...defaultAuthor, image: 'https://www.wakusei.top/res/img/logo.png' },
+            searchUrlTemplate: 'https://www.wakusei.top/search?q={search_term_string}'
+        });
+
+        expect(jsonLd['@type']).toBe('WebSite');
+        expect(jsonLd.inLanguage).toBe('zh-CN');
+        expect(jsonLd.publisher).toEqual({
+            '@type': 'Person',
+            name: 'Wakusei',
+            url: 'https://www.wakusei.top/',
+            image: 'https://www.wakusei.top/res/img/logo.png'
+        });
+        expect(jsonLd.potentialAction.target.urlTemplate).toContain('{search_term_string}');
+        expect(jsonLd.potentialAction['query-input']).toBe('required name=search_term_string');
+    });
+});
+
+describe('breadcrumb structured data', () => {
+    const home = { name: '首页', url: 'https://www.wakusei.top/' };
+    const article = { name: '一篇文章', url: 'https://www.wakusei.top/posts/example/' };
+
+    it('numbers the trail from the home page down to the article', () => {
+        const jsonLd = createBreadcrumbListJsonLd([
+            home,
+            { name: '生活', url: 'https://www.wakusei.top/categories/%E7%94%9F%E6%B4%BB' },
+            article
+        ]);
+
+        expect(jsonLd?.['@type']).toBe('BreadcrumbList');
+        expect(jsonLd?.itemListElement.map((item) => item.position)).toEqual([1, 2, 3]);
+        expect(jsonLd?.itemListElement[1].name).toBe('生活');
+        expect(jsonLd?.itemListElement[2].item).toBe(article.url);
+    });
+
+    it('keeps the two-level trail for uncategorised articles', () => {
+        const jsonLd = createBreadcrumbListJsonLd([home, article]);
+
+        expect(jsonLd?.itemListElement).toHaveLength(2);
+        expect(jsonLd?.itemListElement[1].name).toBe('一篇文章');
+    });
+
+    it('drops blank entries and refuses to emit a single-item trail', () => {
+        expect(createBreadcrumbListJsonLd([home, { name: ' ', url: ' ' }])).toBeNull();
+        expect(createBreadcrumbListJsonLd([{ name: '', url: '' }, home])).toBeNull();
     });
 });

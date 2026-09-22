@@ -4,16 +4,15 @@ import Icon from './Icon.vue';
 import PostCard from './PostCard.vue';
 import { useI18n } from '../composables/useI18n';
 import { useMasonryOrder } from '../composables/useMasonryOrder';
-import { siteConfig } from '../data/site';
+import { usePageMeta } from '../composables/usePageMeta';
 import { searchPosts, type SearchIndexEntry, type SearchMatchSnippet } from '../lib/search';
-import { usePageShellStore } from '../stores/page-shell';
+import { readSearchQuery, writeSearchQuery } from '../lib/search-query';
 
 const props = defineProps<{
     entries: SearchIndexEntry[];
 }>();
 
-const { t, locale } = useI18n();
-const pageShell = usePageShellStore();
+const { t } = useI18n();
 
 const query = ref('');
 const searchInput = ref<HTMLInputElement | null>(null);
@@ -27,9 +26,16 @@ const totalPosts = computed(() => props.entries.length);
 
 const resultSummary = computed(() => {
     if (!hasQuery.value) {
-        return t('search.summary.total').replace('{count}', String(totalPosts.value));
+        return t('search.summary.total', { count: totalPosts.value });
     }
-    return t('search.summary.results').replace('{count}', String(results.value.length));
+    return t('search.summary.results', { count: results.value.length });
+});
+
+usePageMeta({
+    titleKey: 'pages.search.title',
+    descriptionKey: 'pages.search.description',
+    params: () => ({ count: totalPosts.value }),
+    mode: 'blog'
 });
 
 function clearQuery() {
@@ -41,27 +47,25 @@ function snippetLabel(snippet: SearchMatchSnippet) {
     return snippet.field === 'description' ? t('search.snippet.description') : t('search.snippet.body');
 }
 
-function syncShellTitle() {
-    const title = t('dock.search');
-    pageShell.enterPage({
-        title,
-        mode: 'blog',
-        isHomePage: false
-    });
-
-    const surface = document.getElementById('pageTransitionSurface');
-    if (surface) surface.dataset.pageTitle = title;
-
-    document.title = `${title} | ${siteConfig.title}`;
+// Mirror the query into `?q=` so a search result is shareable and bookmarkable,
+// and so the WebSite SearchAction target in the structured data is truthful.
+// `replaceState` rather than `pushState`: typing must not flood the history or
+// disturb the View Transitions state.
+function syncQueryParam() {
+    if (!isMounted) return;
+    window.history.replaceState(window.history.state, '', writeSearchQuery(window.location.href, query.value));
 }
 
-watch(locale, () => {
-    if (isMounted) syncShellTitle();
-});
+watch(query, syncQueryParam);
 
 onMounted(() => {
     isMounted = true;
-    syncShellTitle();
+
+    const requested = readSearchQuery(window.location.search);
+    if (requested) {
+        query.value = requested;
+    }
+
     window.requestAnimationFrame(() => searchInput.value?.focus());
 });
 

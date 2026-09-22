@@ -1,19 +1,27 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from '../composables/useI18n';
-import { siteConfig } from '../data/site';
+import { usePageMeta } from '../composables/usePageMeta';
 import { filterArchiveGroups, type ArchiveGroups } from '../lib/archive';
 import { estimateReadingTime, type TaxonomyTerm } from '../lib/post-model';
-import { usePageShellStore } from '../stores/page-shell';
 
 const props = defineProps<{
     archive: ArchiveGroups;
     categories: TaxonomyTerm[];
     tags: TaxonomyTerm[];
+    titleKey: string;
+    descriptionKey: string;
+    metaParams: Record<string, string | number>;
 }>();
 
-const { t, locale } = useI18n();
-const pageShell = usePageShellStore();
+const { t } = useI18n();
+
+usePageMeta({
+    titleKey: props.titleKey,
+    descriptionKey: props.descriptionKey,
+    params: () => props.metaParams,
+    mode: 'blog'
+});
 
 const COLLAPSED_CATEGORY_LIMIT = 6;
 const COLLAPSED_TAG_LIMIT = 10;
@@ -153,20 +161,6 @@ function scrollToYear(year: number) {
     el.scrollIntoView({ behavior, block: 'start' });
 }
 
-function syncShellTitle() {
-    const title = t('dock.topics');
-    pageShell.enterPage({
-        title,
-        mode: 'blog',
-        isHomePage: false
-    });
-
-    const surface = document.getElementById('pageTransitionSurface');
-    if (surface) surface.dataset.pageTitle = title;
-
-    document.title = `${title} | ${siteConfig.title}`;
-}
-
 let isMounted = false;
 let observerEpoch = 0;
 let yearObserver: IntersectionObserver | null = null;
@@ -215,10 +209,6 @@ watch(
     () => setupYearObserver(),
     { flush: 'post' }
 );
-
-watch(locale, () => {
-    if (isMounted) syncShellTitle();
-});
 
 let scrollAnimObserver: IntersectionObserver | null = null;
 
@@ -270,7 +260,6 @@ onMounted(() => {
 
     isMounted = true;
     syncFilterQuery();
-    syncShellTitle();
     setupYearObserver();
     nextTick(() => setupScrollAnimations());
 });

@@ -3,6 +3,7 @@ import { toRef } from 'vue';
 import PostCard from './PostCard.vue';
 import { useI18n } from '../composables/useI18n';
 import { useMasonryOrder } from '../composables/useMasonryOrder';
+import { usePageMeta } from '../composables/usePageMeta';
 import type { HomepagePagination } from '../lib/home-pagination';
 import type { PostListItem } from '../lib/post-model';
 
@@ -11,8 +12,20 @@ const props = defineProps<{ posts: PostListItem[]; pagination: HomepagePaginatio
 const { t } = useI18n();
 const { orderedItems: displayPosts } = useMasonryOrder(toRef(props, 'posts'));
 
+// The first page's title is the site title and its shell title is the profile
+// name (set by the layout), so only the paginated pages need syncing.
+usePageMeta({
+    titleKey: 'pages.home.page.title',
+    descriptionKey: 'pages.home.page.description',
+    params: () => ({ page: props.pagination.currentPage, total: props.pagination.totalPages }),
+    mode: 'home',
+    isHomePage: true,
+    enabled: () => props.pagination.currentPage > 1,
+    syncShell: false
+});
+
 function pageAriaLabel(page: number) {
-    return t('home.pagination.page').replace('{page}', String(page));
+    return t('home.pagination.page', { page });
 }
 </script>
 

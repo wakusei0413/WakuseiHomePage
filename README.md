@@ -1,6 +1,6 @@
 # Wakusei HomePage
 
-![Version](https://img.shields.io/badge/version-2.0.0-9a0a0a?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-2.0.1-9a0a0a?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-ffe600?style=for-the-badge)
 ![Astro](https://img.shields.io/badge/Astro-7-ff5d01?style=for-the-badge&logo=astro&logoColor=white)
 ![Vue](https://img.shields.io/badge/Vue-3-42b883?style=for-the-badge&logo=vuedotjs&logoColor=white)
@@ -24,7 +24,7 @@ Wakusei HomePage 是一个专为个人开发者、博主和技术爱好者打造
 - 🖼️ **会呼吸的动态壁纸**：
   - 支持本地高清壁纸，也支持接入必应或第三方壁纸 API 自动轮播。
   - 搭载 Web Animations 电影级 Ken Burns 呼吸缩放微动效，切页时缩放相位平滑接管无跳变。
-- 🔍 **顺手好用的即时搜索**：全局快捷键唤出，毫秒级响应；支持键盘 `↑` `↓` `Enter` `Esc` 全流程操作，手机端大触控区防误触。
+- 🔍 **顺手好用的即时搜索**：全局快捷键唤出，毫秒级响应；支持键盘 `↑` `↓` `Enter` `Esc` 全流程操作，手机端大触控区防误触，搜索结果可用 `/search?q=关键词` 直接分享。
 - 📊 **GitHub 动态贡献热力图**：构建期自动抓取 53 周提交矩阵，无需配置个人 Token，在首页展示你的极客贡献轨迹，离线或接口异常时优雅降级。
 - 🌗 **双色主题 & 三语国际化**：预设精致的深色与浅色模式，首屏内联脚本防闪烁；内置简体中文、英语、日语（`zh-CN` / `en` / `ja`）随时切换。
 - 📱 **全平台响应式 & 无障碍优化**：移动端专属抽屉导航、严格遵循 WCAG 交互触控热区与高对比度规范，全面支持系统级“减少动态效果（prefers-reduced-motion）”。
@@ -184,11 +184,12 @@ npm run preview       # 使用 astro preview 预览打包产物
 | `/posts/[...slug]` | 文章正文详情页 |
 | `/archives` | 按年份时间线汇总归档 |
 | `/topics`、`/categories`、`/tags` | 话题、分类与标签聚合浏览 |
-| `/search` | 独立搜索页面（同时支持弹窗快速搜索） |
+| `/search` | 独立搜索页面（同时支持弹窗快速搜索，支持 `?q=关键词` 直达） |
 | `/rss.xml`、`/atom.xml` | RSS 与 Atom 订阅源 |
 | `/search-index.json` | 客户端毫秒级搜索索引（构建时生成） |
 | `/github-contributions.json` | GitHub 提交热力图静态数据快照（构建时生成） |
 | `/featured-posts.json` | 精选文章静态 JSON 数据 |
+| `/og-default.jpg` | 构建期由默认壁纸生成的 1200×630 社交分享卡 |
 | `/404` | 友好的 404 错误页面 |
 
 ### 深入文档索引

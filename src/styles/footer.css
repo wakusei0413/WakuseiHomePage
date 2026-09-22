@@ -27,10 +27,25 @@
     color: var(--muted);
 }
 
+.footer-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
 .footer-tagline {
     font-size: 0.875rem;
     color: var(--muted);
     opacity: 0.7;
+}
+
+.footer-version {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    opacity: 0.55;
+    letter-spacing: 0.02em;
+    user-select: text;
 }
 
 @media (max-width: 768px) {

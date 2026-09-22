@@ -16,8 +16,16 @@ import Footer from '../components/Footer.vue';
 import SiteShell from '../components/SiteShell.vue';
 import TopBar from '../components/TopBar.vue';
 import { siteConfig } from '../data/site';
+import { translate } from '../lib/i18n';
 import { loadFeaturedPosts, loadRecentlyUpdatedPost, loadSiteStats } from '../lib/posts';
-import { createBlogPostingJsonLd, serializeJsonLd, type ArticleSeoMetadata } from '../lib/seo';
+import { createSearchUrlTemplate } from '../lib/search-query';
+import {
+    createBlogPostingJsonLd,
+    createBreadcrumbListJsonLd,
+    createWebSiteJsonLd,
+    serializeJsonLd,
+    type ArticleSeoMetadata
+} from '../lib/seo';
 
 interface Props {
     title?: string;
@@ -26,6 +34,9 @@ interface Props {
     shellTitle?: string;
     ogImage?: string;
     ogImageAlt?: string;
+    ogImageWidth?: number;
+    ogImageHeight?: number;
+    ogImageType?: string;
     articleSeo?: ArticleSeoMetadata;
     paginationPrev?: string;
     paginationNext?: string;
@@ -38,10 +49,20 @@ const {
     shellTitle = title,
     ogImage,
     ogImageAlt,
+    ogImageWidth,
+    ogImageHeight,
+    ogImageType,
     articleSeo,
     paginationPrev,
     paginationNext
 } = Astro.props;
+
+/** Card rendered at build time by `src/pages/og-default.jpg.ts`. */
+const OG_CARD_PATH = '/og-default.jpg';
+const OG_CARD_WIDTH = 1200;
+const OG_CARD_HEIGHT = 630;
+const OG_CARD_TYPE = 'image/jpeg';
+
 const isHomePage = shellMode === 'home';
 const [featuredPosts, siteStats] = await Promise.all([loadFeaturedPosts(3), loadSiteStats()]);
 const recentlyUpdated = await loadRecentlyUpdatedPost(featuredPosts.map((p) => p.slug));
@@ -60,27 +81,69 @@ const wallpaperOrigins = Array.from(
 const siteUrl = Astro.site ?? new URL('https://www.wakusei.top');
 const siteHomeUrl = new URL('/', siteUrl).toString();
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const hasOwnOgImage = Boolean(ogImage);
 const ogImageUrl = ogImage
     ? ogImage.startsWith('http')
         ? ogImage
         : new URL(ogImage, siteUrl).toString()
-    : new URL(siteConfig.profile.avatar, siteUrl).toString();
-const resolvedOgImageAlt = ogImageAlt ?? (articleSeo?.image ? title : `${siteConfig.profile.name} avatar`);
+    : new URL(OG_CARD_PATH, siteUrl).toString();
+
+// Only claim the built card's dimensions when the built card is what we serve.
+// A caller-supplied image without metadata stays dimension-less and keeps the
+// conservative `summary` card rather than being stretched by `summary_large_image`.
+const resolvedOgImageWidth = hasOwnOgImage ? ogImageWidth : OG_CARD_WIDTH;
+const resolvedOgImageHeight = hasOwnOgImage ? ogImageHeight : OG_CARD_HEIGHT;
+const resolvedOgImageType = hasOwnOgImage ? ogImageType : OG_CARD_TYPE;
+const isWideOgImage =
+    typeof resolvedOgImageWidth === 'number' &&
+    typeof resolvedOgImageHeight === 'number' &&
+    resolvedOgImageHeight > 0 &&
+    resolvedOgImageWidth >= 1000 &&
+    resolvedOgImageWidth / resolvedOgImageHeight >= 1.6;
+const twitterCard = isWideOgImage ? 'summary_large_image' : 'summary';
+const resolvedOgImageAlt = ogImageAlt ?? (articleSeo?.image ? title : siteConfig.title);
 const ogLocale = (articleSeo?.language ?? siteConfig.lang).replace('-', '_');
+const publisher = {
+    name: siteConfig.profile.name,
+    url: siteHomeUrl,
+    image: new URL(siteConfig.profile.avatar, siteUrl).toString()
+};
 const blogPosting = articleSeo
     ? createBlogPostingJsonLd({
           ...articleSeo,
           canonicalUrl,
           headline: title,
           description,
-          publisher: {
-              name: siteConfig.profile.name,
-              url: siteHomeUrl,
-              image: new URL(siteConfig.profile.avatar, siteUrl).toString()
-          }
+          publisher
       })
     : undefined;
 const serializedBlogPosting = blogPosting ? serializeJsonLd(blogPosting) : undefined;
+const webSiteJsonLd = isHomePage
+    ? createWebSiteJsonLd({
+          name: siteConfig.title,
+          url: siteHomeUrl,
+          description: siteConfig.description,
+          language: siteConfig.lang,
+          publisher,
+          searchUrlTemplate: createSearchUrlTemplate(siteUrl)
+      })
+    : undefined;
+const serializedWebSite = webSiteJsonLd ? serializeJsonLd(webSiteJsonLd) : undefined;
+const breadcrumbJsonLd = articleSeo
+    ? createBreadcrumbListJsonLd([
+          { name: translate(siteConfig.i18n.defaultLocale, 'article.footer.home'), url: siteHomeUrl },
+          ...(articleSeo.section
+              ? [
+                    {
+                        name: articleSeo.section,
+                        url: new URL(`/categories/${encodeURIComponent(articleSeo.section)}`, siteUrl).toString()
+                    }
+                ]
+              : []),
+          { name: title, url: canonicalUrl }
+      ])
+    : null;
+const serializedBreadcrumbs = breadcrumbJsonLd ? serializeJsonLd(breadcrumbJsonLd) : undefined;
 const googleFontsUrl =
     'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap';
 ---
@@ -114,6 +177,15 @@ const googleFontsUrl =
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:image" content={ogImageUrl} />
         <meta property="og:image:alt" content={resolvedOgImageAlt} />
+        {
+            typeof resolvedOgImageWidth === 'number' && typeof resolvedOgImageHeight === 'number' && (
+                <>
+                    <meta property="og:image:width" content={String(resolvedOgImageWidth)} />
+                    <meta property="og:image:height" content={String(resolvedOgImageHeight)} />
+                </>
+            )
+        }
+        {resolvedOgImageType && <meta property="og:image:type" content={resolvedOgImageType} />}
         <meta property="og:locale" content={ogLocale} />
         {articleSeo && <meta name="author" content={articleSeo.author.name} />}
         {articleSeo?.author.url && <meta property="article:author" content={articleSeo.author.url} />}
@@ -122,7 +194,9 @@ const googleFontsUrl =
         {blogPosting?.articleSection && <meta property="article:section" content={blogPosting.articleSection} />}
         {blogPosting?.keywords?.map((tag) => <meta property="article:tag" content={tag} />)}
         {serializedBlogPosting && <script is:inline type="application/ld+json" set:html={serializedBlogPosting} />}
-        <meta name="twitter:card" content="summary" />
+        {serializedWebSite && <script is:inline type="application/ld+json" set:html={serializedWebSite} />}
+        {serializedBreadcrumbs && <script is:inline type="application/ld+json" set:html={serializedBreadcrumbs} />}
+        <meta name="twitter:card" content={twitterCard} />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={ogImageUrl} />
@@ -263,7 +337,7 @@ const googleFontsUrl =
                 <slot />
             </div>
             <div class="page-footer" transition:name="site-footer" transition:persist>
-                <Footer client:idle copyrightText={siteConfig.footer.text} />
+                <Footer client:idle copyrightText={siteConfig.footer.text} version={siteConfig.version} />
             </div>
         </div>
         <TopBar client:idle initialIsHomePage={isHomePage} />

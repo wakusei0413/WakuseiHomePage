@@ -1,11 +1,30 @@
-import type { Locale } from '../data/i18n';
+import { translations, type Locale } from '../data/i18n';
+import { siteConfig } from '../data/site';
 import type { I18nConfig } from '../types/site';
 
 const STORAGE_KEY_LANG = 'lang';
 const STORAGE_KEY_THEME = 'theme';
 const THEME_CHANGE_EVENT = 'wakusei:theme-change';
 
+const i18nConfig = siteConfig.i18n as I18nConfig;
+
 export type Theme = 'light' | 'dark';
+
+/**
+ * Pure lookup used by both the client i18n store and the build-time `.astro`
+ * pages. The store wraps this to stay reactive; `.astro` files call it directly
+ * with the default locale so the SSR markup and the hydrated islands read their
+ * copy from a single source instead of duplicating literal strings.
+ */
+export function translate(locale: Locale, key: string, params?: Record<string, string | number>): string {
+    const entry = translations[locale];
+    const fallback = translations[i18nConfig.defaultLocale];
+    const template = (entry && entry[key]) ?? (fallback && fallback[key]) ?? key;
+
+    if (!params) return template;
+
+    return template.replace(/\{(\w+)\}/g, (match, name: string) => (name in params ? String(params[name]) : match));
+}
 
 export function getStoredLang(config: I18nConfig): Locale {
     if (typeof localStorage === 'undefined') return config.defaultLocale;

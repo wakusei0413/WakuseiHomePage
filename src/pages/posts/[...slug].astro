@@ -1,7 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleToc from '../../components/ArticleToc.vue';
-import Icon from '../../components/Icon.vue';
+import PostFooterNav from '../../components/PostFooterNav.vue';
+import PostMeta from '../../components/PostMeta.vue';
 import ReadingControls from '../../components/ReadingControls.vue';
 import { formatPostDateLabel } from '../../lib/post-model';
 import { getPostStaticPaths, type PostPageProps } from '../../lib/posts';
@@ -10,13 +11,13 @@ import { siteConfig } from '../../data/site';
 
 export { getPostStaticPaths as getStaticPaths };
 
-const { frontmatter, Content, readingMinutes, prev, next } = Astro.props as PostPageProps;
+const { frontmatter, Content, readingMinutes, prev, next, coverMeta } = Astro.props as PostPageProps;
 const pub = formatPostDateLabel(frontmatter.pubDate);
 const updated = formatPostDateLabel(frontmatter.updatedDate);
+const updatedForDisplay = updated && pub && updated.iso !== pub.iso ? updated : null;
 const siteUrl = Astro.site ?? new URL('https://www.wakusei.top');
 const siteHomeUrl = new URL('/', siteUrl).toString();
 const articleImage = frontmatter.cover ? new URL(frontmatter.cover, siteUrl).toString() : undefined;
-const ogImage = articleImage ?? new URL(siteConfig.profile.avatar, siteUrl).toString();
 const articleSeo = createArticleSeoMetadata({
     publishedTime: frontmatter.pubDate,
     updatedTime: frontmatter.updatedDate,
@@ -37,8 +38,11 @@ const articleSeo = createArticleSeoMetadata({
     shellTitle={frontmatter.title}
     title={frontmatter.title}
     description={frontmatter.description}
-    ogImage={ogImage}
+    ogImage={articleImage}
     ogImageAlt={articleImage ? frontmatter.title : undefined}
+    ogImageWidth={coverMeta?.width}
+    ogImageHeight={coverMeta?.height}
+    ogImageType={coverMeta ? `image/${coverMeta.format}` : undefined}
     articleSeo={articleSeo}
 >
     <div class="reading-progress" aria-hidden="true">
@@ -61,14 +65,7 @@ const articleSeo = createArticleSeoMetadata({
                             </time>
                         )
                     }
-                    <span class="post-reading-time">约 {readingMinutes} 分钟阅读</span>
-                    {
-                        updated && pub && updated.iso !== pub.iso && (
-                            <time class="post-date post-date--updated" datetime={updated.iso}>
-                                更新于 {updated.label}
-                            </time>
-                        )
-                    }
+                    <PostMeta client:idle readingMinutes={readingMinutes} updated={updatedForDisplay} />
                 </div>
             </header>
             {
@@ -91,42 +88,7 @@ const articleSeo = createArticleSeoMetadata({
         <div class="post-body">
             <Content />
         </div>
-        <footer class="post-footer">
-            <nav class="post-footer__actions" aria-label="文章页导航">
-                <a href="/#posts" class="back-link post-footer__action post-footer__action--primary">
-                    <Icon name="arrow-left" size="0.9em" />
-                    <span>文章列表</span>
-                </a>
-                <a href="/" class="back-link post-footer__action">
-                    <Icon name="house" size="0.9em" />
-                    <span>首页</span>
-                </a>
-            </nav>
-        </footer>
-        <nav class="post-nav" aria-label="文章导航">
-            {
-                prev ? (
-                    <a class="post-nav__card post-nav__card--prev" data-internal-nav href={`/posts/${prev.slug}`}>
-                        <span class="post-nav__dir">← 上一篇</span>
-                        <span class="post-nav__title">{prev.title}</span>
-                        {prev.dateLabel && <span class="post-nav__date">{prev.dateLabel}</span>}
-                    </a>
-                ) : (
-                    <span class="post-nav__placeholder" />
-                )
-            }
-            {
-                next ? (
-                    <a class="post-nav__card post-nav__card--next" data-internal-nav href={`/posts/${next.slug}`}>
-                        <span class="post-nav__dir">下一篇 →</span>
-                        <span class="post-nav__title">{next.title}</span>
-                        {next.dateLabel && <span class="post-nav__date">{next.dateLabel}</span>}
-                    </a>
-                ) : (
-                    <span class="post-nav__placeholder" />
-                )
-            }
-        </nav>
+        <PostFooterNav client:idle prev={prev} next={next} />
     </article>
     <ArticleToc client:idle={{ timeout: 500 }} />
     <ReadingControls client:idle />

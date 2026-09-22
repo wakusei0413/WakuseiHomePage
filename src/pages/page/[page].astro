@@ -4,6 +4,7 @@ import HomepageApp from '../../components/HomepageApp.vue';
 import { siteConfig } from '../../data/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { createHomepagePage, homepagePageCount, homepagePagePath, type HomepagePage } from '../../lib/home-pagination';
+import { translate } from '../../lib/i18n';
 import { loadPublishedPosts } from '../../lib/posts';
 
 export const getStaticPaths = (async () => {
@@ -20,7 +21,9 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 const { posts, pagination } = Astro.props as HomepagePage;
-const title = `最新文章 · 第 ${pagination.currentPage} 页 | ${siteConfig.title}`;
+const metaParams = { page: pagination.currentPage, total: pagination.totalPages };
+const title = translate(siteConfig.i18n.defaultLocale, 'pages.home.page.title', metaParams);
+const description = translate(siteConfig.i18n.defaultLocale, 'pages.home.page.description', metaParams);
 const paginationPrev = homepagePagePath(pagination.currentPage - 1);
 const paginationNext =
     pagination.currentPage < pagination.totalPages ? homepagePagePath(pagination.currentPage + 1) : undefined;
@@ -29,7 +32,8 @@ const paginationNext =
 <BaseLayout
     shellMode="home"
     shellTitle={siteConfig.profile.name}
-    title={title}
+    title={`${title} | ${siteConfig.title}`}
+    description={description}
     paginationPrev={paginationPrev}
     paginationNext={paginationNext}
 >
