@@ -357,6 +357,22 @@ html:not(.is-loaded) .noise-overlay {
     background-color: color-mix(in srgb, var(--custom-color, #ffe600) 74%, transparent);
 }
 
+/* 点击复制后卡片立即退回常态，不残留浮起与高亮颜色，与其他按钮保持一致 */
+.social-link-slot.is-copied .social-link--custom {
+    transform: none !important;
+    box-shadow: var(--panel-shadow) !important;
+    background-color: var(--panel-glass) !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+}
+
+[data-theme='dark'] .social-link-slot.is-copied .social-link--custom {
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.2),
+        0 2px 12px rgba(0, 0, 0, 0.3) !important;
+    background-color: var(--glass-bg) !important;
+}
+
 .link-label {
     font-family: 'IBM Plex Mono', 'Noto Sans SC', monospace;
     font-family: var(--font-mono, 'IBM Plex Mono', 'Noto Sans SC', monospace);
@@ -364,6 +380,103 @@ html:not(.is-loaded) .noise-overlay {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+}
+
+/* 复制类社交卡片（RSS）的浮动气泡反馈：
+   不在小卡片里挤字，点击后在卡片上方弹出精致的 Toast 气泡，
+   包含标题「已复制订阅地址」和指引「粘贴到阅读器即可订阅」。
+   小箭头指向卡片，2.4 秒后自动淡出。 */
+.social-link-toast {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    right: 0;
+    z-index: 50;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 0.6rem 0.85rem;
+    background: var(--panel-bg-solid, #fffef7);
+    color: var(--fg, #0a0a0a);
+    border: 1px solid var(--panel-border, rgba(0, 0, 0, 0.2));
+    border-radius: var(--radius-sm, 4px);
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.12),
+        0 1px 4px rgba(0, 0, 0, 0.06);
+    white-space: nowrap;
+}
+
+.social-link-toast::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    right: 28px;
+    width: 8px;
+    height: 8px;
+    background: var(--panel-bg-solid, #fffef7);
+    border-right: 1px solid var(--panel-border, rgba(0, 0, 0, 0.2));
+    border-bottom: 1px solid var(--panel-border, rgba(0, 0, 0, 0.2));
+    transform: rotate(45deg);
+}
+
+[data-theme='dark'] .social-link-toast {
+    background: #1a1a1c;
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow:
+        0 6px 24px rgba(0, 0, 0, 0.45),
+        0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] .social-link-toast::after {
+    background: #1a1a1c;
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+.social-link-toast__header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.social-link-toast__icon {
+    color: #ff8400;
+}
+
+.social-link-toast__title {
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--fg);
+}
+
+.social-link-toast__hint {
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    line-height: 1.3;
+    color: var(--muted);
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.social-toast-enter-active,
+.social-toast-leave-active {
+    transition:
+        opacity 0.22s var(--curve-fade),
+        transform 0.22s var(--curve-snap);
+}
+
+.social-toast-enter-from,
+.social-toast-leave-to {
+    opacity: 0;
+    transform: translateY(6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .social-toast-enter-active,
+    .social-toast-leave-active {
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* ===== 时间组件 ===== */

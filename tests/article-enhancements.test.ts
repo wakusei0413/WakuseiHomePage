@@ -15,6 +15,8 @@ afterEach(() => {
     teardownHeadingLinks();
     teardownImageLightbox();
     document.body.innerHTML = '';
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
 });
 
@@ -88,5 +90,68 @@ describe('deferred article enhancements', () => {
 
         expect(document.querySelectorAll('.article-lightbox')).toHaveLength(1);
         expect(document.querySelector<HTMLImageElement>('.article-lightbox__img')!.alt).toBe('Two');
+    });
+
+    it('crossfades to the next image instead of hard cutting', async () => {
+        vi.useFakeTimers();
+        document.body.innerHTML =
+            '<article class="post-body"><img src="/one.jpg" alt="One"><img src="/two.jpg" alt="Two"></article>';
+        const root = document.querySelector<HTMLElement>('.post-body')!;
+        const bodyImages = root.querySelectorAll<HTMLImageElement>('img');
+
+        enhanceImageLightbox(root);
+        bodyImages[0].click();
+
+        const overlayImage = document.querySelector<HTMLImageElement>('.article-lightbox__img')!;
+        expect(overlayImage.alt).toBe('One');
+
+        // The warm-up gates the first paint: the src only lands once the image
+        // would actually have fetched (jsdom never fires load, so the warm-up
+        // timeout is what settles it).
+        await vi.advanceTimersByTimeAsync(2000);
+        expect(overlayImage.getAttribute('src')).toBe(bodyImages[0].src);
+
+        // Clicking the overlay image advances to the next one.
+        overlayImage.click();
+        expect(overlayImage.alt).toBe('Two');
+
+        // The neighbour was warmed on open, so the fade-out starts immediately.
+        await vi.advanceTimersByTimeAsync(0);
+        expect(overlayImage.classList.contains('article-lightbox__img--swapping')).toBe(true);
+
+        await vi.advanceTimersByTimeAsync(500);
+        expect(overlayImage.getAttribute('src')).toBe(bodyImages[1].src);
+        expect(overlayImage.classList.contains('article-lightbox__img--swapping')).toBe(false);
+    });
+
+    it('warms both neighbours of the opened image', () => {
+        const requested: string[] = [];
+        const RealImage = window.Image;
+        class RecordingImage extends RealImage {
+            constructor() {
+                super();
+                Object.defineProperty(this, 'src', {
+                    get: () => '',
+                    set: (value: string) => {
+                        requested.push(value);
+                    },
+                    configurable: true
+                });
+            }
+        }
+        vi.stubGlobal('Image', RecordingImage);
+
+        document.body.innerHTML =
+            '<article class="post-body">' +
+            '<img src="/a.jpg" alt="A"><img src="/b.jpg" alt="B"><img src="/c.jpg" alt="C">' +
+            '</article>';
+        const root = document.querySelector<HTMLElement>('.post-body')!;
+        const bodyImages = root.querySelectorAll<HTMLImageElement>('img');
+
+        enhanceImageLightbox(root);
+        bodyImages[1].click();
+
+        expect(requested).toContain(bodyImages[0].src);
+        expect(requested).toContain(bodyImages[2].src);
     });
 });

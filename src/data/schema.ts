@@ -4,7 +4,8 @@ const socialLinkSchema = z.object({
     name: z.string().min(1),
     url: z.string().min(1),
     icon: z.string().min(1).optional(),
-    color: z.string().min(1).optional()
+    color: z.string().min(1).optional(),
+    copy: z.boolean().optional()
 });
 
 const dockItemSchema = z.union([

@@ -52,6 +52,8 @@ export interface SocialLink {
     url: string;
     icon?: string;
     color?: string;
+    /** 复制 url 到剪贴板，而不是跳转过去（用于 RSS 这类浏览器里看不了的地址）。 */
+    copy?: boolean;
 }
 
 export interface SocialLinksConfig {

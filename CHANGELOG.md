@@ -6,6 +6,33 @@
 
 ---
 
+## 2.0.2
+
+2026-09-23
+
+### 新增
+
+- 开放 RSS / Atom 订阅入口：左侧边栏社交区新增第 6 张 RSS 卡片，填补 2×3 宫格右下角空位，尺寸分毫不变（零布局位移）。
+- 社交卡片支持 `copy: true` 复制语义：
+  - 点击 RSS 卡片不再发生页面跳转，而是直接将完整的订阅地址（如 `https://www.wakusei.top/rss.xml`）复制到剪贴板，并在卡片正上方滑入弹出精致的浮动 Toast 气泡（「已复制订阅地址 / 粘贴到阅读器即可订阅」），带指示箭头并在 2.4 秒后平滑淡出。
+  - 卡片点击后立即解除聚焦并退回静止态，不残留高亮与浮起，与其他按钮交互体验完全一致。
+  - 保留逃生口：按住 <kbd>Ctrl</kbd> / <kbd>⌘</kbd> 点击或鼠标中键点击仍会直接在新标签页打开原始 XML。
+  - 补齐 Font Awesome 6 `rss` 图标，并在 `zh-CN`、`en`、`ja` 三语种中同步国际化文本与无障碍屏幕阅读器播报（`role="status" aria-live="polite"`）。
+- 新增 `tests/social-link-copy.test.ts` 与 `tests/image-loading-reveal.test.ts` 契约与功能测试。
+
+### 修复
+
+- 文章卡片封面（`PostCard`）「啪」地突然闪现与滚动掉帧：
+  - 根因排查：原本封面的 `src` 被 IntersectionObserver 扣留未在 SSR 中输出，导致原生 `loading="lazy"` 与 `fetchpriority="low"` 完全失效，必须等客户端水合及卡片滚到眼前才开始请求，且缺失透明度过渡。
+  - 修复：封面 `src` 在 SSR 阶段常驻，交由浏览器原生懒加载提前预取；绑定 `HTMLImageElement.decode()` 在位图解码就绪后触发 `opacity 0.45s` 平滑淡入，淡入路径不再占用主线程解码；补全客户端水合前的缓存命中与 `@error` 兜底，并增加 `@media (scripting: enabled)` 无 JS 保护。
+  - 顺带修复 CSS 简写特异性冲突：`article.css` 的 `.post-card` 覆盖了 `components.css` 的 `.scroll-reveal` 过渡简写导致卡片显现变成硬切，已补回 `opacity 0.6s` 过渡。
+- 文章图片灯箱（`image-lightbox`）换图硬切与掉帧：
+  - 引入邻居图片预热与解码机制（`warmNeighbours`），左右翻页无需等待网络往返。
+  - 换图流程改为 120ms 淡出 → 0 透明度提交位图并借由一帧渲染掩盖图片宽高比跳变 → 平滑淡入；引入 `swapToken` 丢弃过期切换请求。
+  - 移除 `.article-lightbox` 全屏 `backdrop-filter: blur(4px)` 高开销逐帧合成滤镜。
+
+---
+
 ## 2.0.1
 
 2026-09-22

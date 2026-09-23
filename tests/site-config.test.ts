@@ -51,4 +51,18 @@ describe('site config schema', () => {
             })
         ).toThrow(/socialLinks/i);
     });
+
+    it('ships an RSS copy link that points at the generated feed', () => {
+        const rss = editableSiteConfig.socialLinks.links.find((link) => link.copy === true);
+
+        expect(rss, 'expected a copy:true social link').toBeDefined();
+        // 端点由 src/pages/rss.xml.ts 生成，scripts/check-dist.mjs 校验其存在。
+        expect(rss!.url).toBe('/rss.xml');
+        expect(rss!.icon).toBeTruthy();
+    });
+
+    it('fills one social page so no placeholder cell is left over', () => {
+        // SocialLinks 每页 6 张（3 列 × 2 行）；凑满 6 条即不再渲染占位格。
+        expect(editableSiteConfig.socialLinks.links).toHaveLength(6);
+    });
 });

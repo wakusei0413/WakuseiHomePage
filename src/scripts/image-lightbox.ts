@@ -16,6 +16,8 @@ const NEXT_ICON =
     '<path d="M9 6l6 6-6 6"/></svg>';
 
 const TRANSITION = 220;
+const SWAP_OUT_MS = 120;
+const WARM_TIMEOUT_MS = 1500;
 
 let activeRoot: HTMLElement | null = null;
 let listenerController: AbortController | null = null;
@@ -30,6 +32,59 @@ let closeTimer: number | null = null;
 let openFrame: number | null = null;
 let lockedBody: HTMLElement | null = null;
 let previousBodyOverflow = '';
+let swapToken = 0;
+
+/**
+ * In-flight `warmImage` results, keyed by URL. Warming does the network fetch
+ * *and* the decode ahead of time, so the swap that follows is a cached paint
+ * instead of a fetch-then-decode on the main thread.
+ */
+const warmed = new Map<string, Promise<void>>();
+const warmTimers = new Set<number>();
+
+function prefersReducedMotion(): boolean {
+    return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * Resolves once `src` is fetched and decoded. `load` and `error` both settle it,
+ * and a timeout backstops a request that never settles — the UI must never be
+ * held hostage by a warm-up, so a late or failed warm just means the swap falls
+ * back to the browser's own timing.
+ */
+function warmImage(src: string): Promise<void> {
+    const cached = warmed.get(src);
+    if (cached) return cached;
+
+    const promise = new Promise<void>((resolve) => {
+        const image = new Image();
+        image.decoding = 'async';
+        const finish = () => resolve();
+        const timer = window.setTimeout(() => {
+            warmTimers.delete(timer);
+            finish();
+        }, WARM_TIMEOUT_MS);
+        warmTimers.add(timer);
+        const settle = () => {
+            window.clearTimeout(timer);
+            warmTimers.delete(timer);
+            finish();
+        };
+
+        image.onload = () => {
+            if (typeof image.decode === 'function') {
+                image.decode().then(settle, settle);
+                return;
+            }
+            settle();
+        };
+        image.onerror = settle;
+        image.src = src;
+    });
+
+    warmed.set(src, promise);
+    return promise;
+}
 
 function ensureOverlay(): HTMLElement {
     if (overlay) {
@@ -90,17 +145,71 @@ function restoreBodyOverflow(): void {
     previousBodyOverflow = '';
 }
 
+/**
+ * Pre-fetches and decodes the images on either side of the current one. The
+ * body images are themselves `loading="lazy"`, so by the time the reader has
+ * scrolled to the one they clicked, the neighbours are usually already in the
+ * HTTP cache — warming them then costs a decode, not a round trip.
+ */
+function warmNeighbours(): void {
+    if (images.length <= 1) return;
+    for (const offset of [1, -1]) {
+        const neighbour = images[(currentIndex + offset + images.length) % images.length];
+        if (neighbour) void warmImage(neighbour.currentSrc || neighbour.src);
+    }
+}
+
+/**
+ * Swaps the overlay image through a short fade-out / fade-in instead of a hard
+ * cut. Two things make it read as smooth rather than as a flicker:
+ *   - the target is warmed first, so the `src` assignment paints from cache;
+ *   - the new `src` is committed while opacity is 0, which hides the box
+ *     resizing to the new image's aspect ratio.
+ */
+async function swapImage(src: string, alt: string): Promise<void> {
+    if (!overlayImg || overlayImg.getAttribute('src') === src) return;
+
+    const token = ++swapToken;
+    await warmImage(src);
+    if (token !== swapToken || !overlayImg) return;
+
+    // Nothing to fade out on the overlay's first frame (and reduced motion asks
+    // for no fade at all) — the bitmap is already decoded, so committing it
+    // straight away is a clean paint. The overlay's own fade-in supplies the
+    // entrance on open.
+    if (!overlayImg.getAttribute('src') || prefersReducedMotion()) {
+        overlayImg.src = src;
+        overlayImg.alt = alt;
+        return;
+    }
+
+    overlayImg.classList.add('article-lightbox__img--swapping');
+    await new Promise<void>((resolve) => window.setTimeout(resolve, SWAP_OUT_MS));
+    if (token !== swapToken || !overlayImg) return;
+
+    overlayImg.src = src;
+    overlayImg.alt = alt;
+    // Let the browser paint one frame at opacity 0 so the box can resize to the
+    // new aspect ratio unobserved, then fade the image back in.
+    await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+    if (token !== swapToken || !overlayImg) return;
+
+    overlayImg.classList.remove('article-lightbox__img--swapping');
+}
+
 function showAt(index: number): void {
     if (!images.length) return;
     currentIndex = (index + images.length) % images.length;
     const img = images[currentIndex];
-    if (overlayImg) {
-        overlayImg.src = img.currentSrc || img.src;
-        overlayImg.alt = img.alt || '';
-    }
+    // Caption, alt and button state update synchronously; only the bitmap swap
+    // is deferred behind the warm-up and the fade.
+    if (overlayImg) overlayImg.alt = img.alt || '';
     if (captionEl) captionEl.textContent = img.alt || '';
     if (prevBtn) prevBtn.disabled = images.length <= 1;
     if (nextBtn) nextBtn.disabled = images.length <= 1;
+
+    void swapImage(img.currentSrc || img.src, img.alt || '');
+    warmNeighbours();
 }
 
 function open(index: number): void {
@@ -170,6 +279,12 @@ export function teardownImageLightbox(): void {
     listenerController = null;
     activeRoot = null;
     images = [];
+    // Invalidate any in-flight swap so a late warm-up cannot write into the
+    // next article's overlay, and drop the warm-up bookkeeping with it.
+    swapToken += 1;
+    warmed.clear();
+    warmTimers.forEach((timer) => window.clearTimeout(timer));
+    warmTimers.clear();
     if (closeTimer) {
         window.clearTimeout(closeTimer);
         closeTimer = null;
@@ -180,6 +295,11 @@ export function teardownImageLightbox(): void {
     }
     restoreBodyOverflow();
     overlay?.classList.remove('article-lightbox--visible');
+    overlayImg?.classList.remove('article-lightbox__img--swapping');
+    // Drop the bitmap too: the overlay is reused across navigations, and a stale
+    // `src` would both flash the previous article's image and make the next open
+    // take the crossfade path instead of a clean first paint.
+    overlayImg?.removeAttribute('src');
     if (overlay) overlay.style.display = 'none';
 }
 

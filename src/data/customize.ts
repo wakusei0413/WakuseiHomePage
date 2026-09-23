@@ -3,7 +3,7 @@ import type { SiteConfig } from '../types/site';
 // 日常站点配置的唯一入口；site.ts 会通过 schema.ts 校验后再暴露给运行时。
 // 新增字段时同步更新 types/site.ts 与 schema.ts，不要建立第二套快捷配置映射。
 export const editableSiteConfig: SiteConfig = {
-    version: '2.0.1',
+    version: '2.0.2',
 
     // 浏览器与 SEO 元数据。
     title: '遊星Wakusei的个人小屋',
@@ -51,6 +51,16 @@ export const editableSiteConfig: SiteConfig = {
                 url: 'https://status.wakusei.top/',
                 icon: 'fa-solid fa-arrow-up-right-dots',
                 color: '#ddff00'
+            },
+            {
+                // 浏览器里直接打开只会看到原始 XML，所以这张卡片是「复制订阅地址」
+                // 而不是跳转：copy: true 让 SocialLinks 走剪贴板分支。
+                // 地址由构建期的 site 拼成绝对地址，换域名不用改这里。
+                name: 'RSS',
+                url: '/rss.xml',
+                icon: 'fas fa-rss',
+                color: '#ff8400',
+                copy: true
             }
         ]
     },

@@ -28,23 +28,60 @@ interface PostCardProps {
 const props = defineProps<PostCardProps>();
 const { t } = useI18n();
 const cardRef = ref<HTMLElement | null>(null);
+const coverRef = ref<HTMLImageElement | null>(null);
+const coverShown = ref(false);
 const readingLabel = computed(() =>
     t('post.reading').replace('{minutes}', String(estimateReadingTime(props.wordCount)))
 );
-const revealed = ref(false);
 let observer: IntersectionObserver | null = null;
 
 const layout = computed(() => props.data.coverLayout || 'below');
 const hasCover = computed(() => !!props.data.cover);
 
+function showCover() {
+    coverShown.value = true;
+}
+
+/**
+ * The cover fades in only once `decode()` resolves — that promise settles when
+ * the bitmap is decoded and ready to paint. Revealing on `load` alone would
+ * hand the decode to the first frame of the fade, which is exactly the
+ * main-thread stall the previous pop-in caused.
+ *
+ * `decode()` is only ever reached from the load/complete paths: calling it on a
+ * still-pending `loading="lazy"` image would start the fetch immediately and
+ * defeat the native lookahead. Both a rejected decode and a broken image still
+ * reveal, so a failure never leaves an invisible `opacity: 0` element behind.
+ */
+function handleCoverLoad() {
+    const cover = coverRef.value;
+    if (cover && typeof cover.decode === 'function') {
+        try {
+            cover.decode().then(showCover, showCover);
+            return;
+        } catch {
+            // Safari throws synchronously for a detached/broken image.
+        }
+    }
+    showCover();
+}
+
 onMounted(() => {
+    // The cover keeps its `src` from SSR on so native lazy loading can start the
+    // fetch ~1250px early. Cards hydrate at `client:idle`, though, so a cached
+    // cover may already be complete before this runs — `load` will never fire
+    // again and the cover would stay transparent forever. Adopt it here.
+    const cover = coverRef.value;
+    if (cover?.complete && cover.naturalWidth > 0) {
+        handleCoverLoad();
+    }
+
     if (!cardRef.value) return;
     observer = new IntersectionObserver(
         (entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('scroll-reveal--visible');
-                    revealed.value = true;
                     observer?.unobserve(entry.target);
                 }
             });
@@ -76,12 +113,15 @@ function handleClick(e: MouseEvent) {
     >
         <img
             v-if="hasCover"
-            :src="revealed ? props.data.cover : undefined"
+            ref="coverRef"
+            :src="props.data.cover"
             :alt="props.data.title"
-            class="post-cover"
+            :class="['post-cover', { 'post-cover--shown': coverShown }]"
             loading="lazy"
             decoding="async"
             fetchpriority="low"
+            @load="handleCoverLoad"
+            @error="showCover"
         />
         <div class="post-info">
             <div class="post-meta">

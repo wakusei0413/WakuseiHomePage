@@ -44,29 +44,54 @@ slogans: {
 ```
 
 ### Q3: 怎么添加我的 B站、GitHub、微信或邮箱？
-在 `src/data/customize.ts` 中找到 `socialLinks` 数组，自由增减：
+在 `src/data/customize.ts` 中找到 `socialLinks.links`，自由增减：
 ```typescript
-socialLinks: [
-    {
-        name: 'GitHub',
-        icon: 'fa-brands fa-github',      // 图标类名（由 Icon.vue 内联渲染）
-        url: 'https://github.com/你的用户名',
-        color: '#24292e'
-    },
-    {
-        name: 'Bilibili',
-        icon: 'fa-brands fa-bilibili',
-        url: 'https://space.bilibili.com/你的UID',
-        color: '#00aeec'
-    },
-    {
-        name: 'Email',
-        icon: 'fa-solid fa-envelope',
-        url: 'mailto:your-email@example.com',
-        color: '#ea4335'
-    }
-]
+socialLinks: {
+    colorScheme: 'cycle',   // 'cycle' 三条一组循环配色，或 'same' 全部同色
+    links: [
+        {
+            name: 'GitHub',
+            icon: 'fa-brands fa-github',      // 图标类名（由 Icon.vue 内联渲染）
+            url: 'https://github.com/你的用户名',
+            color: '#24292e'
+        },
+        {
+            name: 'Bilibili',
+            icon: 'fa-brands fa-bilibili',
+            url: 'https://space.bilibili.com/你的UID',
+            color: '#00aeec'
+        },
+        {
+            name: 'Email',
+            icon: 'fa-solid fa-envelope',
+            url: 'mailto:your-email@example.com',
+            color: '#ea4335'
+        }
+    ]
+}
 ```
+
+左侧宫格每页 6 张卡片（3 列 × 2 行），超出自动分页并在下方显示圆点。
+
+> 💡 **新增图标**：`icon` 里的名字必须在 `src/components/Icon.vue` 的图标表里有对应条目，
+> 否则该卡片不会显示图标（`npm test` 会直接报错指出缺哪个）。图标路径取自 Font Awesome 6。
+
+### Q3.1: 怎么加一个「点击复制」的链接？
+给条目加 `copy: true`，点击时就把地址复制进剪贴板，而不是跳转过去——
+适合 RSS 这类在浏览器里打开只会看到原始 XML 的地址：
+
+```typescript
+{
+    name: 'RSS',
+    icon: 'fas fa-rss',
+    url: '/rss.xml',    // 相对路径会在复制时自动补成站点绝对地址
+    color: '#ff8400',
+    copy: true
+}
+```
+
+复制出的地址由构建期的 `site`（`astro.config.mjs`）拼成绝对路径，换域名不用改这里。
+按住 <kbd>Ctrl</kbd> / <kbd>⌘</kbd> 点击（或右键另存）仍然会直接打开原始文件。
 
 ### Q4: 我只想用一张固定的高清壁纸，不想要自动轮播换图？
 在 `src/data/customize.ts` 中找到 `wallpaper`，将 `rotation.enabled` 设为 `false`，并清空 `apis`：

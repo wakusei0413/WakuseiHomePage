@@ -756,7 +756,12 @@
     overflow: hidden;
     text-decoration: none;
     color: inherit;
+    /* opacity 必须在这里再声明一次：卡片同时挂着 .scroll-reveal，两者特异性
+       相同（都是单个类），而本文件在 components.css 之后加载 —— .post-card 的
+       transition 简写会整条覆盖掉 .scroll-reveal 的，卡片入场就变成硬切。
+       transform 时长仍是 0.45s，hover 手感不变。 */
     transition:
+        opacity 0.6s var(--curve-snap),
         transform 0.45s var(--curve-lift),
         box-shadow 0.6s var(--curve-delicate),
         background-color 0.6s var(--curve-snap),
@@ -907,13 +912,30 @@
     border-bottom: 1px solid var(--panel-border);
 }
 
-/* 悬浮细节：hover 时封面缓慢呼吸放大（卡片 overflow:hidden 裁切边缘） */
+/* 封面显影：src 常驻让原生懒加载能提前抓取，但数据到位的那一帧不能直接跳出来。
+   opacity 与 hover 的 transform/filter 并到同一条 transition —— 这条规则只在本
+   文件里声明一次，不会像 .post-card 那样被更新的简写覆盖。 */
 .post-card .post-cover {
     transition:
+        opacity 0.45s var(--curve-fade),
         transform 0.7s var(--curve-delicate),
         filter 0.5s var(--curve-snap);
 }
 
+/* 显隐状态只对支持脚本的环境生效：无 JS 时不会有人加 --shown 类，
+   封面必须照常可见（否则图片被发出去却永远藏在 opacity:0 后面）。 */
+@media (scripting: enabled) {
+    .post-card .post-cover {
+        opacity: 0;
+    }
+
+    /* PostCard 在图片 load + decode() 完成（已解码、下一帧可直接绘制）后才加上。 */
+    .post-card .post-cover--shown {
+        opacity: 1;
+    }
+}
+
+/* 悬浮细节：hover 时封面缓慢呼吸放大（卡片 overflow:hidden 裁切边缘） */
 .post-card:hover .post-cover {
     transform: scale(1.05);
 }
@@ -1246,8 +1268,6 @@
     justify-content: center;
     padding: 24px;
     background: rgba(0, 0, 0, 0.9);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
     opacity: 0;
     transition: opacity 0.22s var(--curve-fade);
 }
@@ -1263,6 +1283,13 @@
     border-radius: var(--radius-md);
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
     cursor: pointer;
+    /* 换图时先淡出、换完 src 再淡入。目标图在 image-lightbox.ts 里已预热解码，
+       中间两帧几乎无耗时，宽高比的跳变正好被藏在 opacity 为 0 的那一帧里。 */
+    transition: opacity 0.12s var(--curve-fade);
+}
+
+.article-lightbox__img--swapping {
+    opacity: 0;
 }
 
 .article-lightbox__caption {
