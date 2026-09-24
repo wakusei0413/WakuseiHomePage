@@ -1,7 +1,9 @@
 import { getImage } from 'astro:assets';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
 import { createArchiveGroups } from './archive';
+import type { FeedPost } from './feed';
 import {
     countWords,
     estimateReadingTime,
@@ -15,6 +17,7 @@ import {
     type TaxonomyTerm
 } from './post-model';
 import { createSearchIndex, type SearchIndexEntry } from './search';
+import { memoizeAsync, memoizeAsyncByKey } from './memoize-async';
 
 type BlogEntry = CollectionEntry<'blog'>;
 
@@ -66,7 +69,8 @@ async function resolveCoverMeta(
         src: cover,
         width,
         format: 'webp',
-        quality: 80
+        quality: 80,
+        layout: 'none'
     });
 
     const attributes = image.attributes as { width?: unknown; height?: unknown; format?: unknown };
@@ -106,7 +110,9 @@ function serializeFrontmatter(data: BlogEntry['data'], coverUrl?: string): Publi
     };
 }
 
-async function loadPublishedEntries(): Promise<BlogEntry[]> {
+const rememberDuringBuild = () => import.meta.env.PROD;
+
+const loadPublishedEntries = memoizeAsync(async (): Promise<BlogEntry[]> => {
     const posts = await getCollection('blog', ({ data }) => data.draft !== true);
     // Newest first; same-day ties break by slug so order is stable.
     return posts.sort((a, b) => {
@@ -115,9 +121,9 @@ async function loadPublishedEntries(): Promise<BlogEntry[]> {
         if (db !== da) return db - da;
         return postSlug(a).localeCompare(postSlug(b));
     });
-}
+}, rememberDuringBuild);
 
-export async function loadPublishedPostEntries(): Promise<PostEntry[]> {
+const loadPublishedPostEntriesCached = memoizeAsync(async (): Promise<PostEntry[]> => {
     const posts = await loadPublishedEntries();
     return Promise.all(
         posts.map(async (entry) => {
@@ -129,6 +135,38 @@ export async function loadPublishedPostEntries(): Promise<PostEntry[]> {
             };
         })
     );
+}, rememberDuringBuild);
+
+export function loadPublishedPostEntries(): Promise<PostEntry[]> {
+    return loadPublishedPostEntriesCached();
+}
+
+const loadFeedDocumentsCached = memoizeAsync(async (): Promise<FeedPost[]> => {
+    const entries = await loadPublishedEntries();
+    const container = await AstroContainer.create();
+
+    return Promise.all(
+        entries.map(async (entry) => {
+            const slug = postSlug(entry);
+            const cover = await resolveCoverUrl(entry.data.cover, COVER_WIDTH_HERO);
+            const { Content } = await render(entry);
+            const contentHtml = await container.renderToString(Content);
+            if (contentHtml.includes('__ASTRO_IMAGE_') || /<!doctype html>/i.test(contentHtml)) {
+                throw new Error(`Feed HTML for "${slug}" was not a resolved article fragment`);
+            }
+
+            return {
+                slug,
+                data: serializeFrontmatter(entry.data, cover),
+                contentHtml
+            };
+        })
+    );
+}, rememberDuringBuild);
+
+/** Published posts with the same rendered HTML the article page uses, for RSS and Atom. */
+export function loadFeedDocuments(): Promise<FeedPost[]> {
+    return loadFeedDocumentsCached();
 }
 
 function toPostListItem(entry: PostEntry): PostListItem {
@@ -166,8 +204,8 @@ interface FeaturedPostItem {
 const COVER_WIDTH_FEATURED = 480;
 const FEATURED_DEFAULT_LIMIT = 3;
 
-export async function loadFeaturedPosts(limit = FEATURED_DEFAULT_LIMIT): Promise<FeaturedPostItem[]> {
-    const entries = (await loadPublishedEntries()).slice(0, Math.max(0, limit));
+const loadFeaturedPostsCached = memoizeAsyncByKey(async (limit: number): Promise<FeaturedPostItem[]> => {
+    const entries = (await loadPublishedEntries()).slice(0, limit);
     return Promise.all(
         entries.map(async (entry) => {
             const cover = await resolveCoverUrl(entry.data.cover, COVER_WIDTH_FEATURED);
@@ -181,6 +219,10 @@ export async function loadFeaturedPosts(limit = FEATURED_DEFAULT_LIMIT): Promise
             };
         })
     );
+}, rememberDuringBuild);
+
+export function loadFeaturedPosts(limit = FEATURED_DEFAULT_LIMIT): Promise<FeaturedPostItem[]> {
+    return loadFeaturedPostsCached(Math.max(0, limit));
 }
 
 /** Lightweight taxonomy/post counts for hero stat cards (no body, no cover). */
@@ -194,7 +236,7 @@ interface SiteStats {
     yearTo: number | null;
 }
 
-export async function loadSiteStats(): Promise<SiteStats> {
+const loadSiteStatsCached = memoizeAsync(async (): Promise<SiteStats> => {
     const entries = await loadPublishedEntries();
     const categories = new Set<string>();
     const tags = new Set<string>();
@@ -226,47 +268,62 @@ export async function loadSiteStats(): Promise<SiteStats> {
         yearFrom,
         yearTo
     };
+}, rememberDuringBuild);
+
+export function loadSiteStats(): Promise<SiteStats> {
+    return loadSiteStatsCached();
 }
 
 /** Most recently updated post (by updatedDate, else pubDate), optional exclude slugs. */
-export async function loadRecentlyUpdatedPost(excludeSlugs: string[] = []): Promise<FeaturedPostItem | null> {
-    const exclude = new Set(excludeSlugs);
-    const entries = await loadPublishedEntries();
-    const ranked = entries
-        .map((entry) => {
-            const updated = entry.data.updatedDate;
-            const published = entry.data.pubDate;
-            const stamp =
-                updated instanceof Date && !Number.isNaN(updated.getTime())
-                    ? updated.getTime()
-                    : published instanceof Date && !Number.isNaN(published.getTime())
-                      ? published.getTime()
-                      : 0;
-            return { entry, stamp };
-        })
-        .filter(({ entry, stamp }) => stamp > 0 && !exclude.has(postSlug(entry)))
-        .sort((a, b) => b.stamp - a.stamp);
+const loadRecentlyUpdatedPostCached = memoizeAsyncByKey(
+    async (excludeKey: string): Promise<FeaturedPostItem | null> => {
+        const exclude = new Set(excludeKey ? excludeKey.split('\0') : []);
+        const entries = await loadPublishedEntries();
+        const ranked = entries
+            .map((entry) => {
+                const updated = entry.data.updatedDate;
+                const published = entry.data.pubDate;
+                const stamp =
+                    updated instanceof Date && !Number.isNaN(updated.getTime())
+                        ? updated.getTime()
+                        : published instanceof Date && !Number.isNaN(published.getTime())
+                          ? published.getTime()
+                          : 0;
+                return { entry, stamp };
+            })
+            .filter(({ entry, stamp }) => stamp > 0 && !exclude.has(postSlug(entry)))
+            .sort((a, b) => b.stamp - a.stamp);
 
-    const top = ranked[0]?.entry;
-    if (!top) return null;
+        const top = ranked[0]?.entry;
+        if (!top) return null;
 
-    const cover = await resolveCoverUrl(top.data.cover, COVER_WIDTH_FEATURED);
-    const dateRaw = top.data.updatedDate ?? top.data.pubDate;
-    return {
-        slug: postSlug(top),
-        title: top.data.title,
-        description: top.data.description,
-        category: top.data.category ?? null,
-        cover: cover ?? null,
-        dateLabel: formatDate(toIsoString(dateRaw))
-    };
+        const cover = await resolveCoverUrl(top.data.cover, COVER_WIDTH_FEATURED);
+        const dateRaw = top.data.updatedDate ?? top.data.pubDate;
+        return {
+            slug: postSlug(top),
+            title: top.data.title,
+            description: top.data.description,
+            category: top.data.category ?? null,
+            cover: cover ?? null,
+            dateLabel: formatDate(toIsoString(dateRaw))
+        };
+    },
+    rememberDuringBuild
+);
+
+export function loadRecentlyUpdatedPost(excludeSlugs: string[] = []): Promise<FeaturedPostItem | null> {
+    return loadRecentlyUpdatedPostCached([...excludeSlugs].sort().join('\0'));
 }
 
-export async function loadArchiveGroups() {
+const loadArchiveGroupsCached = memoizeAsync(async () => {
     return createArchiveGroups(await loadPublishedPosts());
+}, rememberDuringBuild);
+
+export function loadArchiveGroups() {
+    return loadArchiveGroupsCached();
 }
 
-export async function loadSearchIndex(): Promise<SearchIndexEntry[]> {
+const loadSearchIndexCached = memoizeAsync(async (): Promise<SearchIndexEntry[]> => {
     return createSearchIndex(
         (await loadPublishedPostEntries()).map((entry) => {
             const listItem = toPostListItem(entry);
@@ -279,6 +336,10 @@ export async function loadSearchIndex(): Promise<SearchIndexEntry[]> {
             };
         })
     );
+}, rememberDuringBuild);
+
+export function loadSearchIndex(): Promise<SearchIndexEntry[]> {
+    return loadSearchIndexCached();
 }
 
 function getTaxonomyHref(kind: TaxonomyKind, name: string) {
@@ -318,8 +379,12 @@ function createTaxonomyTerms(kind: TaxonomyKind, posts: PostListItem[]): Taxonom
         .sort(compareTerms);
 }
 
-export async function loadTaxonomyTerms(kind: TaxonomyKind): Promise<TaxonomyTerm[]> {
+const loadTaxonomyTermsCached = memoizeAsyncByKey(async (kind: TaxonomyKind) => {
     return createTaxonomyTerms(kind, await loadPublishedPosts());
+}, rememberDuringBuild);
+
+export function loadTaxonomyTerms(kind: TaxonomyKind): Promise<TaxonomyTerm[]> {
+    return loadTaxonomyTermsCached(kind);
 }
 
 export async function getCategoryStaticPaths() {

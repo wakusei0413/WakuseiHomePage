@@ -22,8 +22,8 @@ describe('hero widget marquee', () => {
     });
 
     it('loads featured posts and site stats via lightweight server helpers', () => {
-        expect(posts).toContain('export async function loadFeaturedPosts');
-        expect(posts).toContain('export async function loadSiteStats');
+        expect(posts).toContain('export function loadFeaturedPosts');
+        expect(posts).toContain('export function loadSiteStats');
         expect(layout).toContain('loadFeaturedPosts');
         expect(layout).toContain('loadSiteStats');
         expect(layout).toContain('featuredPosts={featuredPosts}');
