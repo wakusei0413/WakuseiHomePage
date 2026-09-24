@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { navigate } from 'astro:transitions/client';
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
 import Icon from './Icon.vue';
 import PostCard from './PostCard.vue';
 import { searchPosts, type SearchIndexEntry, type SearchMatchSnippet } from '../lib/search';
+import { loadClientSearchIndex } from '../lib/search-index-client';
 import { useI18n } from '../composables/useI18n';
 import { useSearchStore } from '../stores/search';
 
@@ -17,6 +19,7 @@ const loading = ref(true);
 const dialogRef = ref<HTMLDivElement | null>(null);
 const selectedIndex = ref(-1);
 const resultElements = ref<HTMLElement[]>([]);
+const scrollerRef = ref<InstanceType<typeof DynamicScroller> | null>(null);
 
 let previousActiveElement: HTMLElement | null = null;
 
@@ -84,12 +87,7 @@ function snippetLabel(snippet: SearchMatchSnippet) {
 async function loadIndex() {
     try {
         loading.value = true;
-        // Built endpoint — do not import posts.ts (getCollection/getImage are server-only).
-        const response = await fetch('/search-index.json');
-        if (!response.ok) {
-            throw new Error(`search-index.json ${response.status}`);
-        }
-        entries.value = (await response.json()) as SearchIndexEntry[];
+        entries.value = await loadClientSearchIndex();
     } catch (error) {
         console.error('Failed to load search index:', error);
         entries.value = [];
@@ -100,8 +98,11 @@ async function loadIndex() {
 
 function scrollToSelected() {
     nextTick(() => {
-        if (selectedIndex.value >= 0 && resultElements.value[selectedIndex.value]) {
-            resultElements.value[selectedIndex.value].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        if (selectedIndex.value >= 0) {
+            scrollerRef.value?.scrollToItem(selectedIndex.value);
+            if (resultElements.value[selectedIndex.value]) {
+                resultElements.value[selectedIndex.value].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
         }
     });
 }
@@ -241,39 +242,56 @@ onUnmounted(() => {
                             </button>
                         </div>
 
-                        <div v-if="results.length" class="search-results">
-                            <div
-                                v-for="(result, idx) in results"
-                                :key="result.slug"
-                                :ref="
-                                    (el) => {
-                                        if (el) resultElements[idx] = el as HTMLElement;
-                                    }
-                                "
-                                class="search-result"
-                                :class="{ 'search-result--selected': selectedIndex === idx }"
-                                role="link"
-                                tabindex="0"
-                                @click="handleResultClick(result.slug)"
-                                @keydown.enter.prevent="handleResultClick(result.slug)"
-                            >
-                                <PostCard
-                                    :slug="result.slug"
-                                    :data="result.data"
-                                    :date-label="result.dateLabel"
-                                    :word-count="result.wordCount"
-                                />
-                                <div v-if="result.snippet" class="search-snippet">
-                                    <span class="search-snippet__label">{{ snippetLabel(result.snippet) }}</span>
-                                    <p>
-                                        <template v-for="(part, index) in result.snippet.parts" :key="index">
-                                            <mark v-if="part.highlighted">{{ part.text }}</mark>
-                                            <span v-else>{{ part.text }}</span>
-                                        </template>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                        <DynamicScroller
+                            v-if="results.length"
+                            ref="scrollerRef"
+                            :items="results"
+                            :min-item-size="120"
+                            key-field="slug"
+                            class="search-results scroller"
+                        >
+                            <template #default="{ item: result, index: idx, active }">
+                                <DynamicScrollerItem
+                                    :item="result"
+                                    :active="active"
+                                    :index="idx"
+                                    :data-index="idx"
+                                    class="search-result-item"
+                                >
+                                    <div
+                                        :ref="
+                                            (el) => {
+                                                if (el) resultElements[idx] = el as HTMLElement;
+                                            }
+                                        "
+                                        class="search-result"
+                                        :class="{ 'search-result--selected': selectedIndex === idx }"
+                                        role="link"
+                                        tabindex="0"
+                                        @click="handleResultClick(result.slug)"
+                                        @keydown.enter.prevent="handleResultClick(result.slug)"
+                                    >
+                                        <PostCard
+                                            :slug="result.slug"
+                                            :data="result.data"
+                                            :date-label="result.dateLabel"
+                                            :word-count="result.wordCount"
+                                        />
+                                        <div v-if="result.snippet" class="search-snippet">
+                                            <span class="search-snippet__label">
+                                                {{ snippetLabel(result.snippet) }}
+                                            </span>
+                                            <p>
+                                                <template v-for="(part, index) in result.snippet.parts" :key="index">
+                                                    <mark v-if="part.highlighted">{{ part.text }}</mark>
+                                                    <span v-else>{{ part.text }}</span>
+                                                </template>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </DynamicScrollerItem>
+                            </template>
+                        </DynamicScroller>
 
                         <div v-else-if="hasQuery" class="search-empty" role="status">
                             <p>{{ t('search.empty') }}</p>

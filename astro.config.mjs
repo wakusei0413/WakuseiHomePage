@@ -49,7 +49,11 @@ export default defineConfig({
     compressHTML: true,
     vite: {
         define: {
-            __VUE_PROD_DEVTOOLS__: false
+            __VUE_PROD_DEVTOOLS__: false,
+            // plugin-vue emits bare `__VUE_HMR_RUNTIME__` calls, but the pinned
+            // bundler runtime does not install that global. Resolve it as a property
+            // so a missing runtime is a no-op instead of a hydration ReferenceError.
+            __VUE_HMR_RUNTIME__: 'globalThis.__VUE_HMR_RUNTIME__'
         },
         resolve: {
             alias: [
@@ -76,7 +80,8 @@ export default defineConfig({
                 'picomatch',
                 'p-limit',
                 'yocto-queue',
-                'picocolors'
+                'picocolors',
+                'vue-virtual-scroller'
             ]
         }
     },
@@ -92,6 +97,10 @@ export default defineConfig({
     ],
     output: 'static',
     outDir: './dist',
+    image: {
+        layout: 'constrained',
+        responsiveStyles: true
+    },
     devToolbar: {
         enabled: false
     },

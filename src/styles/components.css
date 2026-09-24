@@ -961,7 +961,9 @@ html:not(.is-loaded) .noise-overlay {
 
 .search-modal-body {
     flex: 1;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     padding: 24px;
     min-height: 0;
 }
@@ -976,8 +978,13 @@ html:not(.is-loaded) .noise-overlay {
 }
 
 .search-modal-body .search-results {
-    display: grid;
-    gap: 16px;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+}
+
+.search-modal-body .search-result-item {
+    padding-bottom: 16px;
 }
 
 .search-modal-body .search-result {
@@ -1009,6 +1016,7 @@ html:not(.is-loaded) .noise-overlay {
     color: var(--muted);
     font-size: 0.95rem;
     font-weight: 600;
+    flex-shrink: 0;
 }
 
 .search-modal-body .search-summary span:first-child {
