@@ -12,6 +12,7 @@ const astroVuePackage = JSON.parse(readFileSync(require.resolve('@astrojs/vue/pa
     version: string;
 };
 const siteShell = readFileSync('src/components/SiteShell.vue', 'utf8');
+const vueGlobalGuard = readFileSync('src/pages/_pinia-guard.ts', 'utf8');
 const expectedVuePackage = realpathSync(require.resolve('vue/package.json'));
 const expectedVueRuntime = realpathSync(require.resolve('vue/dist/vue.runtime.esm-bundler.js'));
 const expectedAstroVueClient = realpathSync('src/lib/astro-vue-client.ts');
@@ -92,6 +93,13 @@ describe('Vue runtime singleton guardrails', () => {
             expect.arrayContaining(['@astrojs/vue/client.js', 'vue', 'pinia', 'zod'])
         );
         expect(astroConfig.vite?.server?.headers).toMatchObject({ 'Cache-Control': 'no-cache' });
+        expect(astroConfig.vite?.define?.__VUE_HMR_RUNTIME__).toBe('globalThis.__VUE_HMR_RUNTIME__');
+    });
+
+    it('guards the missing Vue HMR runtime without treating it as a free variable', () => {
+        expect(astroConfig.vite?.define?.__VUE_HMR_RUNTIME__).toBe('globalThis.__VUE_HMR_RUNTIME__');
+        expect(vueGlobalGuard).toContain('hmrGlobal.__VUE_HMR_RUNTIME__');
+        expect(vueGlobalGuard).toContain('createRecord: () => false');
     });
 
     it('keeps SiteShell DOM ownership scoped to template refs', () => {
