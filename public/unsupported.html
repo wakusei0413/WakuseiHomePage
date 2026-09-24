@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <script data-cfasync="false">
+        (function () {
+            if (
+                !document.documentMode &&
+                window.CSS &&
+                window.CSS.supports &&
+                window.CSS.supports('color', 'var(--x)')
+            ) {
+                window.location.replace('/');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>无法正常显示 | 遊星Wakusei的个人小屋</title>
+    <link rel="icon" href="/res/img/logo.png" type="image/png" />
+    <link rel="alternate" type="application/rss+xml" title="遊星Wakusei的个人小屋 RSS" href="/rss.xml" />
+    <link rel="alternate" type="application/atom+xml" title="遊星Wakusei的个人小屋 Atom" href="/atom.xml" />
+    <style>
+        body {
+            margin: 0;
+            background: #fffef7;
+            color: #0a0a0a;
+            font-family: "Microsoft YaHei", SimSun, sans-serif;
+            text-align: center;
+        }
+        .wrap {
+            max-width: 34em;
+            margin: 48px auto;
+            padding: 28px 24px 24px;
+            border: 1px solid #d4d0c4;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            background: #fffef7;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        img {
+            width: 72px;
+            height: 72px;
+            border: 0;
+            border-radius: 8px;
+        }
+        h1 {
+            font-size: 22px;
+            line-height: 1.4;
+            margin: 0.6em 0 0.4em;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0.6em 0;
+        }
+        .alt {
+            color: #666666;
+            font-size: 14px;
+        }
+        .actions {
+            margin-top: 1em;
+        }
+        .btn {
+            display: inline-block;
+            *display: inline;
+            *zoom: 1;
+            margin: 6px 4px 0;
+            padding: 8px 16px;
+            background: #fffef7;
+            color: #0a0a0a;
+            border: 1px solid #d4d0c4;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 15px;
+        }
+        .btn:hover {
+            background: #ffe600;
+        }
+        .rss {
+            background: #ff8400;
+            border-color: #ff8400;
+            font-weight: bold;
+        }
+        .foot {
+            margin-top: 1.6em;
+            color: #666666;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <img src="/res/img/logo.png" alt="" width="72" height="72" />
+        <h1>遊星Wakusei的个人小屋</h1>
+        <p>你的浏览器无法正常显示这个网站。<br />请改用新版 Chrome、Edge 或 Firefox。</p>
+        <p class="actions">
+            <a class="btn" href="https://www.google.com/intl/zh-CN/chrome/">下载 Chrome</a>
+            <a class="btn" href="https://www.microsoft.com/zh-cn/edge/download">下载 Edge</a>
+            <a class="btn" href="https://www.mozilla.org/zh-CN/firefox/new/">下载 Firefox</a>
+        </p>
+        <p>你仍然可以通过 RSS 订阅更新。</p>
+        <a class="btn rss" href="/rss.xml">订阅 RSS</a>
+        <p class="alt">This browser cannot display this site. Download a current browser, or subscribe via RSS.</p>
+        <p class="alt">このブラウザではサイトを正しく表示できません。新しいブラウザを入手するか、RSS で購読できます。</p>
+        <p class="foot">© 2026 遊星 Wakusei</p>
+    </div>
+</body>
+</html>

@@ -44,4 +44,5 @@
 ## 📦 静态资源分布
 
 - `public/res/`：存放全局公开静态资源（如网站 Logo `/res/img/logo.png`、默认壁纸 `/res/img/wallpaper/default.webp`）。
+- `public/unsupported.html`：旧浏览器提示页（`/unsupported.html`）。不走 `BaseLayout`，不进 sitemap。页面说明网站无法正常显示，并提供 Chrome、Edge、Firefox 下载入口和可直接打开的 `/rss.xml` 订阅链接。能正常显示网站的浏览器打开这一页时会自动回到首页。
 - `src/content/blog/<slug>/`：文章配套的封面图与正文配图，构建期由 Astro 和 Sharp 自动进行响应式转码与尺寸优化。

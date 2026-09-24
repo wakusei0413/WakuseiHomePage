@@ -157,6 +157,28 @@ const googleFontsUrl =
 >
     <head>
         <meta charset="UTF-8" />
+        {
+            /*
+          旧浏览器跳到 /unsupported.html：IE ≤ 9 靠条件注释（脚本关闭也能跳），
+          IE 10/11 与不支持 CSS 变量的浏览器靠下面这段脚本。必须是 ES3 且 is:inline，
+          收成 type="module" 后 IE 不会执行。不要加 async/defer。
+        */
+        }
+        <!--[if lte IE 9]>
+        <meta http-equiv="refresh" content="0; url=/unsupported.html" />
+        <![endif]-->
+        <script is:inline>
+            (function () {
+                if (
+                    document.documentMode ||
+                    !window.CSS ||
+                    !window.CSS.supports ||
+                    !window.CSS.supports('color', 'var(--x)')
+                ) {
+                    window.location.replace('/unsupported.html');
+                }
+            })();
+        </script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{title}</title>
 
