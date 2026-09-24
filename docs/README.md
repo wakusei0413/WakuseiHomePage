@@ -1,6 +1,6 @@
 # 项目文档中心 (Documentation Hub)
 
-这里收录了 Wakusei HomePage 2.0.2 的全套详细设计与操作指南。
+这里收录了 Wakusei HomePage 2.0.3 的全套详细设计与操作指南。
 
 ---
 

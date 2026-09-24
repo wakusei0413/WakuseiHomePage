@@ -3,7 +3,7 @@ import type { SiteConfig } from '../types/site';
 // 日常站点配置的唯一入口；site.ts 会通过 schema.ts 校验后再暴露给运行时。
 // 新增字段时同步更新 types/site.ts 与 schema.ts，不要建立第二套快捷配置映射。
 export const editableSiteConfig: SiteConfig = {
-    version: '2.0.2',
+    version: '2.0.3',
 
     // 浏览器与 SEO 元数据。
     title: '遊星Wakusei的个人小屋',

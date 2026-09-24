@@ -1,6 +1,6 @@
 # Wakusei HomePage
 
-![Version](https://img.shields.io/badge/version-2.0.2-9a0a0a?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-2.0.3-9a0a0a?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-ffe600?style=for-the-badge)
 ![Astro](https://img.shields.io/badge/Astro-7-ff5d01?style=for-the-badge&logo=astro&logoColor=white)
 ![Vue](https://img.shields.io/badge/Vue-3-42b883?style=for-the-badge&logo=vuedotjs&logoColor=white)
