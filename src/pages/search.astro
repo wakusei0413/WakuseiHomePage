@@ -3,14 +3,14 @@ import SearchPage from '../components/SearchPage.vue';
 import { siteConfig } from '../data/site';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { translate } from '../lib/i18n';
-import { loadSearchIndex } from '../lib/posts';
+import { loadPublishedPosts } from '../lib/posts';
 
-const entries = await loadSearchIndex();
-const metaParams = { count: entries.length };
+const posts = await loadPublishedPosts();
+const metaParams = { count: posts.length };
 const title = translate(siteConfig.i18n.defaultLocale, 'pages.search.title', metaParams);
 const description = translate(siteConfig.i18n.defaultLocale, 'pages.search.description', metaParams);
 ---
 
 <BaseLayout shellMode="blog" shellTitle={title} title={`${title} | ${siteConfig.title}`} description={description}>
-    <SearchPage client:load entries={entries} />
+    <SearchPage client:load posts={posts} />
 </BaseLayout>

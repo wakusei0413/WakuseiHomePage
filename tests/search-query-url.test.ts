@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { createSearchUrlTemplate, readSearchQuery, writeSearchQuery } from '../src/lib/search-query';
 
 const searchPage = readFileSync(join(process.cwd(), 'src', 'components', 'SearchPage.vue'), 'utf8');
+const searchRoute = readFileSync(join(process.cwd(), 'src', 'pages', 'search.astro'), 'utf8');
 const searchModal = readFileSync(join(process.cwd(), 'src', 'components', 'SearchModal.vue'), 'utf8');
 
 describe('search query URL round-trip', () => {
@@ -46,7 +47,12 @@ describe('search page wiring', () => {
         expect(searchPage).not.toContain('window.history.pushState(');
     });
 
-    it('agrees with the search modal, which already links to `?q=`', () => {
+    it('loads the full index on demand instead of embedding article bodies', () => {
+        expect(searchRoute).toContain('loadPublishedPosts');
+        expect(searchRoute).not.toContain('loadSearchIndex');
+        expect(searchPage).toContain('loadClientSearchIndex');
+        expect(searchPage).toContain('posts: PostListItem[]');
+        expect(searchModal).toContain('loadClientSearchIndex');
         expect(searchModal).toContain('/search?q=${encodeURIComponent(trimmedQuery.value)}');
     });
 });

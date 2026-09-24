@@ -6,23 +6,30 @@ import { useI18n } from '../composables/useI18n';
 import { useMasonryOrder } from '../composables/useMasonryOrder';
 import { usePageMeta } from '../composables/usePageMeta';
 import { searchPosts, type SearchIndexEntry, type SearchMatchSnippet } from '../lib/search';
+import { loadClientSearchIndex } from '../lib/search-index-client';
 import { readSearchQuery, writeSearchQuery } from '../lib/search-query';
+import type { PostListItem } from '../lib/post-model';
 
 const props = defineProps<{
-    entries: SearchIndexEntry[];
+    posts: PostListItem[];
 }>();
 
 const { t } = useI18n();
 
 const query = ref('');
 const searchInput = ref<HTMLInputElement | null>(null);
+const entries = ref<SearchIndexEntry[] | null>(null);
+const indexState = ref<'idle' | 'loading' | 'ready' | 'error'>('idle');
 let isMounted = false;
 
 const trimmedQuery = computed(() => query.value.trim());
-const results = computed(() => searchPosts(props.entries, query.value));
-const { orderedItems: displayResults } = useMasonryOrder(results);
 const hasQuery = computed(() => trimmedQuery.value.length > 0);
-const totalPosts = computed(() => props.entries.length);
+const totalPosts = computed(() => props.posts.length);
+const results = computed(() => (entries.value ? searchPosts(entries.value, query.value) : []));
+const visibleCards = computed(() =>
+    hasQuery.value ? results.value : props.posts.map((post) => ({ ...post, snippet: null }))
+);
+const { orderedItems: displayResults } = useMasonryOrder(visibleCards);
 
 const resultSummary = computed(() => {
     if (!hasQuery.value) {
@@ -41,6 +48,16 @@ usePageMeta({
 function clearQuery() {
     query.value = '';
     searchInput.value?.focus();
+}
+
+async function loadIndex() {
+    indexState.value = 'loading';
+    try {
+        entries.value = await loadClientSearchIndex();
+        indexState.value = 'ready';
+    } catch {
+        indexState.value = 'error';
+    }
 }
 
 function snippetLabel(snippet: SearchMatchSnippet) {
@@ -65,6 +82,7 @@ onMounted(() => {
     if (requested) {
         query.value = requested;
     }
+    void loadIndex();
 
     window.requestAnimationFrame(() => searchInput.value?.focus());
 });
@@ -113,7 +131,16 @@ onUnmounted(() => {
                 <span v-if="hasQuery">“{{ trimmedQuery }}”</span>
             </div>
 
-            <div v-if="displayResults.length" class="post-list--masonry search-results">
+            <div v-if="hasQuery && indexState === 'loading'" class="search-empty" role="status">
+                <p>{{ t('search.loading') }}</p>
+            </div>
+
+            <div v-else-if="hasQuery && indexState === 'error'" class="search-empty" role="status">
+                <p>{{ t('search.error') }}</p>
+                <button class="search-empty__button" type="button" @click="loadIndex">{{ t('search.retry') }}</button>
+            </div>
+
+            <div v-else-if="displayResults.length" class="post-list--masonry search-results">
                 <article v-for="result in displayResults" :key="result.slug" class="search-result">
                     <PostCard
                         :slug="result.slug"

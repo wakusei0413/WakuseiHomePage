@@ -83,20 +83,35 @@ export function createSearchIndex(sources: SearchIndexSource[]): SearchIndexEntr
         );
 }
 
+const normalizedSearchFields = new WeakMap<SearchIndexEntry, { title: string; description: string; body: string }>();
+
+function getNormalizedSearchFields(entry: SearchIndexEntry) {
+    const cached = normalizedSearchFields.get(entry);
+    if (cached) {
+        return cached;
+    }
+
+    const fields = {
+        title: normalizeSearchText(entry.data.title),
+        description: normalizeSearchText(entry.data.description),
+        body: normalizeSearchText(entry.bodyText)
+    };
+    normalizedSearchFields.set(entry, fields);
+    return fields;
+}
+
 function getScore(entry: SearchIndexEntry, tokens: string[]): number | null {
-    const title = normalizeSearchText(entry.data.title);
-    const description = normalizeSearchText(entry.data.description);
-    const body = normalizeSearchText(entry.bodyText);
-    const combined = `${title} ${description} ${body}`;
+    const fields = getNormalizedSearchFields(entry);
+    const combined = `${fields.title} ${fields.description} ${fields.body}`;
     let score = 0;
 
     for (const token of tokens) {
         if (!combined.includes(token)) {
             return null;
         }
-        if (title.includes(token)) score += 30;
-        if (description.includes(token)) score += 15;
-        if (body.includes(token)) score += 5;
+        if (fields.title.includes(token)) score += 30;
+        if (fields.description.includes(token)) score += 15;
+        if (fields.body.includes(token)) score += 5;
     }
 
     return score;
