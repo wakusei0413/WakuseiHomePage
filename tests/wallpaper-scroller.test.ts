@@ -112,9 +112,10 @@ describe('WallpaperController internals', () => {
 
     it('swaps as soon as a late preload lands (readiness-driven rotation)', async () => {
         vi.useFakeTimers();
+        let controller: WallpaperController | undefined;
         try {
             const activeSrcs: string[] = [];
-            const controller = new WallpaperController(
+            controller = new WallpaperController(
                 { ...baseConfig, rotation: { enabled: true, interval: 100 } },
                 { onWallpaperChange: (img) => activeSrcs.push(img.src) }
             );
@@ -166,6 +167,58 @@ describe('WallpaperController internals', () => {
             resolveSecond(makeImage('frame-B'));
             await vi.advanceTimersByTimeAsync(50);
             expect(activeSrcs).toEqual(['frame-A', 'frame-B']);
+        } finally {
+            controller?.destroy();
+            vi.useRealTimers();
+        }
+    });
+
+    it('does not fetch while the document is hidden and resumes when visible', async () => {
+        let calls = 0;
+        const controller = new WallpaperController({ ...baseConfig });
+        controller.attach({ innerHTML: '', appendChild() {} } as unknown as HTMLElement);
+        controller.raceLoadImage = async () => {
+            calls += 1;
+            return { src: 'hidden-frame' } as HTMLImageElement;
+        };
+        const hidden = document.hidden;
+        Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+
+        try {
+            controller.init();
+            await Promise.resolve();
+            expect(calls).toBe(0);
+
+            Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+            document.dispatchEvent(new Event('visibilitychange'));
+            await Promise.resolve();
+            await Promise.resolve();
+            expect(calls).toBe(1);
+        } finally {
+            Object.defineProperty(document, 'hidden', { configurable: true, value: hidden });
+            controller.destroy();
+        }
+    });
+
+    it('does not retry after the controller is destroyed', async () => {
+        vi.useFakeTimers();
+        try {
+            let calls = 0;
+            const controller = new WallpaperController({ ...baseConfig });
+            controller.raceLoadImage = async () => {
+                calls += 1;
+                throw new Error('temporary failure');
+            };
+
+            const pending = controller.loadWithRetry(1);
+            const settled = expect(pending).rejects.toThrow(/cancelled|temporary failure/);
+            await vi.advanceTimersByTimeAsync(0);
+            expect(calls).toBe(1);
+
+            controller.destroy();
+            await vi.advanceTimersByTimeAsync(30000);
+            await settled;
+            expect(calls).toBe(1);
         } finally {
             vi.useRealTimers();
         }

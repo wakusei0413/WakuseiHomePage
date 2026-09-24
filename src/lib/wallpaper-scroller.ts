@@ -67,6 +67,12 @@ export class WallpaperController {
     private rotationTimer: number | null = null;
     /** True while a rotation is waiting for its preload to land (see rotate()). */
     private rotationPending = false;
+    /** Bumped whenever an in-flight load must not continue or retry. */
+    private loadGeneration = 0;
+    private retryTimer: number | null = null;
+    private retryReject: ((error: Error) => void) | null = null;
+    private cancelActiveImageLoad: (() => void) | null = null;
+    private recycleTimer: number | null = null;
     private visibilityHandler: (() => void) | null = null;
     private isDestroyed = false;
     private isPaused = false;
@@ -102,25 +108,12 @@ export class WallpaperController {
 
         this.bindVisibilityHandling();
         this.buildLayers();
-
-        void this.loadFirstLayer().then((ok) => {
-            if (this.isDestroyed) {
-                return;
-            }
-
-            if (ok) {
-                this.activateLayer(0);
-            }
-
+        if (this.isDocumentHidden()) {
             this.fireReady();
+            return;
+        }
 
-            if (this.wallpaperConfig.rotation.enabled) {
-                this.scheduleRotation();
-                // Kick the next image off immediately so the first crossfade is
-                // instant instead of waiting an entire interval for a fresh fetch.
-                this.preloadOther(0);
-            }
-        });
+        this.startInitialLoad();
     }
 
     pause() {
@@ -131,17 +124,13 @@ export class WallpaperController {
 
     resume() {
         this.isPaused = false;
-        if (this.wallpaperConfig.rotation.enabled) {
-            this.scheduleRotation();
-            // If the hidden layer never finished preloading before the tab was
-            // hidden, resume it now so the next swap is still instant.
-            this.preloadOther(this.activeIndex);
-        }
+        this.startRotation();
     }
 
     destroy() {
         this.isDestroyed = true;
         this.stopRotation();
+        this.cancelLoads();
         this.rotationPending = false;
         this.teardownVisibilityHandling();
 
@@ -173,20 +162,39 @@ export class WallpaperController {
             throw new Error('No wallpaper APIs configured');
         }
 
+        const generation = this.loadGeneration;
         return await new Promise<HTMLImageElement>((resolve, reject) => {
             const candidates = this.wallpaperConfig.apis.map(() => new Image());
             let resolved = false;
             let failureCount = 0;
-
             const timer = window.setTimeout(() => {
                 if (resolved) {
                     return;
                 }
 
                 resolved = true;
+                this.cancelActiveImageLoad = null;
                 candidates.forEach((candidate) => this.clearImageRequest(candidate));
                 reject(new Error('Wallpaper timeout'));
             }, this.wallpaperConfig.raceTimeout);
+
+            const finishCancelled = () => {
+                if (resolved) {
+                    return;
+                }
+
+                resolved = true;
+                window.clearTimeout(timer);
+                this.cancelActiveImageLoad = null;
+                candidates.forEach((candidate) => this.clearImageRequest(candidate));
+                reject(new Error('Wallpaper load cancelled'));
+            };
+
+            this.cancelActiveImageLoad = finishCancelled;
+            if (generation !== this.loadGeneration || this.isDestroyed) {
+                finishCancelled();
+                return;
+            }
 
             const finishSuccess = (image: HTMLImageElement) => {
                 if (resolved) {
@@ -194,6 +202,7 @@ export class WallpaperController {
                 }
 
                 resolved = true;
+                this.cancelActiveImageLoad = null;
                 window.clearTimeout(timer);
                 candidates.forEach((candidate) => {
                     if (candidate !== image) {
@@ -214,6 +223,7 @@ export class WallpaperController {
                 }
 
                 resolved = true;
+                this.cancelActiveImageLoad = null;
                 window.clearTimeout(timer);
                 candidates.forEach((candidate) => this.clearImageRequest(candidate));
                 reject(new Error('All wallpaper sources failed'));
@@ -232,8 +242,23 @@ export class WallpaperController {
     }
 
     waitForRetry(delay: number) {
-        return new Promise<void>((resolve) => {
-            setTimeout(resolve, delay);
+        const generation = this.loadGeneration;
+        return new Promise<void>((resolve, reject) => {
+            if (generation !== this.loadGeneration || this.isDestroyed) {
+                reject(new Error('Wallpaper load cancelled'));
+                return;
+            }
+
+            this.retryReject = reject;
+            this.retryTimer = window.setTimeout(() => {
+                this.retryTimer = null;
+                this.retryReject = null;
+                if (generation !== this.loadGeneration || this.isDestroyed) {
+                    reject(new Error('Wallpaper load cancelled'));
+                    return;
+                }
+                resolve();
+            }, delay);
         });
     }
 
@@ -242,15 +267,23 @@ export class WallpaperController {
     }
 
     async loadWithRetry(index: number) {
+        const generation = this.loadGeneration;
         let attempt = 0;
 
         while (attempt < this.wallpaperConfig.maxRetries) {
+            if (generation !== this.loadGeneration || this.isDestroyed) {
+                throw new Error('Wallpaper load cancelled');
+            }
             attempt += 1;
 
             try {
                 return await this.raceLoadImage(index);
             } catch (error) {
-                if (attempt >= this.wallpaperConfig.maxRetries) {
+                if (
+                    generation !== this.loadGeneration ||
+                    this.isDestroyed ||
+                    attempt >= this.wallpaperConfig.maxRetries
+                ) {
                     throw error;
                 }
 
@@ -504,13 +537,64 @@ export class WallpaperController {
         this.callbacks.onReady?.();
     }
 
+    private isDocumentHidden() {
+        return typeof document !== 'undefined' && document.hidden;
+    }
+
+    private canRequestWallpaper() {
+        return !this.isDestroyed && !this.isPaused && !this.isDocumentHidden();
+    }
+
+    private startInitialLoad() {
+        const generation = this.loadGeneration;
+        void this.loadFirstLayer().then((ok) => {
+            if (generation !== this.loadGeneration || this.isDestroyed || this.isDocumentHidden()) {
+                return;
+            }
+
+            if (ok) {
+                this.activateLayer(0);
+            }
+
+            this.fireReady();
+            this.startRotation();
+        });
+    }
+
+    private startRotation() {
+        if (!this.wallpaperConfig.rotation.enabled || !this.canRequestWallpaper()) {
+            return;
+        }
+
+        this.scheduleRotation();
+        // Kick the next image off immediately so the first crossfade is
+        // instant instead of waiting an entire interval for a fresh fetch.
+        this.preloadOther(this.activeIndex);
+    }
+
+    private cancelLoads() {
+        this.loadGeneration += 1;
+        this.rotationPending = false;
+        if (this.retryTimer !== null) {
+            window.clearTimeout(this.retryTimer);
+            this.retryTimer = null;
+        }
+
+        const rejectRetry = this.retryReject;
+        this.retryReject = null;
+        const cancelImage = this.cancelActiveImageLoad;
+        this.cancelActiveImageLoad = null;
+        cancelImage?.();
+        rejectRetry?.(new Error('Wallpaper load cancelled'));
+    }
+
     /**
      * Schedules the next rotation `interval` ms from now (a chained timeout, not
      * a fixed grid), so a swap that was delayed by a slow fetch never pushes the
      * following ones further off — each interval is measured from its own swap.
      */
     private scheduleRotation() {
-        if (this.rotationTimer !== null || this.isDestroyed || this.isPaused) {
+        if (this.rotationTimer !== null || !this.canRequestWallpaper()) {
             return;
         }
 
@@ -524,6 +608,10 @@ export class WallpaperController {
         if (this.rotationTimer !== null) {
             clearTimeout(this.rotationTimer);
             this.rotationTimer = null;
+        }
+        if (this.recycleTimer !== null) {
+            clearTimeout(this.recycleTimer);
+            this.recycleTimer = null;
         }
     }
 
@@ -551,8 +639,9 @@ export class WallpaperController {
         this.scheduleRotation();
         // Begin preloading the slot we just vacated once its crossfade has
         // finished, so the following swap is instant too.
-        window.setTimeout(() => {
-            if (this.isDestroyed || this.isPaused) {
+        this.recycleTimer = window.setTimeout(() => {
+            this.recycleTimer = null;
+            if (!this.canRequestWallpaper()) {
                 return;
             }
             this.preloadOther(this.activeIndex);
@@ -577,13 +666,25 @@ export class WallpaperController {
         this.visibilityHandler = () => {
             if (document.hidden) {
                 this.stopRotation();
+                this.cancelLoads();
                 return;
             }
 
-            if (!this.isPaused) {
-                this.scheduleRotation();
-                this.preloadOther(this.activeIndex);
+            if (!this.canRequestWallpaper()) {
+                return;
             }
+
+            const activeLayer = this.layers[this.activeIndex];
+            if (activeLayer?.classList?.contains('active') === false) {
+                this.activateLayer(this.activeIndex);
+            }
+
+            if (!this.ready.some(Boolean)) {
+                this.startInitialLoad();
+                return;
+            }
+
+            this.startRotation();
         };
 
         document.addEventListener('visibilitychange', this.visibilityHandler);
