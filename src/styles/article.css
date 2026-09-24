@@ -107,6 +107,7 @@
     justify-content: center;
     gap: 0.55rem;
     min-height: 42px;
+    min-width: 88px;
     padding: 0.65rem 1rem;
     border: 1px solid var(--panel-border);
     border-radius: var(--radius-pill);
@@ -114,29 +115,34 @@
     box-shadow: var(--panel-shadow);
     text-decoration: none;
     color: inherit;
+    font-family: var(--font-ui);
     font-weight: 600;
     line-height: 1;
     transition:
-        transform 0.35s var(--curve-lift),
         background-color var(--transition-fast),
         border-color var(--transition-fast),
-        box-shadow 0.45s var(--curve-delicate);
+        color var(--transition-fast);
 }
 
+/* 保持与 homepage-pagination__control 一致的静止基底，语义保留，不预置常驻浅蓝 */
 .post-container .post-footer__action--primary {
-    background: color-mix(in srgb, var(--accent-blue) 14%, var(--panel-glass));
+    background: var(--panel-glass);
+}
+
+[data-theme='dark'] .post-container .post-footer__action,
+[data-theme='dark'] .post-container .post-footer__action--primary {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(20, 20, 20, 0.78);
 }
 
 .post-container .post-footer__action:hover {
-    transform: var(--lift-sm);
     border-color: var(--accent-blue);
     background: color-mix(in srgb, var(--accent-blue) 14%, var(--panel-glass));
-    box-shadow: var(--shadow-lift-sm);
+    color: var(--accent-blue);
 }
 
 .post-container .post-footer__action:active {
-    transform: translateY(0) scale(0.97);
-    transition-duration: 0.08s;
+    background: color-mix(in srgb, var(--accent-blue) 22%, var(--panel-glass));
 }
 
 .post-container .post-footer__action:focus-visible {

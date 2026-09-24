@@ -22,4 +22,22 @@ describe('article footer actions', () => {
         expect(articleStyles).toContain('.post-container .post-footer__action:focus-visible');
         expect(articleStyles).toContain('@media (max-width: 480px)');
     });
+
+    it('unifies footer action button styles and interaction effects with homepage pagination controls', () => {
+        // Shared pill geometry, font, and smooth color transitions
+        expect(articleStyles).toContain('min-width: 88px;');
+        expect(articleStyles).toContain('border-radius: var(--radius-pill);');
+        expect(articleStyles).toContain('font-family: var(--font-ui);');
+        expect(articleStyles).toContain('color var(--transition-fast)');
+
+        // Hover & active effects match homepage-pagination: border/bg/color all transition to accent blue
+        expect(articleStyles).toContain('.post-container .post-footer__action:hover {');
+        expect(articleStyles).toContain('color: var(--accent-blue);');
+        expect(articleStyles).toContain('.post-container .post-footer__action:active {');
+        expect(articleStyles).toContain('background: color-mix(in srgb, var(--accent-blue) 22%, var(--panel-glass));');
+
+        // Dark theme background and border tokens aligned
+        expect(articleStyles).toContain("[data-theme='dark'] .post-container .post-footer__action");
+        expect(articleStyles).toContain('background: rgba(20, 20, 20, 0.78);');
+    });
 });
