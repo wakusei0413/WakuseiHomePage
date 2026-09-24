@@ -1,11 +1,11 @@
 import type { APIRoute } from 'astro';
 import { siteConfig } from '../data/site';
 import { createRssFeed } from '../lib/feed';
-import { loadPublishedPostEntries } from '../lib/posts';
+import { loadFeedDocuments } from '../lib/posts';
 
 export const GET: APIRoute = async () => {
     const siteUrl = new URL(import.meta.env.SITE);
-    const posts = await loadPublishedPostEntries();
+    const posts = await loadFeedDocuments();
     const body = createRssFeed(
         {
             siteUrl,
@@ -14,7 +14,7 @@ export const GET: APIRoute = async () => {
             language: siteConfig.lang,
             authorName: siteConfig.profile.name
         },
-        posts.map(({ slug, data }) => ({ slug, data }))
+        posts
     );
 
     return new Response(body, {

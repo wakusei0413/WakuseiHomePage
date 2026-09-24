@@ -3,6 +3,8 @@ import type { PostFrontmatter } from './post-model';
 export interface FeedPost {
     slug: string;
     data: PostFrontmatter;
+    /** Rendered article HTML. Image and link URLs may still be site-relative. */
+    contentHtml: string;
 }
 
 export interface FeedMetadata {
@@ -44,6 +46,61 @@ function postUrl(siteUrl: URL, slug: string): string {
     return new URL(`/posts/${slug}`, siteUrl).toString();
 }
 
+function escapeHtmlAttr(value: string): string {
+    return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+function rewriteUrl(value: string, base: URL): string {
+    const trimmed = value.trim();
+    if (!trimmed) return value;
+    try {
+        return new URL(trimmed, base).toString();
+    } catch {
+        return value;
+    }
+}
+
+function rewriteSrcset(value: string, base: URL): string {
+    return value
+        .split(',')
+        .map((candidate) => {
+            const trimmed = candidate.trim();
+            if (!trimmed) return candidate;
+            const match = /^(\S+)(.*)$/.exec(trimmed);
+            if (!match) return candidate;
+            return `${rewriteUrl(match[1], base)}${match[2]}`;
+        })
+        .join(', ');
+}
+
+/** Readers cannot resolve `/_astro/...` or in-page anchors against the feed URL. */
+export function absolutizeFeedHtml(html: string, base: URL): string {
+    return html.replace(
+        /(\s(?:href|src|poster|srcset))=(["'])([\s\S]*?)\2/gi,
+        (_full, attr: string, quote: string, value: string) => {
+            const rewritten =
+                attr.trim().toLowerCase() === 'srcset' ? rewriteSrcset(value, base) : rewriteUrl(value, base);
+            return `${attr}=${quote}${rewritten}${quote}`;
+        }
+    );
+}
+
+function articleHtml(metadata: FeedMetadata, post: FeedPost): string {
+    const pageUrl = new URL(postUrl(metadata.siteUrl, post.slug));
+    const cover = post.data.cover
+        ? `<img src="${escapeHtmlAttr(post.data.cover)}" alt="${escapeHtmlAttr(post.data.title)}">`
+        : '';
+    const body = post.contentHtml.trim() ? post.contentHtml : `<p>${escapeHtmlAttr(post.data.description)}</p>`;
+    return absolutizeFeedHtml(`${cover}${body}`, pageUrl);
+}
+
+function categoryTags(post: FeedPost, indent: string): string[] {
+    const names = [post.data.category, ...(post.data.tags ?? [])]
+        .map((name) => name?.trim())
+        .filter((name): name is string => Boolean(name));
+    return [...new Set(names)].map((name) => `${indent}<category>${escapeXml(name)}</category>`);
+}
+
 function feedUpdated(posts: FeedPost[]): string {
     return posts.reduce((latest, post) => {
         const candidate = toIsoDate(post.data.updatedDate ?? post.data.pubDate);
@@ -58,27 +115,33 @@ export function createRssFeed(metadata: FeedMetadata, posts: FeedPost[]): string
         .map((post) => {
             const url = postUrl(metadata.siteUrl, post.slug);
             const pubDate = toRfc822Date(post.data.pubDate);
+            const html = escapeXml(articleHtml(metadata, post));
             return [
                 '    <item>',
                 `      <title>${escapeXml(post.data.title)}</title>`,
                 `      <link>${escapeXml(url)}</link>`,
                 `      <guid isPermaLink="true">${escapeXml(url)}</guid>`,
-                `      <description>${escapeXml(post.data.description)}</description>`,
+                `      <description>${html}</description>`,
+                `      <content:encoded>${html}</content:encoded>`,
+                ...categoryTags(post, '      '),
                 ...(pubDate ? [`      <pubDate>${pubDate}</pubDate>`] : []),
                 '    </item>'
             ].join('\n');
         })
         .join('\n');
 
+    const lastBuildDate = toRfc822Date(feedUpdated(posts));
+
     return [
         '<?xml version="1.0" encoding="UTF-8"?>',
-        '<rss version="2.0">',
+        '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">',
         '  <channel>',
         `    <title>${escapeXml(metadata.title)}</title>`,
         `    <link>${escapeXml(channelUrl)}</link>`,
         `    <description>${escapeXml(metadata.description)}</description>`,
         `    <language>${escapeXml(metadata.language)}</language>`,
-        `    <atom:link href="${escapeXml(selfUrl)}" rel="self" type="application/rss+xml" xmlns:atom="http://www.w3.org/2005/Atom" />`,
+        ...(lastBuildDate ? [`    <lastBuildDate>${lastBuildDate}</lastBuildDate>`] : []),
+        `    <atom:link href="${escapeXml(selfUrl)}" rel="self" type="application/rss+xml" />`,
         items,
         '  </channel>',
         '</rss>',
@@ -94,6 +157,8 @@ export function createAtomFeed(metadata: FeedMetadata, posts: FeedPost[]): strin
             const url = postUrl(metadata.siteUrl, post.slug);
             const published = toIsoDate(post.data.pubDate);
             const updated = toIsoDate(post.data.updatedDate ?? post.data.pubDate);
+            const html = escapeXml(articleHtml(metadata, post));
+            const categories = categoryTags(post, '    ');
             return [
                 '  <entry>',
                 `    <title>${escapeXml(post.data.title)}</title>`,
@@ -102,6 +167,8 @@ export function createAtomFeed(metadata: FeedMetadata, posts: FeedPost[]): strin
                 `    <published>${published}</published>`,
                 `    <updated>${updated}</updated>`,
                 `    <summary>${escapeXml(post.data.description)}</summary>`,
+                `    <content type="html">${html}</content>`,
+                ...categories,
                 '  </entry>'
             ].join('\n');
         })
