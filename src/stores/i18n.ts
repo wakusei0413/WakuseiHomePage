@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { Locale } from '../data/i18n';
 import { siteConfig } from '../data/site';
-import { persistLang, translate } from '../lib/i18n';
+import { applyDocumentLanguage, persistLang, translate } from '../lib/i18n';
 import type { I18nConfig } from '../types/site';
 
 const i18nConfig = siteConfig.i18n as I18nConfig;
@@ -21,9 +21,7 @@ export const useI18nStore = defineStore('i18n', () => {
     function setLocale(newLocale: Locale) {
         locale.value = newLocale;
         persistLang(newLocale);
-        if (typeof document !== 'undefined') {
-            document.documentElement.lang = newLocale;
-        }
+        applyDocumentLanguage(newLocale);
     }
 
     return { locale, t, setLocale };

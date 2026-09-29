@@ -1,0 +1,33 @@
+---
+import TaxonomyPage from '../../../components/TaxonomyPage.vue';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { localizedSiteMeta, translate, type Locale } from '../../../lib/i18n';
+import type { TaxonomyPageProps } from '../../../lib/post-model';
+import { getLocalizedTagStaticPaths } from '../../../lib/posts';
+
+export { getLocalizedTagStaticPaths as getStaticPaths };
+
+const { term, terms, posts, locale } = Astro.props as TaxonomyPageProps & { locale: Locale };
+const metaParams = { name: term.name, count: term.count };
+const title = translate(locale, 'pages.tag.title', metaParams);
+const description = translate(locale, 'pages.tag.description', metaParams);
+---
+
+<BaseLayout
+    shellMode="blog"
+    shellTitle={title}
+    title={`${title} | ${localizedSiteMeta(locale).title}`}
+    description={description}
+    locale={locale}
+>
+    <TaxonomyPage
+        client:idle
+        variant="tags"
+        titleKey="pages.tag.title"
+        descriptionKey="pages.tag.description"
+        metaParams={metaParams}
+        terms={terms}
+        activeTerm={term}
+        posts={posts}
+    />
+</BaseLayout>

@@ -3,10 +3,10 @@ import TopicsPage from '../../components/TopicsPage.vue';
 import { siteConfig } from '../../data/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { translate } from '../../lib/i18n';
-import { loadPublishedPosts, loadTaxonomyTerms } from '../../lib/posts';
+import { loadPublishedPosts, loadTaxonomyTermSummaries } from '../../lib/posts';
 
-const categories = await loadTaxonomyTerms('category');
-const tags = await loadTaxonomyTerms('tag');
+const categories = await loadTaxonomyTermSummaries('category');
+const tags = await loadTaxonomyTermSummaries('tag');
 const postCount = (await loadPublishedPosts()).length;
 const metaParams = { categories: categories.length, tags: tags.length, posts: postCount };
 const title = translate(siteConfig.i18n.defaultLocale, 'pages.topics.title', metaParams);

@@ -25,7 +25,7 @@ pubDate: '2026-04-06'
 技术栈也极其简单：一个 JavaScript、一个 CSS、一个 HTML，就这点内容。这种静态网页意味着你可以部署到任何地方——GitHub Pages、Vercel 等等。我现在就部署在 Vercel 上。
 
 所以接下来的分享**纯主观** ，没有所谓的客观。大家就当听一个中学生唠嗑，听个乐呵吧。
-![image|690x430](https://cdn3.ldstatic.com/original/4X/5/a/0/5a0e1cbcb3f3f19301e9494608cc82c2b135337e.jpeg)
+![image|690x430](./img-01.jpeg)
 
 ## 起因
 
@@ -39,7 +39,7 @@ https://www.wakusei.top/
 项目也已开源：
 https://github.com/wakusei0413/WakuseiHomePage
 
-![297f95e102d164dae3288780852a2edb95e02b60_2_1035x580|690x386, 100%](https://cdn3.ldstatic.com/original/4X/2/3/b/23b05473c158fe16bc6722a860a6faec70ee71fa.png)
+![297f95e102d164dae3288780852a2edb95e02b60_2_1035x580|690x386, 100%](./img-02.png)
 
 肯定有人会说：“你这个 vibe coding 代码质量肯定一塌糊涂。”
 我想说的是：**说得好，我完全同意。**
@@ -54,7 +54,7 @@ https://github.com/wakusei0413/WakuseiHomePage
 
 顺便说说我这次的感受。我开的是 OpenCode 的 Go 套餐，首月 5 美元，折合人民币大概 35 块。相对便宜，额度也没那么大，但胜在稳定——没有遇到什么“降智”的情况。能用 GLM5、Kimi K2.5、小米的 MIMO V2 Omni 和 V2 Pro，以及 Minimax 家族的 M2.5 和 2.7。
 
-![image|243x292, 100%](https://cdn3.ldstatic.com/original/4X/4/3/6/43615d07eec1415786cb8f1423b88c9884e02ee7.png)
+![image|243x292, 100%](./img-03.png)
 这次我只用了 **GLM5** 、**Kimi K2.5** 和一个 **MIMO V2 Pro** 。主观体验如下：
 
 * **GLM5** ：比较适合修 bug，修复能力较强。
@@ -63,7 +63,7 @@ https://github.com/wakusei0413/WakuseiHomePage
 
 至于 Minimax？我的感受是：**那玩意是路边一条** ，给我留下了今生的阴影，我是再也不想用了。之前的 Coding Plan 已经留下了非常深重的阴影——除了量大，估计一无是处。
 
-![image|690x439, 100%](https://cdn3.ldstatic.com/original/4X/f/d/5/fd50e88dc972366f94e2840c739efbb53ed92880.png)
+![image|690x439, 100%](./img-04.png)
 
 当然，OpenCode 的 Go 套餐额度消耗速度也很快。不过看在它 35 块钱不降质的面子上，我没什么意见，起码挺热闹的。
 
@@ -82,31 +82,31 @@ https://github.com/wakusei0413/WakuseiHomePage
 
 不要等到上下文快满的时候让 OpenCode 自动压缩。**当上下文已经占了 1/3 左右** ，或者你已经完成了一个新功能的开发，就应该**手动压缩（Compact）** 。无论厂商宣传的上下文有多长，上下文越长，出现错误和幻觉的几率就越大。如果下一个任务与当前上下文联系不紧密，最优做法就是手动压缩。
 
-![image|417x222, 75%](https://cdn3.ldstatic.com/original/4X/2/a/5/2a5698043a17eccaa278ef0942c33235ff8500e7.png)
+![image|417x222, 75%](./img-05.png)
 
 ### 2. 语言描述能力
 
 刚开始做项目时，你还能有条理地描述需求。但随着时间推移，你可能会浮躁、不耐烦，没有把具体需求说清楚，导致模型出错。换句话讲，如果你面对一个真实的程序员，描述不清楚或不给正确参考，他也没法写出你脑中想要的东西。
 
-![image|250x250, 100%](https://cdn3.ldstatic.com/original/4X/a/c/9/ac949878727f27928944c199f80824580cf26812.jpeg)
+![image|250x250, 100%](./img-06.jpeg)
 
 ### 3. 规划模式（Plan 模式）
 
 修 bug 可以不开规划模式，但**添加新功能时，无论用什么模型，都有必要先用 Plan 模式进行规划** ，让模型细化到可执行的程度，再进入 Build 模式执行。你可能到后面会浮躁，想快速看到成果，懒得再用 Plan 规划一遍——觉得费时间。但代码量越多，这样做越灾难，**一定会返工，而且会返无数的工** 。
 
-![image|179x158](https://cdn3.ldstatic.com/original/4X/b/f/e/bfef93410bbce1126497c42eba2d4b328d60fd79.png)
+![image|179x158](./img-07.png)
 
 ### 4. 宁缺毋滥
 
 宁愿用贵一点的模型（token 更贵的），也不要用低价、量大但效果不行的模型。不需要很多次，**只要一次低质量代码就能把整个项目带偏** 。就算后续用昂贵模型去修 bug，一时半会也修不好。最后花了时间、精力，还多花了钱，得不偿失。
 
-![image|690x147](https://cdn3.ldstatic.com/original/4X/a/6/f/a6f8b68d50a08002a2cf1c612579e67e86d0f50a.png)
+![image|690x147](./img-08.png)
 
 ### 5. 备份
 
 **一定要有备份，一定要能回滚** 。当你 vibe coding 出了一个不错的原型，如果不进行备份（`git add .` 、`git commit` ），只要后续出一个 bug，基本上就积重难返，项目就废了。所以当第一阶段想要开发的功能差不多完成时，**先打一个 commit** ，让你拥有回滚的权利，再接着开发新功能。千万不要偷这个懒。
 
-![image|237x213, 100%](https://cdn3.ldstatic.com/original/4X/8/4/0/8400ef94bc763b5569c2fa0fc15607225b04a317.png)
+![image|237x213, 100%](./img-09.png)
 
 说实话，上述这些可能很多人已经说过了，甚至是老生常谈。但有些东西只有你自己实际去做了、感受到了，才能真切地说出来。希望我这个菜鸡萌新的碎碎念能给大家起到一点启发和警醒。
 

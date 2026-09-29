@@ -125,6 +125,10 @@ if (!existsSync(imagePost)) {
         );
     });
     if (!hasResponsiveBodyImage) failures.push(`Missing responsive body image: ${relative(imagePost)}`);
+    const hero = images.find((image) => image.includes('post-hero-image'));
+    if (!hero || (hero.match(/\bsrcset="([^"]+)"/)?.[1].match(/\b\d+w\b/g)?.length ?? 0) < 2) {
+        failures.push(`Expected the article hero cover to offer a srcset: ${relative(imagePost)}`);
+    }
 }
 
 const files = walk(dist);
@@ -138,10 +142,74 @@ for (const file of files) {
     if (extension === '.html' && /<script(?![^>]*\bdata-cfasync=(?:"false"|'false'))/i.test(source)) {
         failures.push(`Script without data-cfasync="false" in ${relative(file)}`);
     }
+    if (extension === '.html' && /fonts\.(?:googleapis|gstatic)\.com/.test(source)) {
+        failures.push(`Google Fonts (unreachable from mainland China) referenced in ${relative(file)}`);
+    }
+    const isLayoutPage = extension === '.html' && path.basename(file) !== 'unsupported.html';
+    if (isLayoutPage && source.includes('<html') && !source.includes("'data-perf'")) {
+        failures.push(`Missing the lite-mode boot script in ${relative(file)}`);
+    }
+}
+
+// ----- Payload guardrails for slow networks and low-end devices -----
+
+// Total client JavaScript, uncompressed. Raise deliberately, never by accident.
+const JS_BUDGET_BYTES = 400_000;
+const astroScripts = files.filter(
+    (file) => path.extname(file) === '.js' && file.includes(`${path.sep}_astro${path.sep}`)
+);
+
+// Prebuilt third-party widgets that article pages fetch on demand. Each ships its
+// own framework copy (Twikoo bundles a private Vue app), so they are kept out of
+// the site budget and the Vue singleton check, but capped separately and must
+// never be loaded by a static import.
+const LAZY_VENDOR_CHUNKS = [{ name: 'Twikoo', pattern: /^twikoo\.min\.[\w-]+\.js$/, budget: 400_000 }];
+const lazyVendorFiles = new Set();
+for (const vendor of LAZY_VENDOR_CHUNKS) {
+    for (const file of astroScripts.filter((candidate) => vendor.pattern.test(path.basename(candidate)))) {
+        lazyVendorFiles.add(file);
+        const size = statSync(file).size;
+        if (size > vendor.budget) {
+            failures.push(`${vendor.name} chunk is ${size} bytes, over its ${vendor.budget}-byte budget`);
+        }
+        // A static `import ... from "./twikoo.min.x.js"` (or bare `import "./..."`) would
+        // pull the widget into every page; only `import("./twikoo.min.x.js")` is allowed.
+        const escapedName = path.basename(file).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const staticImport = new RegExp(String.raw`(?:from\s*|\bimport\s*)["'\x60][^"'\x60]*` + escapedName);
+        for (const importer of astroScripts.filter((other) => other !== file)) {
+            if (staticImport.test(readFileSync(importer, 'utf8'))) {
+                failures.push(`${vendor.name} is statically imported by ${relative(importer)}; load it with import()`);
+            }
+        }
+    }
+}
+const clientScripts = astroScripts.filter((file) => !lazyVendorFiles.has(file));
+const clientScriptBytes = clientScripts.reduce((total, file) => total + statSync(file).size, 0);
+if (clientScriptBytes > JS_BUDGET_BYTES) {
+    failures.push(`Client JS is ${clientScriptBytes} bytes, over the ${JS_BUDGET_BYTES}-byte budget`);
+}
+for (const file of clientScripts) {
+    const source = readFileSync(file, 'utf8');
+    if (source.includes('ZodError')) {
+        failures.push(`zod leaked into a client bundle (validate config server-side only): ${relative(file)}`);
+    }
+    if (path.basename(file).startsWith('_app.') && source.includes('DynamicScroller')) {
+        failures.push(`vue-virtual-scroller is bundled into the per-island app entry: ${relative(file)}`);
+    }
+}
+if (!files.some((file) => /inter.*\.woff2$/i.test(path.basename(file)))) {
+    failures.push('Expected the self-hosted Inter woff2 in dist/_astro');
+}
+const headersFile = path.join(dist, '_headers');
+if (
+    existsSync(headersFile) &&
+    !/^\/_astro\/\*\s*$\s*Cache-Control:[^\n]*immutable/m.test(readFileSync(headersFile, 'utf8'))
+) {
+    failures.push('Expected dist/_headers to cache /_astro/* as immutable');
 }
 
 const vueRuntimeFiles = files.filter((file) => {
-    if (path.extname(file) !== '.js') return false;
+    if (path.extname(file) !== '.js' || lazyVendorFiles.has(file)) return false;
     return readFileSync(file, 'utf8').includes('__VUE_INSTANCE_SETTERS__');
 });
 if (vueRuntimeFiles.length > 1) {

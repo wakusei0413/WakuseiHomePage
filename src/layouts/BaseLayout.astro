@@ -1,4 +1,16 @@
 ---
+// Self-hosted copies of the fonts the site always used (previously from Google
+// Fonts, which mainland China blocks). Same unicode-range slicing as Google, so a
+// page only downloads the glyph slices it actually renders. Lite mode (poor
+// network) switches the font stacks to system fonts, so none of these load there.
+import '@fontsource-variable/inter';
+import '@fontsource/noto-sans-sc/400.css';
+import '@fontsource/noto-sans-sc/500.css';
+import '@fontsource/noto-sans-sc/600.css';
+import '@fontsource/noto-sans-sc/700.css';
+import '@fontsource/noto-serif-sc/400.css';
+import '@fontsource/noto-serif-sc/600.css';
+import '@fontsource/noto-serif-sc/700.css';
 import '../styles/base.css';
 import '../styles/layout.css';
 import '../styles/transitions.css';
@@ -10,14 +22,18 @@ import '../styles/footer.css';
 import '../styles/article.css';
 import '../styles/toc.css';
 import '../styles/reading-controls.css';
-import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
+import '../styles/performance.css';
 
 import { ClientRouter } from 'astro:transitions';
 import Footer from '../components/Footer.vue';
 import SiteShell from '../components/SiteShell.vue';
 import TopBar from '../components/TopBar.vue';
+import type { Locale } from '../data/i18n';
 import { siteConfig } from '../data/site';
-import { translate } from '../lib/i18n';
+import '../data/validate-site-config';
+import { getAlternateLocaleUrls, resolveLocalizedPath } from '../lib/i18n-routing';
+import { localizedSiteMeta, translate } from '../lib/i18n';
+import { LITE_MODE_BOOT_SCRIPT } from '../lib/performance-mode';
 import { loadFeaturedPosts, loadRecentlyUpdatedPost, loadSiteStats } from '../lib/posts';
 import { createSearchUrlTemplate } from '../lib/search-query';
 import {
@@ -41,13 +57,21 @@ interface Props {
     articleSeo?: ArticleSeoMetadata;
     paginationPrev?: string;
     paginationNext?: string;
+    locale?: Locale;
+    /**
+     * Language of the main content when it differs from the UI locale — an article
+     * route serving the source post because this locale has no translation yet.
+     */
+    contentLocale?: Locale;
+    /** Locales that have real content for this page. Defaults to every configured locale. */
+    alternateLocales?: readonly Locale[];
 }
 
 const {
-    title = siteConfig.title,
-    description = siteConfig.description,
+    title: titleProp,
+    description: descriptionProp,
     shellMode = 'error',
-    shellTitle = title,
+    shellTitle: shellTitleProp,
     ogImage,
     ogImageAlt,
     ogImageWidth,
@@ -55,8 +79,23 @@ const {
     ogImageType,
     articleSeo,
     paginationPrev,
-    paginationNext
+    paginationNext,
+    locale = (Astro.params.locale as Locale) ?? siteConfig.i18n.defaultLocale,
+    contentLocale,
+    alternateLocales
 } = Astro.props;
+
+// Site name and tagline follow the route locale, so `/en/` never falls back to the
+// Chinese `<title>` / `meta description` just because a page did not pass its own.
+const siteMeta = localizedSiteMeta(locale);
+const title = titleProp ?? siteMeta.title;
+const description = descriptionProp ?? siteMeta.description;
+const shellTitle = shellTitleProp ?? title;
+
+// The page is a duplicate whenever it renders content written in another language;
+// its canonical is the route where that language is the real one.
+const resolvedContentLocale = contentLocale ?? locale;
+const isLocaleFallback = resolvedContentLocale !== locale;
 
 /** Card rendered at build time by `src/pages/og-default.jpg.ts`. */
 const OG_CARD_PATH = '/og-default.jpg';
@@ -65,8 +104,11 @@ const OG_CARD_HEIGHT = 630;
 const OG_CARD_TYPE = 'image/jpeg';
 
 const isHomePage = shellMode === 'home';
-const [featuredPosts, siteStats] = await Promise.all([loadFeaturedPosts(3), loadSiteStats()]);
-const recentlyUpdated = await loadRecentlyUpdatedPost(featuredPosts.map((p) => p.slug));
+const [featuredPosts, siteStats] = await Promise.all([loadFeaturedPosts(3, locale), loadSiteStats(locale)]);
+const recentlyUpdated = await loadRecentlyUpdatedPost(
+    featuredPosts.map((p) => p.slug),
+    locale
+);
 const DARK_THEME_BG = '#080808';
 const wallpaperOrigins = Array.from(
     new Set(
@@ -81,7 +123,10 @@ const wallpaperOrigins = Array.from(
 );
 const siteUrl = Astro.site ?? new URL('https://www.wakusei.top');
 const siteHomeUrl = new URL('/', siteUrl).toString();
-const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const selfUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const canonicalUrl = isLocaleFallback
+    ? new URL(resolveLocalizedPath(Astro.url.pathname, resolvedContentLocale), siteUrl).toString()
+    : selfUrl;
 const hasOwnOgImage = Boolean(ogImage);
 const ogImageUrl = ogImage
     ? ogImage.startsWith('http')
@@ -102,8 +147,21 @@ const isWideOgImage =
     resolvedOgImageWidth >= 1000 &&
     resolvedOgImageWidth / resolvedOgImageHeight >= 1.6;
 const twitterCard = isWideOgImage ? 'summary_large_image' : 'summary';
-const resolvedOgImageAlt = ogImageAlt ?? (articleSeo?.image ? title : siteConfig.title);
-const ogLocale = (articleSeo?.language ?? siteConfig.lang).replace('-', '_');
+const resolvedOgImageAlt = ogImageAlt ?? (articleSeo?.image ? title : siteMeta.title);
+const ogLocale = (articleSeo?.language ?? resolvedContentLocale).replace('-', '_');
+const alternateUrls = getAlternateLocaleUrls(Astro.url.pathname, siteUrl, alternateLocales);
+// x-default points at the configured default locale when it carries content,
+// otherwise at whichever locale the page originates from.
+const xDefaultLocale = alternateUrls.some((item) => item.locale === siteConfig.i18n.defaultLocale)
+    ? siteConfig.i18n.defaultLocale
+    : (alternateUrls[0]?.locale ?? siteConfig.i18n.defaultLocale);
+const defaultAlternateUrl = new URL(resolveLocalizedPath(Astro.url.pathname, xDefaultLocale), siteUrl).toString();
+// A single-locale page has no siblings to cross-link, so it emits no hreflang at all.
+const hasAlternates = alternateUrls.length > 1;
+const feedUrls = {
+    rss: resolveLocalizedPath('/rss.xml', locale),
+    atom: resolveLocalizedPath('/atom.xml', locale)
+};
 const publisher = {
     name: siteConfig.profile.name,
     url: siteHomeUrl,
@@ -119,25 +177,29 @@ const blogPosting = articleSeo
       })
     : undefined;
 const serializedBlogPosting = blogPosting ? serializeJsonLd(blogPosting) : undefined;
+const localizedHomeUrl = new URL(resolveLocalizedPath('/', locale), siteUrl).toString();
 const webSiteJsonLd = isHomePage
     ? createWebSiteJsonLd({
-          name: siteConfig.title,
-          url: siteHomeUrl,
-          description: siteConfig.description,
-          language: siteConfig.lang,
+          name: siteMeta.title,
+          url: localizedHomeUrl,
+          description: siteMeta.description,
+          language: locale,
           publisher,
-          searchUrlTemplate: createSearchUrlTemplate(siteUrl)
+          searchUrlTemplate: createSearchUrlTemplate(siteUrl, resolveLocalizedPath('/search', locale))
       })
     : undefined;
 const serializedWebSite = webSiteJsonLd ? serializeJsonLd(webSiteJsonLd) : undefined;
 const breadcrumbJsonLd = articleSeo
     ? createBreadcrumbListJsonLd([
-          { name: translate(siteConfig.i18n.defaultLocale, 'article.footer.home'), url: siteHomeUrl },
+          { name: translate(locale, 'article.footer.home'), url: localizedHomeUrl },
           ...(articleSeo.section
               ? [
                     {
                         name: articleSeo.section,
-                        url: new URL(`/categories/${encodeURIComponent(articleSeo.section)}`, siteUrl).toString()
+                        url: new URL(
+                            resolveLocalizedPath(`/categories/${encodeURIComponent(articleSeo.section)}`, locale),
+                            siteUrl
+                        ).toString()
                     }
                 ]
               : []),
@@ -145,13 +207,13 @@ const breadcrumbJsonLd = articleSeo
       ])
     : null;
 const serializedBreadcrumbs = breadcrumbJsonLd ? serializeJsonLd(breadcrumbJsonLd) : undefined;
-const googleFontsUrl =
-    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap';
 ---
 
 <!doctype html>
 <html
-    lang={siteConfig.lang}
+    lang={resolvedContentLocale}
+    data-ui-lang={locale}
+    data-content-lang={contentLocale}
     class:list={[isHomePage && 'is-home', 'is-loaded', 'is-entering']}
     transition:name="root"
     transition:animate="none"
@@ -180,6 +242,8 @@ const googleFontsUrl =
                 }
             })();
         </script>
+        {/* 低速网络 / 低性能设备：首帧前打上 html[data-perf=lite]，见 src/lib/performance-mode.ts */}
+        <script is:inline set:html={LITE_MODE_BOOT_SCRIPT} />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{title}</title>
 
@@ -188,12 +252,14 @@ const googleFontsUrl =
         <meta name="theme-color" content={siteConfig.themeColor} />
         <style is:inline set:html={`:root{--theme-color:${siteConfig.themeColor}}`}></style>
         <link rel="canonical" href={canonicalUrl} />
+        {hasAlternates && alternateUrls.map((item) => <link rel="alternate" hreflang={item.locale} href={item.href} />)}
+        {hasAlternates && <link rel="alternate" hreflang="x-default" href={defaultAlternateUrl} />}
         {paginationPrev && <link rel="prev" href={new URL(paginationPrev, siteUrl).toString()} />}
         {paginationNext && <link rel="next" href={new URL(paginationNext, siteUrl).toString()} />}
         <link rel="sitemap" href="/sitemap-index.xml" />
-        <link rel="alternate" type="application/rss+xml" title={`${siteConfig.title} RSS`} href="/rss.xml" />
-        <link rel="alternate" type="application/atom+xml" title={`${siteConfig.title} Atom`} href="/atom.xml" />
-        <meta property="og:site_name" content={siteConfig.title} />
+        <link rel="alternate" type="application/rss+xml" title={`${siteMeta.title} RSS`} href={feedUrls.rss} />
+        <link rel="alternate" type="application/atom+xml" title={`${siteMeta.title} Atom`} href={feedUrls.atom} />
+        <meta property="og:site_name" content={siteMeta.title} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:type" content={articleSeo ? 'article' : 'website'} />
@@ -250,10 +316,6 @@ const googleFontsUrl =
             }
         </style>
 
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         {wallpaperOrigins.map((origin) => <link rel="dns-prefetch" href={origin} media="(min-width: 901px)" />)}
         {wallpaperOrigins.map((origin) => <link rel="preconnect" href={origin} media="(min-width: 901px)" />)}
         <script
@@ -288,7 +350,6 @@ const googleFontsUrl =
                 } catch (e) {}
             })();
         </script>
-        <link href={googleFontsUrl} rel="stylesheet" />
         <ClientRouter />
         <script
             is:inline
@@ -302,11 +363,12 @@ const googleFontsUrl =
                 } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     document.documentElement.setAttribute('data-theme', 'dark');
                 }
-                // Keep <html lang> in sync with the persisted locale before first
-                // paint so the page language never lags the stored choice.
-                var storedLang = localStorage.getItem('lang');
-                if (storedLang && validLocales.indexOf(storedLang) !== -1) {
-                    document.documentElement.lang = storedLang;
+                // Remember the route locale as the UI preference. <html lang> is left
+                // alone: the server already rendered the language of the content
+                // itself, which differs from the route on untranslated articles.
+                var pathLocale = window.location.pathname.replace(/^\/+/, '').split('/')[0];
+                if (validLocales.indexOf(pathLocale) !== -1) {
+                    localStorage.setItem('lang', pathLocale);
                 }
                 var appliedTheme = document.documentElement.getAttribute('data-theme');
                 if (appliedTheme === 'dark') {

@@ -8,6 +8,8 @@ export interface ArticleSeoMetadata {
     language: string;
     section?: string;
     tags?: string[];
+    /** URL of the original article when this one is a repost. */
+    basedOn?: string;
 }
 
 export interface ArticleSeoInput extends Omit<ArticleSeoMetadata, 'author' | 'modifiedTime'> {
@@ -41,6 +43,7 @@ export interface BlogPostingJsonLd {
     image?: string;
     articleSection?: string;
     keywords?: string[];
+    isBasedOn?: string;
 }
 
 export interface WebSiteJsonLd {
@@ -123,7 +126,8 @@ export function createArticleSeoMetadata(input: ArticleSeoInput): ArticleSeoMeta
         image: input.image,
         language: input.language,
         section: input.section,
-        tags: input.tags
+        tags: input.tags,
+        basedOn: input.basedOn
     };
 }
 
@@ -131,6 +135,7 @@ export function createBlogPostingJsonLd(input: BlogPostingInput): BlogPostingJso
     const image = nonBlank(input.image);
     const section = nonBlank(input.section);
     const keywords = input.tags?.map((tag) => tag.trim()).filter(Boolean);
+    const basedOn = nonBlank(input.basedOn);
 
     return {
         '@context': 'https://schema.org',
@@ -149,7 +154,8 @@ export function createBlogPostingJsonLd(input: BlogPostingInput): BlogPostingJso
         inLanguage: input.language,
         ...(image ? { image } : {}),
         ...(section ? { articleSection: section } : {}),
-        ...(keywords?.length ? { keywords } : {})
+        ...(keywords?.length ? { keywords } : {}),
+        ...(basedOn ? { isBasedOn: basedOn } : {})
     };
 }
 

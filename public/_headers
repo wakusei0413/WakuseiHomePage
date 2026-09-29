@@ -3,7 +3,27 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), clipboard-write=(self)
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https:; connect-src 'self' https://comment.wakusei.top; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
+
+# Content-hashed build output: a changed file always gets a new name.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Hand-managed static assets keep their names, so let them go stale eventually.
+/res/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# Twikoo UI language chunks, copied from node_modules at build time (unversioned path).
+/twikoo/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# Regenerated every deploy; a short cache still spares repeat searches a download.
+/search-index.json
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+/*/search-index.json
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+/github-contributions.json
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
 
 # Built once per deploy from the configured wallpaper — safe to cache forever.
 /og-default.jpg

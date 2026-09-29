@@ -12,6 +12,24 @@ const baseConfig = {
     rotation: { enabled: true, interval: 60000 }
 };
 
+/** A loaded-image stand-in with just enough surface for layer activation and Ken Burns. */
+function makeFrame(src: string): HTMLImageElement {
+    return {
+        src,
+        className: '',
+        setAttribute() {},
+        remove() {},
+        classList: { remove() {}, add() {}, contains: () => true },
+        get offsetWidth() {
+            return 1;
+        },
+        animate() {
+            return { currentTime: 0, play() {}, pause() {}, cancel() {}, playState: 'running' };
+        },
+        style: {}
+    } as unknown as HTMLImageElement;
+}
+
 describe('WallpaperController internals', () => {
     it('retries loading until raceLoadImage succeeds', async () => {
         const controller = new WallpaperController({ ...baseConfig });
@@ -197,6 +215,87 @@ describe('WallpaperController internals', () => {
         } finally {
             Object.defineProperty(document, 'hidden', { configurable: true, value: hidden });
             controller.destroy();
+        }
+    });
+
+    it('never reaches for the external APIs in lite mode', async () => {
+        vi.useFakeTimers();
+        let calls = 0;
+        const controller = new WallpaperController(
+            { ...baseConfig, defaultImage: '/res/img/wallpaper/default.webp' },
+            {},
+            { lite: true }
+        );
+        controller.attach({ innerHTML: '', appendChild() {} } as unknown as HTMLElement);
+        controller.raceLoadImage = async () => {
+            calls += 1;
+            return makeFrame('external');
+        };
+
+        try {
+            controller.init();
+            // Let the local default time out (jsdom never loads images) and any
+            // rotation interval elapse several times over.
+            await vi.advanceTimersByTimeAsync(baseConfig.rotation.interval * 5);
+            expect(calls).toBe(0);
+        } finally {
+            controller.destroy();
+            vi.useRealTimers();
+        }
+    });
+
+    it('stops rotating and fetching while paused, and picks up again on resume', async () => {
+        vi.useFakeTimers();
+        let calls = 0;
+        const controller = new WallpaperController({ ...baseConfig, rotation: { enabled: true, interval: 100 } });
+        controller.attach({ innerHTML: '', appendChild() {} } as unknown as HTMLElement);
+        controller.loadWithRetry = async () => {
+            calls += 1;
+            return makeFrame(`frame-${calls}`);
+        };
+
+        try {
+            controller.init();
+            await vi.advanceTimersByTimeAsync(0);
+            // First frame plus the immediate preload of the next one.
+            expect(calls).toBe(2);
+
+            controller.pause();
+            await vi.advanceTimersByTimeAsync(10_000);
+            expect(calls).toBe(2);
+
+            controller.resume();
+            await vi.advanceTimersByTimeAsync(2_000);
+            expect(calls).toBeGreaterThan(2);
+        } finally {
+            controller.destroy();
+            vi.useRealTimers();
+        }
+    });
+
+    it('gives up on unreachable wallpaper APIs instead of retrying forever', async () => {
+        vi.useFakeTimers();
+        let calls = 0;
+        const controller = new WallpaperController({ ...baseConfig, rotation: { enabled: true, interval: 100 } });
+        controller.attach({ innerHTML: '', appendChild() {} } as unknown as HTMLElement);
+        controller.loadWithRetry = async () => {
+            calls += 1;
+            if (calls === 1) return makeFrame('first');
+            throw new Error('All wallpaper sources failed');
+        };
+
+        try {
+            controller.init();
+            await vi.advanceTimersByTimeAsync(60_000);
+            const callsAfterGivingUp = calls;
+            // The first frame, then a bounded number of failed rotation fetches.
+            expect(callsAfterGivingUp).toBeLessThanOrEqual(3);
+
+            await vi.advanceTimersByTimeAsync(60_000);
+            expect(calls).toBe(callsAfterGivingUp);
+        } finally {
+            controller.destroy();
+            vi.useRealTimers();
         }
     });
 

@@ -2,14 +2,16 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { navigate } from 'astro:transitions/client';
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 import Icon from './Icon.vue';
 import PostCard from './PostCard.vue';
 import { searchPosts, type SearchIndexEntry, type SearchMatchSnippet } from '../lib/search';
 import { loadClientSearchIndex } from '../lib/search-index-client';
+import { resolveLocalizedPath } from '../lib/i18n-routing';
 import { useI18n } from '../composables/useI18n';
 import { useSearchStore } from '../stores/search';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const searchStore = useSearchStore();
 
 const query = ref('');
@@ -70,12 +72,12 @@ function handleOverlayClick(e: MouseEvent) {
 
 function handleResultClick(slug: string) {
     closeModal();
-    navigate(`/posts/${slug}`);
+    navigate(resolveLocalizedPath(`/posts/${slug}`, locale.value));
 }
 
 function handleViewAllSearch() {
     if (!trimmedQuery.value) return;
-    const targetUrl = `/search?q=${encodeURIComponent(trimmedQuery.value)}`;
+    const targetUrl = resolveLocalizedPath(`/search?q=${encodeURIComponent(trimmedQuery.value)}`, locale.value);
     closeModal();
     navigate(targetUrl);
 }
@@ -87,7 +89,7 @@ function snippetLabel(snippet: SearchMatchSnippet) {
 async function loadIndex() {
     try {
         loading.value = true;
-        entries.value = await loadClientSearchIndex();
+        entries.value = await loadClientSearchIndex(locale.value);
     } catch (error) {
         console.error('Failed to load search index:', error);
         entries.value = [];

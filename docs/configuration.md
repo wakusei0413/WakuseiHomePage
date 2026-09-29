@@ -119,6 +119,18 @@ github: {
 ```
 构建时，系统会自动抓取该用户的 53 周公开提交数据。如果用户名为不存在的账户或遇到网络超时，页面将优雅降级为一行简洁的 GitHub 个人主页链接。
 
+### Q5.1: 怎么开启文章评论和浏览量？
+先按 [comments.md](comments.md) 把 Twikoo 部署到自己的 Cloudflare，然后在 `src/data/customize.ts` 中找到 `comments`：
+```typescript
+comments: {
+    enabled: true,
+    provider: 'twikoo',                       // 目前只支持 twikoo
+    envId: 'https://comment.wakusei.top',     // 你的 Twikoo 后端地址，必须是 https
+    pageview: true                            // 文章标题下显示浏览量
+}
+```
+同一个地址还要加进 `public/_headers` 里 CSP 的 `connect-src`，漏加时 `npm test` 会报错提醒。
+
 ### Q6: 顶栏（TopBar）导航按钮怎么自定义？
 在 `src/data/customize.ts` 中找到 `dock.items`。支持四种类型：
 1. `type: 'link'`：页面或外部链接（如 `/archives`, `/about`）。
@@ -177,8 +189,28 @@ dock: {
 ### 2. 新增一种语言支持
 1. 在 `src/data/i18n.ts` 中新增语言的全部键值对字典。
 2. 在 `src/data/customize.ts` 的 `i18n.locales` 列表中加入新语言标识（如 `fr`、`de` 等）。
-3. 在 `src/types/site.ts` 中的 `Locale` 类型联合体中加入对应字面量。
-4. 运行 `npm test`，单元测试会自动校验所有语言的翻译键是否完全对齐无遗漏。
+3. 在 `src/types/site.ts` 中的 `Locale` 类型联合体中加入对应字面量，并在 `src/data/schema.ts` 的三处 `z.enum([...])` 与 `src/content.config.ts` 的 `language` 枚举中同步。
+4. 在 `astro.config.mjs` 的 `i18n.locales`、`sitemap({ i18n })` 与顶部的 `I18N_LOCALES` 常量里同步加上。
+5. 运行 `npm test`，单元测试会自动校验所有语言的翻译键是否完全对齐无遗漏。
+
+内容集合的文件匹配模式（`**/index.<语种>.md`）与前端路由前缀都由 `i18n.locales` 推导，新增语言后无需再改内容加载逻辑。
+
+### 3. 各语种的站点标题与描述
+
+`customize.ts` 的 `i18n.siteMeta` 用来覆盖每个语种的站点名与描述，影响 `<title>`、`meta description`、`og:site_name`、WebSite 结构化数据与该语种的订阅源：
+
+```typescript
+i18n: {
+    defaultLocale: 'zh-CN',
+    locales: ['zh-CN', 'en', 'ja'],
+    siteMeta: {
+        en: { title: "Wakusei's Homepage", description: 'Wakusei — personal homepage and blog' },
+        ja: { title: '遊星Wakuseiのホームページ', description: 'Wakusei — 個人ホームページとブログ' }
+    }
+}
+```
+
+不填的语种自动回落到顶层的 `title` / `description`，所以默认语种通常不需要在这里重复一遍。
 
 ---
 

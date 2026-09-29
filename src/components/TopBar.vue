@@ -4,6 +4,7 @@ import { navigate } from 'astro:transitions/client';
 import Icon from './Icon.vue';
 import type { Locale } from '../data/i18n';
 import { getDockItemActiveState, isDockLinkDisabled, resolveDockIcon, resolveDockLabel } from '../lib/dock';
+import { resolveLocalizedPath, switchLocalePath } from '../lib/i18n-routing';
 import { isPlainPrimaryClick, shouldEnhanceAnchorClick } from '../lib/navigation-click';
 import { isHashSectionHref, navigateToHashSection } from '../lib/section-nav';
 import { splitLatinText } from '../lib/text';
@@ -230,15 +231,33 @@ function updatePopupPosition() {
     popupRef.value.style.top = `${rect.bottom + 18}px`;
 }
 
+function localizedItemHref(href: string): string {
+    return resolveLocalizedPath(href, locale.value);
+}
+
 function selectLanguage(lang: Locale) {
     setLocale(lang);
     setOpen(false);
+    if (typeof window !== 'undefined') {
+        const currentFull = window.location.pathname + window.location.search + window.location.hash;
+        const nextUrl = switchLocalePath(currentFull, lang);
+        if (nextUrl !== currentFull) {
+            navigate(nextUrl);
+        }
+    }
 }
 
 function selectSidebarLanguage(lang: Locale) {
     setLocale(lang);
     activePanel.value = null;
     closeSidebar();
+    if (typeof window !== 'undefined') {
+        const currentFull = window.location.pathname + window.location.search + window.location.hash;
+        const nextUrl = switchLocalePath(currentFull, lang);
+        if (nextUrl !== currentFull) {
+            navigate(nextUrl);
+        }
+    }
 }
 
 function setupOutsideClick() {
@@ -374,15 +393,16 @@ function handleLeftClick(e: MouseEvent) {
     }
 }
 
-function handleDockLinkClick(e: MouseEvent, href: string) {
-    if (isDockLinkDisabled(href)) {
+function handleDockLinkClick(e: MouseEvent, rawHref: string) {
+    if (isDockLinkDisabled(rawHref)) {
         e.preventDefault();
         return;
     }
     if (!isPlainPrimaryClick(e)) return;
-    if (isHashSectionHref(href)) {
+    const href = localizedItemHref(rawHref);
+    if (isHashSectionHref(rawHref)) {
         e.preventDefault();
-        navigateToHashSection(href);
+        navigateToHashSection(rawHref);
         return;
     }
     const currentPath = window.location.pathname;
@@ -396,8 +416,8 @@ function handleDockLinkClick(e: MouseEvent, href: string) {
     }
 }
 
-function handleSidebarDockLinkClick(e: MouseEvent, href: string) {
-    if (isDockLinkDisabled(href)) {
+function handleSidebarDockLinkClick(e: MouseEvent, rawHref: string) {
+    if (isDockLinkDisabled(rawHref)) {
         e.preventDefault();
         closeSidebar();
         return;
@@ -406,10 +426,11 @@ function handleSidebarDockLinkClick(e: MouseEvent, href: string) {
         closeSidebar();
         return;
     }
-    if (isHashSectionHref(href)) {
+    const href = localizedItemHref(rawHref);
+    if (isHashSectionHref(rawHref)) {
         e.preventDefault();
         closeSidebar();
-        navigateToHashSection(href);
+        navigateToHashSection(rawHref);
         return;
     }
     const currentPath = window.location.pathname;
@@ -509,7 +530,7 @@ function shouldRenderTrailingDivider() {
                     <template v-else>
                         <a
                             v-if="item.openInNewTab"
-                            :href="item.href"
+                            :href="localizedItemHref(item.href)"
                             target="_blank"
                             rel="noopener noreferrer"
                             class="top-bar-dock-item"
@@ -544,7 +565,7 @@ function shouldRenderTrailingDivider() {
                         </button>
                         <a
                             v-else
-                            :href="item.href"
+                            :href="localizedItemHref(item.href)"
                             class="top-bar-dock-item"
                             :class="{ 'has-text': getMode(item.display) !== 'icon' }"
                             :title="getLabel(item.display)"
@@ -672,7 +693,7 @@ function shouldRenderTrailingDivider() {
                 <template v-else>
                     <a
                         v-if="item.openInNewTab"
-                        :href="item.href"
+                        :href="localizedItemHref(item.href)"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="sidebar-menu-item"
@@ -694,7 +715,7 @@ function shouldRenderTrailingDivider() {
                     </button>
                     <a
                         v-else
-                        :href="item.href"
+                        :href="localizedItemHref(item.href)"
                         class="sidebar-menu-item"
                         :aria-label="getLabel(item.display)"
                         @click="(e: MouseEvent) => handleSidebarDockLinkClick(e, item.href)"

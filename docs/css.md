@@ -19,7 +19,11 @@ topbar.css        → 顶栏与移动端抽屉菜单
 footer.css        → 页脚布局与社交图标
 article.css       → 文章排版、阅读控制、代码高亮、阅读进度条
 toc.css           → 文章悬浮目录树与高亮定位
+reading-controls.css → 阅读设置浮钮与面板
+performance.css   → 轻量模式 html[data-perf='lite'] 的降级覆盖（必须最后加载）
 ```
+
+字体：Inter、Noto Sans SC、Noto Serif SC 由 `@fontsource*` 自托管（在最前面导入），不加载任何第三方字体源；网速差时的轻量模式改用系统字体。详见 [performance.md](./performance.md)。
 
 ---
 
@@ -30,8 +34,9 @@ toc.css           → 文章悬浮目录树与高亮定位
 ### 1. 面板与磨砂玻璃
 - `--panel-bg`: 基础卡片背景（深浅色自适应半透明色）。
 - `--panel-border`: 细腻的 1px 半透明边框。
-- `--glass-blur`: 磨砂玻璃模糊滤镜。
-- `--glass-tint`: 依据壁纸色调自动微调的背景衬色。
+- `--panel-glass`: 磨砂玻璃面板的半透明底色（轻量模式下改为近乎不透明）。
+- `--panel-blur`: 磨砂玻璃模糊滤镜，配合 `backdrop-filter` 使用（轻量模式下为 `none`）。
+- `--glass-panel-tint` / `--glass-bed-tint`: 依据当前壁纸取样的平涂衬色，由 `SiteShell.vue` 写入。
 
 ### 2. 动效曲线
 - `--curve-delicate`: `cubic-bezier(0.16, 1, 0.3, 1)`（细腻舒缓，用于面板展开、标题浮现）。

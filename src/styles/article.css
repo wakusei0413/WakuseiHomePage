@@ -72,6 +72,73 @@
     opacity: 0.85;
 }
 
+/* Shown when the current language has no translation and the source article is served. */
+.post-container .post-translation-notice {
+    margin: 14px 0 0;
+    padding: 10px 14px;
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--muted, #666);
+    background: var(--panel-glass);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-md, 10px);
+}
+
+/* Marks a reposted article in cards, archives and the article header. The outline
+   uses currentColor so it follows the white text on overlay cards. */
+.post-badge--repost {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 8px;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-pill);
+    color: var(--accent-blue);
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+/* Source and copyright line under the title of a reposted article. */
+.post-container .post-repost-notice {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 14px 0 0;
+    padding: 10px 14px;
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--muted, #666);
+    background: var(--panel-glass);
+    border: 1px solid var(--panel-border);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: var(--radius-md, 10px);
+}
+
+.post-container .post-repost-notice p {
+    margin: 0;
+}
+
+.post-container .post-repost-notice a {
+    color: var(--fg);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    overflow-wrap: anywhere;
+}
+
+.post-container .post-repost-notice cite {
+    color: var(--fg);
+    font-style: normal;
+}
+
+.post-container .post-repost-notice__author {
+    display: block;
+}
+
 .post-container .post-hero-image-wrapper {
     width: 100%;
     aspect-ratio: 16 / 9;
@@ -1134,10 +1201,52 @@
 }
 
 /* ===== 文章 meta：阅读时长 ===== */
-.post-container .post-reading-time {
+.post-container .post-reading-time,
+.post-container .post-views {
     font-family: var(--font-ui);
     white-space: nowrap;
     color: var(--muted, #666);
+}
+
+/* ===== 评论区（Twikoo） ===== */
+.post-container .post-comments {
+    margin-top: 48px;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--panel-border);
+    font-family: var(--font-ui);
+}
+
+.post-container .post-comments__title {
+    margin: 0 0 var(--space-sm);
+    font-size: 1.25rem;
+}
+
+.post-container .post-comments__status {
+    margin: 0;
+    color: var(--muted, #666);
+}
+
+/* Twikoo 自带的配色大多是 currentColor + 半透明灰，亮暗主题通用；只把它写死的 #409eff 换成站点强调色。 */
+.post-comments .twikoo .tk-action-link,
+.post-comments .twikoo .tk-action-icon,
+.post-comments .twikoo .tk-button--text,
+.post-comments .twikoo .tk-nick-link:hover,
+.post-comments .twikoo .tk-sort-item.__active,
+.post-comments .twikoo .tk-input-group__append .tk-button:hover {
+    color: var(--accent-blue);
+}
+
+.post-comments .twikoo .tk-input__inner:focus,
+.post-comments .twikoo .tk-textarea__inner:focus {
+    border-color: var(--accent-blue);
+}
+
+.post-comments .twikoo .tk-button--primary,
+.post-comments .twikoo .tk-button--primary:not(.is-disabled):hover,
+.post-comments .twikoo .tk-button--primary:not(.is-disabled):focus,
+.post-comments .twikoo .tk-button--primary:not(.is-disabled):active {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
 }
 
 /* ===== 标题复制深链按钮 ===== */
@@ -2809,7 +2918,7 @@
     color: var(--fg);
 }
 
-.archives-post__meta span:not(:first-child)::before {
+.archives-post__meta span:not(:first-child):not(.post-badge)::before {
     content: '';
     display: inline-block;
     width: 4px;

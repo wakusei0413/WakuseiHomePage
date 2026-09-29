@@ -52,9 +52,22 @@ const dockSchema = z.object({
     items: z.array(dockItemSchema)
 });
 
+const localizedSiteMetaSchema = z.object({
+    title: z.string().min(1).optional(),
+    description: z.string().min(1).optional()
+});
+
 const i18nSchema = z.object({
     defaultLocale: z.enum(['zh-CN', 'en', 'ja']),
-    locales: z.array(z.enum(['zh-CN', 'en', 'ja'])).min(1)
+    locales: z.array(z.enum(['zh-CN', 'en', 'ja'])).min(1),
+    siteMeta: z
+        .object({
+            'zh-CN': localizedSiteMetaSchema,
+            en: localizedSiteMetaSchema,
+            ja: localizedSiteMetaSchema
+        })
+        .partial()
+        .optional()
 });
 
 const siteConfigSchema = z.object({
@@ -76,6 +89,17 @@ const siteConfigSchema = z.object({
         username: z.string().min(1),
         url: z.string().min(1)
     }),
+    comments: z
+        .object({
+            enabled: z.boolean(),
+            provider: z.enum(['twikoo']),
+            envId: z.string(),
+            pageview: z.boolean()
+        })
+        .refine((value) => !value.enabled || /^https:\/\/[^\s/]+/.test(value.envId), {
+            message: 'comments.envId must be an https:// URL when comments are enabled',
+            path: ['envId']
+        }),
     footer: z.object({
         text: z.string().min(1)
     }),

@@ -3,6 +3,8 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { navigate } from 'astro:transitions/client';
 import { siteConfig } from '../data/site';
 import { useI18n } from '../composables/useI18n';
+import { resolveLocalizedPath } from '../lib/i18n-routing';
+import { isLiteMode } from '../lib/performance-mode';
 import { createSloganSelector } from '../lib/slogan-selector';
 import { usePageShellStore } from '../stores/page-shell';
 import { useSearchStore } from '../stores/search';
@@ -53,7 +55,7 @@ const props = withDefaults(
     }
 );
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const pageShell = usePageShellStore();
 const searchStore = useSearchStore();
 const reducedMotion = ref(false);
@@ -195,11 +197,11 @@ const statCells = computed(() => {
 });
 
 function openPost(slug: string) {
-    navigate(`/posts/${slug}`);
+    navigate(resolveLocalizedPath(`/posts/${slug}`, locale.value));
 }
 
 function openHref(href: string) {
-    navigate(href);
+    navigate(resolveLocalizedPath(href, locale.value));
 }
 
 function openSearch() {
@@ -276,10 +278,12 @@ onMounted(() => {
         }
     }
 
+    // Lite mode renders the marquee as the same static strip as reduced motion.
+    const liteMode = isLiteMode();
     mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    reducedMotion.value = mediaQuery.matches;
+    reducedMotion.value = mediaQuery.matches || liteMode;
     onMotionChange = (event) => {
-        reducedMotion.value = event.matches;
+        reducedMotion.value = event.matches || liteMode;
     };
     mediaQuery.addEventListener('change', onMotionChange);
 

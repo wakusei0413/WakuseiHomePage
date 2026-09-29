@@ -39,6 +39,7 @@ npm test -- tests/foo.test.ts   # 单文件测试
 | 架构 | [architecture.md](docs/architecture.md) | Shell props 驱动、Islands 默认 `client:idle`、Pinia、跨页状态、客户端助手 |
 | 配置链 | [configuration.md](docs/configuration.md) | 日常只改 `customize.ts`、新字段/新语言改哪几处、壁纸、主题 |
 | 内容 | [content.md](docs/content.md) | frontmatter 字段、`description` 必填、排序、`draft`、封面规则 |
+| 评论 | [comments.md](docs/comments.md) | Twikoo（Cloudflare Workers + D1）、`comments` 配置、CSP、三语共用评论串 |
 | 路由 | [routes.md](docs/routes.md) | 路径表、静态资源、Sitemap |
 | CSS | [css.md](docs/css.md) | `BaseLayout` 导入顺序即加载顺序、设计令牌 |
 | 卫生 | [hygiene.md](docs/hygiene.md) | gitignore 清单、别提交截图/Lighthouse |

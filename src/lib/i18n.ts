@@ -26,6 +26,18 @@ export function translate(locale: Locale, key: string, params?: Record<string, s
     return template.replace(/\{(\w+)\}/g, (match, name: string) => (name in params ? String(params[name]) : match));
 }
 
+/**
+ * Site title and description for one locale, falling back to the top-level config
+ * for any locale that has no override in `customize.ts`.
+ */
+export function localizedSiteMeta(locale: Locale): { title: string; description: string } {
+    const override = i18nConfig.siteMeta?.[locale];
+    return {
+        title: override?.title ?? siteConfig.title,
+        description: override?.description ?? siteConfig.description
+    };
+}
+
 export function getStoredLang(config: I18nConfig): Locale {
     if (typeof localStorage === 'undefined') return config.defaultLocale;
     const stored = localStorage.getItem(STORAGE_KEY_LANG);
@@ -68,6 +80,20 @@ export function applyTheme(theme: Theme, persist = true) {
     if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: { theme } }));
     }
+}
+
+/**
+ * `<html lang>` must describe the language of the page content, not the language of
+ * the chrome around it. Article routes stamp `data-content-lang` with the language the
+ * body is actually written in, and it wins over the UI locale whenever it is present.
+ */
+export const CONTENT_LANG_ATTRIBUTE = 'data-content-lang';
+
+export function applyDocumentLanguage(uiLocale: Locale) {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    root.setAttribute('data-ui-lang', uiLocale);
+    root.lang = root.getAttribute(CONTENT_LANG_ATTRIBUTE) || uiLocale;
 }
 
 export function persistLang(lang: Locale) {

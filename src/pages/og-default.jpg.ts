@@ -66,9 +66,57 @@ async function renderBrandCard(): Promise<Buffer> {
     return encode(background.composite([{ input: logoBuffer, gravity: 'centre' }]));
 }
 
+function getCacheDir(): string {
+    return path.resolve('node_modules/.cache/og-default');
+}
+
+function getFingerprint(wallpaper: string | null): string {
+    if (wallpaper) {
+        try {
+            const stat = fs.statSync(wallpaper);
+            return `wallpaper:${wallpaper}:${stat.mtimeMs}:${stat.size}`;
+        } catch {
+            return `wallpaper:${wallpaper}`;
+        }
+    }
+    const avatar = resolvePublicFile(siteConfig.profile.avatar);
+    const avatarStat = avatar ? fs.statSync(avatar) : null;
+    return `brand:${siteConfig.themeColor}:${avatar ?? ''}:${avatarStat ? `${avatarStat.mtimeMs}:${avatarStat.size}` : ''}`;
+}
+
 export const GET: APIRoute = async () => {
     const wallpaper = resolvePublicFile(siteConfig.wallpaper.defaultImage);
+    const fingerprint = getFingerprint(wallpaper);
+    const cacheDir = getCacheDir();
+    const cacheFile = path.join(cacheDir, 'og-default.jpg');
+    const metaFile = path.join(cacheDir, 'og-default.meta.json');
+
+    if (fs.existsSync(cacheFile) && fs.existsSync(metaFile)) {
+        try {
+            const meta = JSON.parse(fs.readFileSync(metaFile, 'utf8'));
+            if (meta && meta.fingerprint === fingerprint) {
+                const cachedBuffer = fs.readFileSync(cacheFile);
+                return new Response(new Uint8Array(cachedBuffer), {
+                    headers: {
+                        'Content-Type': 'image/jpeg',
+                        'Cache-Control': 'public, max-age=31536000, immutable'
+                    }
+                });
+            }
+        } catch {
+            // Ignore cache read errors and re-render
+        }
+    }
+
     const image = wallpaper ? await renderWallpaperCard(wallpaper) : await renderBrandCard();
+
+    try {
+        fs.mkdirSync(cacheDir, { recursive: true });
+        fs.writeFileSync(cacheFile, image);
+        fs.writeFileSync(metaFile, JSON.stringify({ fingerprint, timestamp: Date.now() }), 'utf8');
+    } catch {
+        // Cache write errors shouldn't block response
+    }
 
     return new Response(new Uint8Array(image), {
         headers: {

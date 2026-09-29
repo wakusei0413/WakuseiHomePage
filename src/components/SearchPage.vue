@@ -14,7 +14,7 @@ const props = defineProps<{
     posts: PostListItem[];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const query = ref('');
 const searchInput = ref<HTMLInputElement | null>(null);
@@ -53,7 +53,7 @@ function clearQuery() {
 async function loadIndex() {
     indexState.value = 'loading';
     try {
-        entries.value = await loadClientSearchIndex();
+        entries.value = await loadClientSearchIndex(locale.value);
         indexState.value = 'ready';
     } catch {
         indexState.value = 'error';

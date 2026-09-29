@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { PostListItem, TaxonomyTerm } from '../lib/post-model';
+import type { PostListItem, TaxonomyTermSummary } from '../lib/post-model';
 import PostCard from './PostCard.vue';
 import { useI18n } from '../composables/useI18n';
 import { useMasonryOrder } from '../composables/useMasonryOrder';
@@ -11,8 +11,8 @@ const props = defineProps<{
     titleKey: string;
     descriptionKey: string;
     metaParams: Record<string, string | number>;
-    terms: TaxonomyTerm[];
-    activeTerm?: TaxonomyTerm;
+    terms: TaxonomyTermSummary[];
+    activeTerm?: TaxonomyTermSummary;
     posts?: PostListItem[];
 }>();
 

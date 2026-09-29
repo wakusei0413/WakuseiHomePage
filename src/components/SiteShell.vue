@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue';
 import { siteConfig } from '../data/site';
 import { createLogger } from '../lib/logger';
+import { isLiteMode } from '../lib/performance-mode';
 import { enableContentProtection, initMobileStickyAvatar, initScrollAnimations } from '../lib/runtime-effects';
 import { WallpaperController } from '../lib/wallpaper-scroller';
 import { sampleGlassTints } from '../lib/wallpaper-glass';
@@ -11,10 +12,13 @@ import { splitLatinText } from '../lib/text';
 import { usePageShellStore } from '../stores/page-shell';
 import { useSearchStore } from '../stores/search';
 import HeroWidgetMarquee, { type FeaturedPost, type SiteStats } from './HeroWidgetMarquee.vue';
-import SearchModal from './SearchModal.vue';
 import GitHubContributions from './GitHubContributions.vue';
 import SocialLinks from './SocialLinks.vue';
 import TopBar from './TopBar.vue';
+
+// Only rendered while search is open; loading it on demand keeps the modal and
+// its virtual scroller out of the bundle every page hydrates.
+const SearchModal = defineAsyncComponent(() => import('./SearchModal.vue'));
 
 const props = withDefaults(
     defineProps<{
@@ -59,6 +63,12 @@ const wallpaperRef = ref<HTMLDivElement>();
 const shellRef = ref<HTMLDivElement>();
 const ready = ref(false);
 const isMobile = ref(typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches);
+// The marquee is display:none on mobile, but mounted it still runs its clocks and
+// animation loop. It renders during hydration (to match the SSR markup) and is
+// dropped once the viewport is known to be mobile.
+const showMarquee = ref(true);
+// Decided once, before first paint, by the boot script in BaseLayout.
+const liteMode = typeof document !== 'undefined' && isLiteMode();
 
 let wallpaperController: WallpaperController | null = null;
 // --- frosted-glass tint management ---
@@ -98,6 +108,10 @@ const heroStyle = computed(() => {
     // (the wallpaper + marquee + panel) and was the primary source of scroll jank.
     // The 3D sink + fade keep the visual intent; the filter is gone from the
     // scroll path entirely.
+    if (liteMode) {
+        // Low-end devices: a plain fade, no full-screen 3D transform per frame.
+        return `opacity: ${Math.max(1 - sp * 1.2, 0)};`;
+    }
     return (
         'transform: ' +
         `translateZ(${-600 * sp}px) ` +
@@ -105,6 +119,19 @@ const heroStyle = computed(() => {
         `scale(${1 - 0.3 * sp}); ` +
         `opacity: ${Math.max(1 - sp * 1.2, 0)};`
     );
+});
+
+// heroStyle fades the whole first-screen scene (wallpaper included) out by this
+// point; past it the wallpaper is invisible and must stop rotating and fetching.
+const HERO_SCENE_HIDDEN_PROGRESS = 1 / 1.2;
+const heroSceneHidden = computed(() => pageShell.scrollProgress >= HERO_SCENE_HIDDEN_PROGRESS);
+
+watch(heroSceneHidden, (hidden) => {
+    if (hidden) {
+        wallpaperController?.pause();
+    } else {
+        wallpaperController?.resume();
+    }
 });
 
 function startWallpaperLoading() {
@@ -115,26 +142,33 @@ function startWallpaperLoading() {
         return;
     }
 
-    wallpaperController = new WallpaperController(siteConfig.wallpaper, {
-        onReady: () => {
-            ready.value = true;
-        },
-        // Sample the active frame's tint and publish it to the CSS glass
-        // surfaces; the surfaces transition background-color in sync with the
-        // wallpaper's own crossfade. If sampling fails (tainted canvas), the
-        // glass simply keeps the previous frame's tint.
-        onWallpaperChange: (img) => {
-            const tints = sampleGlassTints(img);
-            if (!tints) {
-                return;
+    wallpaperController = new WallpaperController(
+        siteConfig.wallpaper,
+        {
+            onReady: () => {
+                ready.value = true;
+            },
+            // Sample the active frame's tint and publish it to the CSS glass
+            // surfaces; the surfaces transition background-color in sync with the
+            // wallpaper's own crossfade. If sampling fails (tainted canvas), the
+            // glass simply keeps the previous frame's tint.
+            onWallpaperChange: (img) => {
+                const tints = sampleGlassTints(img);
+                if (!tints) {
+                    return;
+                }
+                const root = glassRoot();
+                root.style.setProperty('--glass-panel-tint', tints.panel);
+                root.style.setProperty('--glass-bed-tint', tints.bed);
             }
-            const root = glassRoot();
-            root.style.setProperty('--glass-panel-tint', tints.panel);
-            root.style.setProperty('--glass-bed-tint', tints.bed);
-        }
-    });
+        },
+        { lite: liteMode }
+    );
 
     wallpaperController.attach(wref);
+    if (heroSceneHidden.value) {
+        wallpaperController.pause();
+    }
     wallpaperController.init();
 }
 
@@ -285,6 +319,7 @@ onMounted(() => {
     watchStop = watch(
         isMobile,
         (mobile) => {
+            showMarquee.value = !mobile;
             teardownWallpaper();
             if (mobile) {
                 ready.value = true;
@@ -462,12 +497,14 @@ watch([ready, () => pageShell.isHomePage], ([isReady]) => {
 
             <!-- Both layers belong to the first-screen scene and pass underneath the left panel. -->
             <HeroWidgetMarquee
+                v-if="showMarquee"
                 layer="defocus"
                 :posts="props.featuredPosts"
                 :stats="props.siteStats"
                 :recently-updated="props.recentlyUpdated"
             />
             <HeroWidgetMarquee
+                v-if="showMarquee"
                 layer="rail"
                 :posts="props.featuredPosts"
                 :stats="props.siteStats"

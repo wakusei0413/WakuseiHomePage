@@ -12,9 +12,9 @@ describe('vue-virtual-scroller integration', () => {
     const packageJson = JSON.parse(read('package.json')) as { dependencies?: Record<string, string> };
     const appTs = read('src/pages/_app.ts');
     const baseLayout = read('src/layouts/BaseLayout.astro');
+    const siteShell = read('src/components/SiteShell.vue');
     const searchModal = read('src/components/SearchModal.vue');
     const componentsCss = read('src/styles/components.css');
-    const typesDts = read('src/types/vue-virtual-scroller.d.ts');
 
     it('declares vue-virtual-scroller dependency', () => {
         expect(packageJson.dependencies?.['vue-virtual-scroller']).toBeDefined();
@@ -24,20 +24,17 @@ describe('vue-virtual-scroller integration', () => {
         expect(astroConfig.vite?.optimizeDeps?.include).toContain('vue-virtual-scroller');
     });
 
-    it('registers VueVirtualScroller in _app.ts', () => {
-        expect(appTs).toContain("import VueVirtualScroller from 'vue-virtual-scroller'");
-        expect(appTs).toContain('app.use(VueVirtualScroller)');
+    it('stays out of the per-island app entry and the global stylesheet', () => {
+        // _app.ts runs for every island on every page; the scroller is only needed
+        // once the search modal opens.
+        expect(appTs).not.toMatch(/from 'vue-virtual-scroller'/);
+        expect(appTs).not.toContain('app.use(VueVirtualScroller)');
+        expect(baseLayout).not.toMatch(/import 'vue-virtual-scroller/);
     });
 
-    it('imports vue-virtual-scroller.css in BaseLayout.astro', () => {
-        expect(baseLayout).toContain("import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'");
-    });
-
-    it('augments Vue global components for TypeScript in vue-virtual-scroller.d.ts', () => {
-        expect(typesDts).toContain("declare module '@vue/runtime-core'");
-        expect(typesDts).toContain('RecycleScroller: typeof RecycleScroller');
-        expect(typesDts).toContain('DynamicScroller: typeof DynamicScroller');
-        expect(typesDts).toContain('DynamicScrollerItem: typeof DynamicScrollerItem');
+    it('is loaded together with the lazily imported search modal', () => {
+        expect(searchModal).toContain("import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'");
+        expect(siteShell).toContain("defineAsyncComponent(() => import('./SearchModal.vue'))");
     });
 
     it('integrates DynamicScroller into SearchModal.vue with keyboard navigation support', () => {

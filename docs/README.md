@@ -1,6 +1,6 @@
 # 项目文档中心 (Documentation Hub)
 
-这里收录了 Wakusei HomePage 2.0.3 的全套详细设计与操作指南。
+这里收录了 Wakusei HomePage 2.1.0 的全套详细设计与操作指南。
 
 ---
 
@@ -12,6 +12,7 @@
 |---|---|---|
 | **改自己的名字、头像、标语、壁纸、社交图标** | [配置指南 (configuration.md)](configuration.md) | 小白常见修改场景问答、字段详细字典、壁纸与 GitHub 贡献图配置 |
 | **写一篇新的博客文章、添加封面、设置分类和标签** | [内容与博客指南 (content.md)](content.md) | 3 步写文章、标准 Markdown 模板、封面自动压缩优化机制、前台阅读控制说明 |
+| **开启文章评论与浏览量、过滤敏感评论** | [评论与浏览量 (comments.md)](comments.md) | Twikoo 部署到 Cloudflare Workers + D1、管理面板推荐配置、CSP 放行 |
 
 ### 🛠️ 开发者进阶与定制
 
@@ -28,6 +29,7 @@
 
 - ⚙️ [配置指南 (configuration.md)](configuration.md)
 - 📝 [博客与内容创作指南 (content.md)](content.md)
+- 💬 [评论与浏览量 (comments.md)](comments.md)
 - 🏛️ [架构设计 (architecture.md)](architecture.md)
 - 🧭 [路由与静态端点 (routes.md)](routes.md)
 - 🎨 [样式体系与动效规范 (css.md)](css.md)

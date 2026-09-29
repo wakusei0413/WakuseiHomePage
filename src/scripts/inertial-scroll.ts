@@ -1,4 +1,5 @@
 import { clampScrollTop, normalizeWheelDelta } from '../lib/inertial-scroll';
+import { isLiteMode } from '../lib/performance-mode';
 
 const EASING = 0.16;
 const WHEEL_DISTANCE = 0.82;
@@ -29,6 +30,9 @@ function hasScrollableAncestor(target: EventTarget | null, scroller: HTMLElement
 function initInertialScroll() {
     if (window.__wakuseiInertialScrollInitialized) return;
     window.__wakuseiInertialScrollInitialized = true;
+    // Lite mode keeps the browser's native (compositor-driven) wheel scrolling
+    // instead of a per-frame JS loop that writes scrollTop.
+    if (isLiteMode()) return;
 
     const pageScroller = document.getElementById('pageScroller');
     if (!(pageScroller instanceof HTMLElement)) return;

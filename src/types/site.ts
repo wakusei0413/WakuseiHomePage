@@ -66,6 +66,18 @@ export interface GithubConfig {
     url: string;
 }
 
+export type CommentsProvider = 'twikoo';
+
+export interface CommentsConfig {
+    enabled: boolean;
+    /** Which comment backend to talk to. Only Twikoo is wired up for now. */
+    provider: CommentsProvider;
+    /** URL of the self-deployed backend (Twikoo: the Cloudflare Worker address). */
+    envId: string;
+    /** Count and show per-post page views through the same backend. */
+    pageview: boolean;
+}
+
 export interface FooterConfig {
     text: string;
 }
@@ -121,9 +133,17 @@ export interface EffectsConfig {
     scrollReveal: ScrollRevealConfig;
 }
 
+/** Per-locale overrides for the site title and description used in `<title>` / SEO tags. */
+export interface LocalizedSiteMeta {
+    title?: string;
+    description?: string;
+}
+
 export interface I18nConfig {
     defaultLocale: Locale;
     locales: Locale[];
+    /** Optional; any locale left out falls back to the top-level `title` / `description`. */
+    siteMeta?: Partial<Record<Locale, LocalizedSiteMeta>>;
 }
 
 export interface SiteConfig {
@@ -135,6 +155,7 @@ export interface SiteConfig {
     profile: ProfileConfig;
     socialLinks: SocialLinksConfig;
     github: GithubConfig;
+    comments: CommentsConfig;
     footer: FooterConfig;
     slogans: SlogansConfig;
     time: TimeConfig;

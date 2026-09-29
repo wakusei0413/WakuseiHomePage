@@ -3,9 +3,9 @@ import TaxonomyPage from '../../components/TaxonomyPage.vue';
 import { siteConfig } from '../../data/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { translate } from '../../lib/i18n';
-import { loadTaxonomyTerms } from '../../lib/posts';
+import { loadTaxonomyTermSummaries } from '../../lib/posts';
 
-const terms = await loadTaxonomyTerms('category');
+const terms = await loadTaxonomyTermSummaries('category');
 const metaParams = { count: terms.length };
 const title = translate(siteConfig.i18n.defaultLocale, 'pages.categories.title', metaParams);
 const description = translate(siteConfig.i18n.defaultLocale, 'pages.categories.description', metaParams);

@@ -45,8 +45,10 @@
     --interactive-card-color-fill-mix: 92%;
     --interactive-card-light-opacity: 0.62;
 
+    /* Web fonts are self-hosted (see BaseLayout.astro). Lite mode swaps these for
+       the system-only stacks in performance.css. */
     --font-serif: 'Times New Roman', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
-    --font-ui: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-ui: 'Inter Variable', 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
     --font-mono: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
     --font-display: var(--font-serif);
     --font-sans: var(--font-ui);

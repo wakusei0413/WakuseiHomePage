@@ -1,4 +1,5 @@
-import type { PostListItem } from './post-model';
+import type { Locale } from '../data/i18n';
+import { localizedMonthName, type PostListItem } from './post-model';
 
 export interface ArchivePostItem extends PostListItem {
     archiveTimestamp: number;
@@ -89,7 +90,7 @@ function parseArchiveDate(raw?: string) {
     };
 }
 
-export function createArchiveGroups(posts: PostListItem[]): ArchiveGroups {
+export function createArchiveGroups(posts: PostListItem[], locale: Locale = 'zh-CN'): ArchiveGroups {
     const publishedPosts = posts.filter((post) => !post.data.draft);
     const monthBuckets = new Map<number, Map<number, ArchivePostItem[]>>();
     const undated: PostListItem[] = [];
@@ -136,7 +137,7 @@ export function createArchiveGroups(posts: PostListItem[]): ArchiveGroups {
                     return {
                         year,
                         month,
-                        label: `${month}月`,
+                        label: localizedMonthName(month, locale),
                         posts: sortedPosts,
                         count: sortedPosts.length
                     };

@@ -1,0 +1,92 @@
+/* ===== Lite mode =====
+   html[data-perf='lite'] is set before first paint by the boot script in
+   src/lib/performance-mode.ts, only on a poor network (Save-Data, 2G/3G,
+   reduced data). Without it the site renders exactly as designed. Layout and
+   content are unchanged; only fonts and decorative effects are downgraded.
+   Loaded last so these overrides win without per-rule specificity games. */
+
+/* System fonts only: fonts are fetched only when a rule uses the family, so with
+   Inter / Noto out of the stacks none of the web-font files are downloaded. */
+html[data-perf='lite'] {
+    --font-serif:
+        'Times New Roman', 'Songti SC', 'STSong', 'Noto Serif CJK SC', 'Source Han Serif SC', 'SimSun',
+        'Hiragino Mincho ProN', 'Yu Mincho', serif;
+    --font-ui:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+        'Noto Sans CJK SC', 'Source Han Sans SC', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
+    --font-display: var(--font-serif);
+    --font-sans: var(--font-ui);
+}
+
+/* The 404 page names Noto Sans SC directly instead of through --font-ui. */
+html[data-perf='lite'] .notfound-subtitle,
+html[data-perf='lite'] .notfound-text {
+    font-family: var(--font-ui);
+}
+
+/* Opaque surfaces stand in for frosted glass: without the blur behind them the
+   translucent tints would leave text sitting on a busy background. */
+html[data-perf='lite'] {
+    --panel-glass: rgba(255, 254, 247, 0.94);
+    --dock-bg: rgba(255, 254, 247, 0.96);
+    --panel-blur: none;
+}
+
+html[data-perf='lite'][data-theme='dark'] {
+    --panel-glass: rgba(18, 18, 18, 0.96);
+    --dock-bg: rgba(18, 18, 18, 0.96);
+}
+
+/* Every backdrop-filter re-samples and blurs what is behind it on each frame
+   that anything underneath moves — the single largest scroll cost on weak GPUs. */
+html[data-perf='lite'] *,
+html[data-perf='lite'] *::before,
+html[data-perf='lite'] *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+html[data-perf='lite'] .top-bar {
+    background-color: rgba(255, 254, 247, 0.96);
+}
+
+html[data-perf='lite'][data-theme='dark'] .top-bar {
+    background-color: rgba(18, 18, 18, 0.96);
+}
+
+/* Full-viewport fractal-noise layer composited above everything. */
+html[data-perf='lite'] .noise-overlay {
+    display: none;
+}
+
+/* Endless decorative animations. */
+html[data-perf='lite'] .hero-marquee__track,
+html[data-perf='lite'] .status-dot,
+html[data-perf='lite'] .notfound-icon {
+    animation: none !important;
+}
+
+/* Large multi-layer glows are expensive to rasterise and animate; keep a plain
+   lift so hover feedback remains. */
+html[data-perf='lite'] .avatar-box:hover,
+html[data-perf='lite'] .post-card:hover {
+    box-shadow: var(--panel-shadow);
+}
+
+html[data-perf='lite'] .social-link-slot.is-hovered .social-link--custom,
+html[data-perf='lite'] .social-link-slot:hover .social-link--custom,
+html[data-perf='lite'] .social-link-slot:focus-within .social-link--custom,
+html[data-perf='lite'] .social-link-slot:active .social-link--custom {
+    box-shadow: var(--panel-shadow);
+    filter: none;
+}
+
+/* Permanent compositor layers cost memory that low-end devices do not have. */
+html[data-perf='lite'] .avatar-box,
+html[data-perf='lite'] .social-link,
+html[data-perf='lite'] .hero-marquee__track,
+html[data-perf='lite'] .wallpaper-image,
+html[data-perf='lite'] .top-bar-left-content,
+html[data-perf='lite'] .top-bar-dock-item {
+    will-change: auto;
+}

@@ -3,18 +3,19 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from '../composables/useI18n';
 import { usePageMeta } from '../composables/usePageMeta';
 import { filterArchiveGroups, type ArchiveGroups } from '../lib/archive';
-import { estimateReadingTime, type TaxonomyTerm } from '../lib/post-model';
+import { resolveLocalizedPath } from '../lib/i18n-routing';
+import { estimateReadingTime, type TaxonomyTermSummary } from '../lib/post-model';
 
 const props = defineProps<{
     archive: ArchiveGroups;
-    categories: TaxonomyTerm[];
-    tags: TaxonomyTerm[];
+    categories: TaxonomyTermSummary[];
+    tags: TaxonomyTermSummary[];
     titleKey: string;
     descriptionKey: string;
     metaParams: Record<string, string | number>;
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 usePageMeta({
     titleKey: props.titleKey,
@@ -99,7 +100,7 @@ const resultSummary = computed(() => {
 });
 
 function postHref(slug: string) {
-    return `/posts/${slug}`;
+    return resolveLocalizedPath(`/posts/${slug}`, locale.value);
 }
 
 function readingLabel(wordCount: number) {
@@ -302,7 +303,7 @@ onUnmounted(() => {
                 <div v-if="categories.length" class="archives-topic-group">
                     <div class="archives-topic-group__heading">
                         <h4>{{ t('archives.categories') }}</h4>
-                        <a href="/categories">{{ t('archives.categories.all') }}</a>
+                        <a :href="resolveLocalizedPath('/categories', locale)">{{ t('archives.categories.all') }}</a>
                     </div>
                     <div class="archives-category-grid" :aria-label="t('archives.categories.filter')">
                         <button
@@ -329,7 +330,7 @@ onUnmounted(() => {
                 <div v-if="tags.length" class="archives-topic-group archives-topic-group--tags">
                     <div class="archives-topic-group__heading">
                         <h4>{{ t('archives.tags') }}</h4>
-                        <a href="/tags">{{ t('archives.tags.all') }}</a>
+                        <a :href="resolveLocalizedPath('/tags', locale)">{{ t('archives.tags.all') }}</a>
                     </div>
                     <div class="archives-tag-index" :aria-label="t('archives.tags.filter')">
                         <button
@@ -447,6 +448,9 @@ onUnmounted(() => {
                                             </time>
                                             <span>{{ readingLabel(post.wordCount) }}</span>
                                             <span v-if="post.data.category">{{ post.data.category }}</span>
+                                            <span v-if="post.data.repost" class="post-badge post-badge--repost">
+                                                {{ t('post.repost.badge') }}
+                                            </span>
                                         </div>
                                         <h4>{{ post.data.title }}</h4>
                                         <p>{{ post.data.description }}</p>
@@ -505,6 +509,9 @@ onUnmounted(() => {
                                         <div class="archives-post__meta">
                                             <span>{{ readingLabel(post.wordCount) }}</span>
                                             <span v-if="post.data.category">{{ post.data.category }}</span>
+                                            <span v-if="post.data.repost" class="post-badge post-badge--repost">
+                                                {{ t('post.repost.badge') }}
+                                            </span>
                                         </div>
                                         <h4>{{ post.data.title }}</h4>
                                         <p>{{ post.data.description }}</p>

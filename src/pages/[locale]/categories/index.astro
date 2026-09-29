@@ -1,0 +1,34 @@
+---
+import TaxonomyPage from '../../../components/TaxonomyPage.vue';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { localizedSiteMeta, translate, type Locale } from '../../../lib/i18n';
+import { NON_DEFAULT_LOCALES } from '../../../lib/i18n-routing';
+import { loadTaxonomyTermSummaries } from '../../../lib/posts';
+
+export function getStaticPaths() {
+    return NON_DEFAULT_LOCALES.map((locale) => ({ params: { locale } }));
+}
+
+const { locale } = Astro.params as { locale: Locale };
+const terms = await loadTaxonomyTermSummaries('category', locale);
+const metaParams = { count: terms.length };
+const title = translate(locale, 'pages.categories.title', metaParams);
+const description = translate(locale, 'pages.categories.description', metaParams);
+---
+
+<BaseLayout
+    shellMode="blog"
+    shellTitle={title}
+    title={`${title} | ${localizedSiteMeta(locale).title}`}
+    description={description}
+    locale={locale}
+>
+    <TaxonomyPage
+        client:idle
+        variant="categories"
+        titleKey="pages.categories.title"
+        descriptionKey="pages.categories.description"
+        metaParams={metaParams}
+        terms={terms}
+    />
+</BaseLayout>

@@ -1,0 +1,139 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ArticleToc from '../../../components/ArticleToc.vue';
+import PostComments from '../../../components/PostComments.vue';
+import PostFooterNav from '../../../components/PostFooterNav.vue';
+import PostMeta from '../../../components/PostMeta.vue';
+import PostViews from '../../../components/PostViews.vue';
+import ReadingControls from '../../../components/ReadingControls.vue';
+import RepostNotice from '../../../components/RepostNotice.astro';
+import { commentThreadPath } from '../../../lib/comments';
+import { formatPostDateLabel } from '../../../lib/post-model';
+import { getLocalizedPostStaticPaths, type PostPageProps } from '../../../lib/posts';
+import { createArticleSeoMetadata } from '../../../lib/seo';
+import { translate } from '../../../lib/i18n';
+import { siteConfig } from '../../../data/site';
+import type { Locale } from '../../../data/i18n';
+
+export { getLocalizedPostStaticPaths as getStaticPaths };
+
+const {
+    frontmatter,
+    Content,
+    readingMinutes,
+    prev,
+    next,
+    coverMeta,
+    coverSrcset,
+    locale,
+    contentLocale,
+    translated,
+    availableLocales
+} = Astro.props as PostPageProps & {
+    locale: Locale;
+};
+const pub = formatPostDateLabel(frontmatter.pubDate, locale);
+const updated = formatPostDateLabel(frontmatter.updatedDate, locale);
+const updatedForDisplay = updated && pub && updated.iso !== pub.iso ? updated : null;
+const siteUrl = Astro.site ?? new URL('https://www.wakusei.top');
+const siteHomeUrl = new URL('/', siteUrl).toString();
+const articleImage = frontmatter.cover ? new URL(frontmatter.cover, siteUrl).toString() : undefined;
+const articleSeo = createArticleSeoMetadata({
+    publishedTime: frontmatter.pubDate,
+    updatedTime: frontmatter.updatedDate,
+    author: frontmatter.author,
+    fallbackAuthor: {
+        name: siteConfig.profile.name,
+        url: siteHomeUrl
+    },
+    image: articleImage,
+    language: contentLocale,
+    section: frontmatter.category,
+    tags: frontmatter.tags,
+    basedOn: frontmatter.repost?.url
+});
+const threadPath = commentThreadPath(String(Astro.params.slug ?? ''));
+const showComments = siteConfig.comments.enabled && frontmatter.comments !== false;
+const showViews = siteConfig.comments.enabled && siteConfig.comments.pageview;
+const fallbackNotice = translated ? null : translate(locale, 'post.translation.fallback');
+---
+
+<BaseLayout
+    shellMode="article"
+    shellTitle={frontmatter.title}
+    title={frontmatter.title}
+    description={frontmatter.description}
+    ogImage={articleImage}
+    ogImageAlt={articleImage ? frontmatter.title : undefined}
+    ogImageWidth={coverMeta?.width}
+    ogImageHeight={coverMeta?.height}
+    ogImageType={coverMeta ? `image/${coverMeta.format}` : undefined}
+    articleSeo={articleSeo}
+    locale={locale}
+    contentLocale={contentLocale}
+    alternateLocales={availableLocales}
+>
+    <div class="reading-progress" aria-hidden="true">
+        <div class="reading-progress__fill"></div>
+    </div>
+    <article class="post-container">
+        <div class="post-lead">
+            <header class="post-header">
+                <h1 class="post-title">{frontmatter.title}</h1>
+                <div class="post-meta">
+                    {
+                        frontmatter.tags && frontmatter.tags.length > 0 && (
+                            <span class="post-tags">{frontmatter.tags.join(' · ')}</span>
+                        )
+                    }
+                    {
+                        pub && (
+                            <time class="post-date" datetime={pub.iso}>
+                                {pub.label}
+                            </time>
+                        )
+                    }
+                    <PostMeta client:idle readingMinutes={readingMinutes} updated={updatedForDisplay} />
+                    {showViews && <PostViews client:idle threadPath={threadPath} />}
+                </div>
+                {frontmatter.repost && <RepostNotice repost={frontmatter.repost} locale={locale} />}
+                {
+                    fallbackNotice && (
+                        <p class="post-translation-notice" lang={locale}>
+                            {fallbackNotice}
+                        </p>
+                    )
+                }
+            </header>
+            {
+                frontmatter.cover && (
+                    <div class="post-hero-image-wrapper">
+                        <img
+                            src={frontmatter.cover}
+                            srcset={coverSrcset}
+                            sizes={coverSrcset ? '(max-width: 900px) 100vw, 960px' : undefined}
+                            alt={frontmatter.title}
+                            class="post-hero-image"
+                            loading="eager"
+                            decoding="async"
+                            fetchpriority="high"
+                            width={coverMeta?.width ?? 1400}
+                            height={coverMeta?.height ?? 788}
+                        />
+                    </div>
+                )
+            }
+        </div>
+        <div class="post-body">
+            <Content />
+        </div>
+        <PostFooterNav client:idle prev={prev} next={next} />
+        {showComments && <PostComments client:visible threadPath={threadPath} />}
+    </article>
+    <ArticleToc client:idle={{ timeout: 500 }} />
+    <ReadingControls client:idle />
+</BaseLayout>
+
+<script>
+    import '../../../scripts/article-runtime';
+</script>

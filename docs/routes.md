@@ -18,6 +18,12 @@
 | `/search` | `src/pages/search.astro` | `shellMode="blog"` | 独立搜索页面（与顶栏全局弹窗共用搜索核心）；支持 `?q=关键词` 直达结果 |
 | `/404` | `src/pages/404.astro` | `shellMode="error"` | 自定义 404 错误页面 |
 
+### 多语言路由
+
+默认语种 `zh-CN` 不带前缀；`en` 与 `ja` 在 `src/pages/[locale]/` 下镜像出完整的一套页面（首页、分页、文章、归档、分类、标签、专题、搜索），路径形如 `/en/archives`、`/ja/posts/[...slug]`。
+
+每个语种的文章集合都独立解析：有 `index.<语种>.md` 译文就用译文，没有就回落到原文（详见 `docs/content.md`）。因此分类名、标签名、列表标题与搜索结果都会随语种变化。
+
 ---
 
 ## 📡 静态数据与订阅端点 (API & Feeds)
@@ -29,7 +35,11 @@
 | `/search-index.json` | `src/pages/search-index.json.ts` | 客户端毫秒级搜索索引文件，包含文章标题、摘要、分类与标签 |
 | `/github-contributions.json` | `src/pages/github-contributions.json.ts` | GitHub 53 周提交热力图数据快照（构建期由服务端抓取并转为静态 JSON） |
 | `/featured-posts.json` | `src/pages/featured-posts.json.ts` | 站点精选/置顶文章静态 JSON 数据 |
+| `/twikoo/locales/[name].js` | `src/pages/twikoo/locales/[name].js.ts` | 开启评论时，构建期从 `node_modules/twikoo` 复制 Twikoo 不内置的界面语言包（目前是 `ja-JP`），见 `docs/comments.md` |
 | `/og-default.jpg` | `src/pages/og-default.jpg.ts` | 构建期用 Sharp 把默认壁纸裁成 1200×630 的社交分享卡，供没有独立封面的页面作为 `og:image` 使用 |
+| `/[locale]/rss.xml` | `src/pages/[locale]/rss.xml.ts` | 各语种 RSS 订阅源（`/en/rss.xml`、`/ja/rss.xml`），条目链接带语种前缀，标题与摘要取该语种的文章版本 |
+| `/[locale]/atom.xml` | `src/pages/[locale]/atom.xml.ts` | 各语种 Atom 订阅源 |
+| `/[locale]/search-index.json` | `src/pages/[locale]/search-index.json.ts` | 各语种搜索索引；前台按当前路由语种读取对应文件 |
 
 ---
 
@@ -38,6 +48,8 @@
 - **自动生成**：由 `@astrojs/sitemap` 官方集成在每次 `npm run build` 时全自动生成为 `sitemap-index.xml` 与 `sitemap-0.xml`。
 - **爬虫指引**：`public/robots.txt` 已配置好指向 `sitemap-index.xml` 的正确绝对路径。
 - **规范提示**：**切勿在 `public/` 目录下手动手写或放置 `sitemap.xml`**，避免与官方集成的生成产物发生冲突。
+- **多语言**：集成开启了 `i18n` 选项，同一页面的各语种 URL 会互相生成 `<xhtml:link rel="alternate">`。`astro.config.mjs` 的 `filter` 会剔除**没有译文的语种文章页**——这些页面只是原文的副本，已 `canonical` 指回原文，不应重复提交。
+- **lastmod**：文章 URL 取各自语种文件的 `updatedDate` / `pubDate`；聚合页统一取全站最新修改时间。
 
 ---
 

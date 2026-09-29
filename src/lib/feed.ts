@@ -1,3 +1,5 @@
+import type { Locale } from '../data/i18n';
+import { resolveLocalizedPath } from './i18n-routing';
 import type { PostFrontmatter } from './post-model';
 
 export interface FeedPost {
@@ -13,6 +15,8 @@ export interface FeedMetadata {
     description: string;
     language: string;
     authorName: string;
+    /** Route locale this feed belongs to; omitted means the default locale. */
+    locale?: Locale;
 }
 
 const EPOCH = new Date(0).toISOString();
@@ -42,8 +46,13 @@ function toRfc822Date(value?: string): string | null {
     return Number.isNaN(date.getTime()) ? null : date.toUTCString();
 }
 
-function postUrl(siteUrl: URL, slug: string): string {
-    return new URL(`/posts/${slug}`, siteUrl).toString();
+function localizedUrl(metadata: FeedMetadata, path: string): string {
+    const localized = metadata.locale ? resolveLocalizedPath(path, metadata.locale) : path;
+    return new URL(localized, metadata.siteUrl).toString();
+}
+
+function postUrl(metadata: FeedMetadata, slug: string): string {
+    return localizedUrl(metadata, `/posts/${slug}`);
 }
 
 function escapeHtmlAttr(value: string): string {
@@ -86,7 +95,7 @@ export function absolutizeFeedHtml(html: string, base: URL): string {
 }
 
 function articleHtml(metadata: FeedMetadata, post: FeedPost): string {
-    const pageUrl = new URL(postUrl(metadata.siteUrl, post.slug));
+    const pageUrl = new URL(postUrl(metadata, post.slug));
     const cover = post.data.cover
         ? `<img src="${escapeHtmlAttr(post.data.cover)}" alt="${escapeHtmlAttr(post.data.title)}">`
         : '';
@@ -109,11 +118,11 @@ function feedUpdated(posts: FeedPost[]): string {
 }
 
 export function createRssFeed(metadata: FeedMetadata, posts: FeedPost[]): string {
-    const selfUrl = new URL('/rss.xml', metadata.siteUrl).toString();
-    const channelUrl = metadata.siteUrl.toString();
+    const selfUrl = localizedUrl(metadata, '/rss.xml');
+    const channelUrl = localizedUrl(metadata, '/');
     const items = posts
         .map((post) => {
-            const url = postUrl(metadata.siteUrl, post.slug);
+            const url = postUrl(metadata, post.slug);
             const pubDate = toRfc822Date(post.data.pubDate);
             const html = escapeXml(articleHtml(metadata, post));
             return [
@@ -150,11 +159,11 @@ export function createRssFeed(metadata: FeedMetadata, posts: FeedPost[]): string
 }
 
 export function createAtomFeed(metadata: FeedMetadata, posts: FeedPost[]): string {
-    const selfUrl = new URL('/atom.xml', metadata.siteUrl).toString();
-    const channelUrl = metadata.siteUrl.toString();
+    const selfUrl = localizedUrl(metadata, '/atom.xml');
+    const channelUrl = localizedUrl(metadata, '/');
     const entries = posts
         .map((post) => {
-            const url = postUrl(metadata.siteUrl, post.slug);
+            const url = postUrl(metadata, post.slug);
             const published = toIsoDate(post.data.pubDate);
             const updated = toIsoDate(post.data.updatedDate ?? post.data.pubDate);
             const html = escapeXml(articleHtml(metadata, post));

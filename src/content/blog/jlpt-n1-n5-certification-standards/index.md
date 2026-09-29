@@ -1,9 +1,12 @@
 ---
-title: '【转载】N1～N5:认定标准_日本语能力测试_JLPT'
+title: 'N1～N5:认定标准_日本语能力测试_JLPT'
 description: '日本语能力测试有N1、N2、N3、N4、N5五个级别。最低的等级是N5，最高的等级是N1。 在N4和N5中，主要考察考生对在课堂学习的基础日语能够理解多少。在N1和N2中，考察考生对现实生活广泛场景的日语能够理解多少。另外，N3是N4、N5向N1、N2的过渡等级。 日本语能力测试的等级认定标准体现在'
 language: 'zh-CN'
 category: '学习日常'
 tags: ['日语', '学习', 'JLPT', 'N1', 'N2', 'N3', 'N4', 'N5']
+repost:
+  source: '日本语能力测试 JLPT 官网'
+  url: 'https://www.jlpt.jp/cn/about/levelsummary.html'
 draft: false
 pubDate: '2025-02-03'
 updatedDate: '2025-04-03'

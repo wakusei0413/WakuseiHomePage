@@ -653,102 +653,139 @@ html:not(.is-loaded) .noise-overlay {
         0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* ===== GitHub 贡献图（左侧面板 bio 区域） ===== */
+/* ===== GitHub 贡献地形（左侧面板 bio 区域） ===== */
+/* 颜色由 GitHubContributions.vue 在 canvas 绘制时读取；侧面明暗在脚本里由顶面色派生。 */
 .github-contrib {
-    --github-cell-gap: 2px;
-    --github-l0: rgba(0, 0, 0, 0.07);
+    --github-l0: rgba(0, 0, 0, 0.055);
     --github-l1: #9be9a8;
     --github-l2: #40c463;
     --github-l3: #30a14e;
     --github-l4: #216e39;
+    --github-glow: rgba(64, 196, 99, 0.55);
+    --github-ground: rgba(0, 0, 0, 0.12);
+    --github-plinth: #e7e4db;
 
     display: flex;
     flex-direction: column;
-    gap: 0.45rem;
-    min-height: 64px;
+    gap: 0.35rem;
     color: var(--fg);
     text-decoration: none;
     outline-offset: 4px;
 }
 
-.github-contrib:hover .github-contrib__total,
-.github-contrib:focus-visible .github-contrib__total {
+.github-contrib__stage {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 360px;
+}
+
+.github-contrib__head {
+    position: absolute;
+    top: 0.3rem;
+    left: 0;
+    z-index: 0;
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    line-height: 1;
+    color: var(--fg);
+    pointer-events: none;
+}
+
+.github-contrib__icon {
+    margin-top: 0.35rem;
+    font-size: 1.35rem;
+    opacity: 0.85;
+}
+
+.github-contrib__count {
+    font-family: var(--font-ui, 'Inter', sans-serif);
+    font-size: 2.9rem;
+    font-size: clamp(2.3rem, 4vw, 2.9rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    font-variant-numeric: tabular-nums;
+    line-height: 0.85;
+    transition: color 0.3s var(--curve-snap);
+}
+
+.github-contrib__arrow {
+    margin-top: 0.2rem;
+    font-size: 0.95rem;
+    opacity: 0;
+    transform: translate(-4px, 4px);
+    transition:
+        opacity 0.3s var(--curve-snap),
+        transform 0.3s var(--curve-snap);
+}
+
+.github-contrib__canvas {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.45s var(--curve-lift);
+}
+
+.github-contrib--loading .github-contrib__canvas {
+    animation: github-contrib-breathe 1.6s var(--curve-loop) infinite;
+}
+
+.github-contrib:hover .github-contrib__count,
+.github-contrib:focus-visible .github-contrib__count {
     color: var(--accent-blue);
 }
 
-.github-contrib__label {
-    font-family: var(--font-mono, 'SFMono-Regular', 'Consolas', monospace);
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
+.github-contrib:hover .github-contrib__arrow,
+.github-contrib:focus-visible .github-contrib__arrow {
+    opacity: 1;
+    transform: none;
+}
+
+.github-contrib:hover .github-contrib__canvas,
+.github-contrib:focus-visible .github-contrib__canvas {
+    transform: translateY(-3px);
 }
 
 .github-contrib__message {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     line-height: 1.4;
     color: var(--muted);
 }
 
-.github-contrib__graph {
-    display: flex;
-    gap: var(--github-cell-gap);
-    width: 100%;
-    max-width: 340px;
+@keyframes github-contrib-breathe {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.55;
+    }
 }
 
-.github-contrib__week {
-    display: flex;
-    flex: 1 1 0;
-    min-width: 0;
-    flex-direction: column;
-    gap: var(--github-cell-gap);
-}
+@media (prefers-reduced-motion: reduce) {
+    .github-contrib--loading .github-contrib__canvas {
+        animation: none;
+    }
 
-.github-contrib__cell {
-    display: block;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: 1.5px;
-    background: var(--github-l0);
-    transition: transform 0.2s var(--curve-snap);
-}
-
-.github-contrib:hover .github-contrib__cell {
-    transform: scale(1.12);
-}
-
-.github-contrib__cell--l1 {
-    background: var(--github-l1);
-}
-
-.github-contrib__cell--l2 {
-    background: var(--github-l2);
-}
-
-.github-contrib__cell--l3 {
-    background: var(--github-l3);
-}
-
-.github-contrib__cell--l4 {
-    background: var(--github-l4);
-}
-
-.github-contrib__total {
-    font-family: var(--font-ui, 'Inter', 'Noto Sans SC', sans-serif);
-    font-size: 0.76rem;
-    line-height: 1.3;
-    color: var(--muted);
-    transition: color 0.2s var(--curve-snap);
+    .github-contrib__canvas,
+    .github-contrib__arrow,
+    .github-contrib__count {
+        transition: none;
+    }
 }
 
 [data-theme='dark'] .github-contrib {
-    --github-l0: rgba(255, 255, 255, 0.08);
+    --github-l0: rgba(255, 255, 255, 0.07);
     --github-l1: #0e4429;
     --github-l2: #006d32;
     --github-l3: #26a641;
     --github-l4: #39d353;
+    --github-glow: rgba(57, 211, 83, 0.75);
+    --github-ground: rgba(57, 211, 83, 0.12);
+    --github-plinth: #202422;
 }
 
 /* ===== Social Links ===== */

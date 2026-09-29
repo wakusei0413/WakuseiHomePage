@@ -3,11 +3,11 @@ import ArchivesPage from '../components/ArchivesPage.vue';
 import { siteConfig } from '../data/site';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { translate } from '../lib/i18n';
-import { loadArchiveGroups, loadTaxonomyTerms } from '../lib/posts';
+import { loadArchiveGroups, loadTaxonomyTermSummaries } from '../lib/posts';
 
 const archive = await loadArchiveGroups();
-const categories = await loadTaxonomyTerms('category');
-const tags = await loadTaxonomyTerms('tag');
+const categories = await loadTaxonomyTermSummaries('category');
+const tags = await loadTaxonomyTermSummaries('tag');
 const metaParams = { categories: categories.length, tags: tags.length, posts: archive.totalPosts };
 const title = translate(siteConfig.i18n.defaultLocale, 'pages.archives.title', metaParams);
 const description = translate(siteConfig.i18n.defaultLocale, 'pages.archives.description', metaParams);

@@ -1,6 +1,6 @@
 # Wakusei HomePage
 
-![Version](https://img.shields.io/badge/version-2.0.3-9a0a0a?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-2.1.0-9a0a0a?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-ffe600?style=for-the-badge)
 ![Astro](https://img.shields.io/badge/Astro-7-ff5d01?style=for-the-badge&logo=astro&logoColor=white)
 ![Vue](https://img.shields.io/badge/Vue-3-42b883?style=for-the-badge&logo=vuedotjs&logoColor=white)
@@ -27,6 +27,7 @@ Wakusei HomePage 是一个专为个人开发者、博主和技术爱好者打造
 - 🔍 **顺手好用的即时搜索**：全局快捷键唤出，毫秒级响应；支持键盘 `↑` `↓` `Enter` `Esc` 全流程操作，手机端大触控区防误触，搜索结果可用 `/search?q=关键词` 直接分享。
 - 📊 **GitHub 动态贡献热力图**：构建期自动抓取 53 周提交矩阵，无需配置个人 Token，在首页展示你的极客贡献轨迹，离线或接口异常时优雅降级。
 - 🌗 **双色主题 & 三语国际化**：预设精致的深色与浅色模式，首屏内联脚本防闪烁；内置简体中文、英语、日语（`zh-CN` / `en` / `ja`）随时切换。
+- 🌍 **真正的多语言正文**：界面、日期、分类标签之外，**文章本身也能写译文**——在文章目录里加一个 `index.en.md` 即可，`/en/`、`/ja/` 自动用上；没写译文的语种照常显示原文，并自动处理 `hreflang`、`canonical` 与 sitemap，不会被搜索引擎当成重复内容。
 - 📱 **全平台响应式 & 无障碍优化**：移动端专属抽屉导航、严格遵循 WCAG 交互触控热区与高对比度规范，全面支持系统级“减少动态效果（prefers-reduced-motion）”。
 - ⚡ **首屏秒开**：无任何阻塞式全屏 Loading 菊花遮罩，首屏内容与标语瞬间呈现。
 
@@ -117,6 +118,21 @@ draft: false                # 是否为草稿（设为 true 则不会在任何�
 ```
 
 保存后，本地开发服务器会自动刷新，在首页文章列表中就能看到刚刚发布的文章！
+
+### 3. （可选）给文章写译文
+
+在同一个文件夹里新建 `index.en.md` 或 `index.ja.md`，就是这篇文章的英文 / 日文版本：
+
+```
+src/content/blog/my-first-post/
+├── index.md       # 原文 → /posts/my-first-post
+├── index.en.md    # 英文 → /en/posts/my-first-post
+└── cover.webp     # 封面与配图各语种共用
+```
+
+译文有自己独立的标题、摘要、分类、标签和正文；封面和配图直接复用同目录的文件。**没写译文的语种不会 404**，会显示原文并附一行「本文暂无译文」的提示，同时把 `canonical` 指回原文、不进 sitemap，避免被搜索引擎判定为重复内容。
+
+详见 [`docs/content.md`](docs/content.md)。
 
 ---
 

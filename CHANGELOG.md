@@ -6,6 +6,62 @@
 
 ---
 
+## 2.1.0
+
+2026-09-29
+
+### 新增
+
+- 文章评论与浏览量（Twikoo）：后端部署在自己的 Cloudflare Workers + D1 上，不需要 VPS，免费额度用完也不会产生费用。支持匿名评论，评论不需要逐条审核：命中违禁词的评论自动隐藏，命中屏蔽词的评论直接拒绝提交，单个 IP 与全站都有每分钟频率限制；博主身份需先登录管理面板才能使用，他人无法冒用。三种语言的同一篇文章共用一个评论区和浏览量；frontmatter 写 `comments: false` 可关闭单篇评论。在 `customize.ts` 的 `comments` 中开启，部署步骤见 `docs/comments.md`。
+- 区分原创与转载文章：frontmatter 新增 `repost`（`true` 或 `{ source, url, author }`）。转载文章在首页卡片、分类/标签页、搜索结果和归档中显示「转载」标记，文章标题下方显示出处与版权说明并链接原文，结构化数据输出 `isBasedOn`；译文自动沿用原文的设置。两篇已有转载文章从标题前缀「【转载】」改为使用该字段。
+- 补充 Sitemap `lastmod` 字段支持：
+    - 在构建期扫描各文章 Markdown frontmatter 的 `updatedDate` 与 `pubDate`，通过 `@astrojs/sitemap` 的 `serialize` 钩子为每篇文章 URL 注入真实的最后修改日期。
+    - 首页、归档、分类、标签等聚合页面自动注入全站最新文章修改时间，并在 `sitemap-index.xml` 索引中统一标记。
+- 构建完整 i18n 多语言静态路由与 SEO 增强：
+    - 彻底解决 2.0.1 遗留的已知限制：新增 `/en/` 与 `/ja/` 完整路由体系，全站 10 类页面（首页、分页、文章正文、归档、分类列表、分类详情、标签列表、标签详情、专题、搜索）均输出独立的静态 HTML 产物。
+    - 静态页面原生携带多语言 SEO 元数据：根据路由语种在 SSR 阶段即输出正确的 `<html lang="...">`、各语言 `<title>`、`<meta name="description">`、`og:locale`、`og:title`、`og:description`、`twitter:*` 以及 WebSite / BreadcrumbList 结构化数据，无 JS 运行环境的搜索引擎爬虫和社交媒体抓取器无需执行客户端脚本即可抓取对应语种。
+    - 自动注入 `<link rel="alternate" hreflang="...">` 多语言互联声明与 `x-default` 回退标签，同时在 `sitemap-0.xml` 中自动为每条 URL 生成多语言 `<xhtml:link rel="alternate">` 关联定义。
+    - 顶栏与移动端侧边栏语言切换器升级为路由级平滑跳转，切页体验与 View Transitions 动效无缝接轨；站内文章卡片、底部导航按钮、Dock 栏等内部链接自动遵循并维持当前所选语种。
+- 文章支持多语言正文：不再只是界面三语，文章本身也能写译文。
+    - 在文章目录里新建 `index.en.md` / `index.ja.md`，即为该篇文章的对应语种译文，`/en/posts/<slug>`、`/ja/posts/<slug>` 自动改用译文的标题、摘要、分类、标签与正文；封面和正文配图沿用同目录文件，不需要复制一份。
+    - 没有译文的语种不会 404：照常显示原文，并在标题下方给出一行「本文暂无译文，显示原文」的提示（三语文案齐备）。
+    - 草稿规则：`index.md` 标 `draft: true` 时整篇文章在所有语种下架；只把某一份译文标为草稿，则仅该语种回落到原文。也允许一篇文章只有译文、没有 `index.md`。
+    - 分类、标签、归档、首页列表、专题页与站内搜索索引（`/en/search-index.json`、`/ja/search-index.json`）均按语种各自生成，译文里写的分类名和标签名只出现在对应语种的站点里。
+    - 新增各语种订阅源 `/en/rss.xml`、`/en/atom.xml`、`/ja/rss.xml`、`/ja/atom.xml`，条目链接带语种前缀，内容取该语种的文章版本；页面 `<head>` 中的订阅入口随路由语种切换。
+    - 新增 `i18n.siteMeta` 配置项：可为每个语种单独指定站点标题与描述，影响 `<title>`、`meta description`、`og:site_name`、WebSite 结构化数据与订阅源；不填的语种回落到顶层配置。
+- 文章日期与月份名称按语种本地化：英文路由显示 `September 28, 2026`，中日文保持 `2026年9月28日`，归档时间线的月份标签同步跟随语种。
+- 新增网速差时自动启用的「轻量模式」：浏览器开启省流量、网络为 2G/3G 或 `prefers-reduced-data` 时，首帧前即改用系统字体（不下载任何 Web 字体），并关闭磨砂玻璃模糊、全屏噪点层、跑马灯与状态点动画、大面积光晕、首屏 3D 下沉、JS 惯性滚轮、壁纸轮播与 Ken Burns 缩放（只显示本地默认壁纸，不请求外部壁纸 API）。网络正常时效果与原来完全一致。说明见 `docs/performance.md`。
+
+### 变更
+
+- 国内与慢速网络加载提速：
+    - 移除 Google Fonts（在中国大陆经常被阻断，且是阻塞首屏渲染的外链样式表）。原有的 Inter、Noto Sans SC、Noto Serif SC 改为 `@fontsource*` 自托管，字形与按字切片方式和 Google 一致，外观不变，站点不再依赖任何境外字体源；CSP 同步收紧。
+    - `public/_headers` 为带哈希的 `/_astro/*` 构建产物加上一年 `immutable` 缓存，`/res/*`、搜索索引与贡献数据加上合理的短缓存，回访无需重新校验每个脚本与样式。
+    - 站点配置的 zod 校验移到服务端（`src/data/validate-site-config.ts`），浏览器端不再下载约 90KB 的 zod。
+    - `vue-virtual-scroller` 不再全局注册到每个岛屿；搜索弹窗改为打开时才异步加载，连同虚拟滚动器及其样式一起按需下载。
+    - 文章头图输出 640 / 960 / 1400 三档 `srcset`，手机不再下载 1400px 的桌面大图。
+    - `npm run check:dist` 新增体积守护：客户端 JS 总量预算、禁止 Google Fonts、禁止 zod 进入客户端、`_app` 入口不得含虚拟滚动器、头图必须带 `srcset`、`/_astro/*` 必须是 immutable 缓存。
+- 桌面端壁纸轮播加上约束：首屏场景滚出视口（例如在读文章）时暂停轮播、下载与缩放动画，滚回首屏再继续；外部壁纸 API 连续失败后本次访问不再请求，保留当前画面。
+- 移动端不再挂载本就被隐藏的首屏跑马灯组件，省掉其后台时钟与动画。
+- 静态构建速度与产物体积深度优化（全站构建耗时缩短 60% 以上）：
+    - 引入 GitHub 贡献数据构建级磁盘缓存（`node_modules/.cache/github-contributions`），在默认 1 小时 TTL 内彻底消除重复构建向公网发起 HTTP 请求的 1.4s~6.0s 阻塞网络开销；并在外部 API 异常或断网时自动平滑回退使用历史缓存。
+    - 文章静态路由生成（`getPostStaticPaths`）接入 `memoizeAsync` 构建级内存缓存，消除默认语言与非默认语言（`/en/`、`/ja/`）多语言路由间全部文章 Markdown 的重复 Unified/Shiki 语法高亮编译与大图 Hero 封面元数据计算。
+    - 分类与标签页面（`TaxonomyPage`、`ArchivesPage`、`TopicsPage`）Props 瘦身：将全量包含文章数组的 `TaxonomyTerm` 改为轻量 `TaxonomyTermSummary`，彻底消除 135+ 个分类/标签静态 HTML 页面中内联重复序列化的各标签全部文章 JSON，标签页单文件体积缩减超 50%，显著降低构建期序列化与浏览器端水合开销。
+    - 社交分享卡（`og-default.jpg`）增加基于源壁纸/头像文件 mtime 与配置指纹的磁盘缓存，源图未修改时跳过耗时的 Sharp 裁剪与 mozjpeg 重编码（由 ~500ms 降至 <1ms）。
+    - 构建产物 HTML 后处理（`cloudflareRocketLoaderSafety`）改造为并发异步批量处理，加速最终产物补丁写入。
+
+### 修复
+
+- 修正非默认语种文章页的语言标注错误：此前 `/en/posts/...`、`/ja/posts/...` 会把中文原文的 `<html lang>`、`og:locale` 与结构化数据 `inLanguage` 一律标成 `en` / `ja`，向搜索引擎和屏幕阅读器谎报正文语言。现在这些字段如实反映**正文实际语言**，仅当该语种确有译文时才标注为该语种。
+- 修正未翻译文章在多语种路由下的重复内容问题：
+    - 回落页面的 `canonical` 指回原文地址，不再自我声明为独立页面。
+    - `hreflang` 只在真正存在译文的语种之间互相声明；只有一种语言的文章不再输出任何 `hreflang` 与 `x-default` 标签。
+    - `sitemap-0.xml` 过滤掉这些回落副本，只提交有实际内容的语种 URL；文章 `lastmod` 改为读取各语种文件自己的 `updatedDate` / `pubDate`。
+- 修正 `<head>` 内联脚本在首帧前用路由语种或本地记忆的语种覆盖 `<html lang>` 的问题：未翻译文章在 `/ja/posts/...` 下会被改回 `lang="ja"`，无前缀路由也会被改成上次选择的界面语言。现在 `lang` 始终保持服务端输出的正文语言。
+- 修正 `/en/`、`/ja/` 页面在未显式传入标题时回落到中文站点名与中文站点描述的问题（`<title>`、`meta description`、`og:site_name`、WebSite 结构化数据、`SearchAction` 目标地址均已按语种输出）。
+
+---
+
 ## 2.0.3
 
 2026-09-24
@@ -13,14 +69,14 @@
 ### 新增
 
 - 引入 `vue-virtual-scroller` 虚拟滚动：
-  - 全局集成 `vue-virtual-scroller`（v3.0.5）及其官方样式与 TypeScript 全局组件类型定义，全站 Vue 组件均可直接使用虚拟滚动能力。
-  - 顶栏搜索弹窗（`SearchModal`）结果列表重构为动态虚拟滚动（`DynamicScroller`）：根据卡片标题、描述与高亮片段自适应高度，按需挂载视口内卡片，大幅减少大量搜索结果下的 DOM 节点数量与内存占用。
-  - 键盘导航平滑联动：使用键盘上下键（<kbd>↑</kbd> / <kbd>↓</kbd>）在搜索结果间移动时，通过 `scrollToItem` 平滑滚动至目标项，保证视口外选中项即时可见。
+    - 全局集成 `vue-virtual-scroller`（v3.0.5）及其官方样式与 TypeScript 全局组件类型定义，全站 Vue 组件均可直接使用虚拟滚动能力。
+    - 顶栏搜索弹窗（`SearchModal`）结果列表重构为动态虚拟滚动（`DynamicScroller`）：根据卡片标题、描述与高亮片段自适应高度，按需挂载视口内卡片，大幅减少大量搜索结果下的 DOM 节点数量与内存占用。
+    - 键盘导航平滑联动：使用键盘上下键（<kbd>↑</kbd> / <kbd>↓</kbd>）在搜索结果间移动时，通过 `scrollToItem` 平滑滚动至目标项，保证视口外选中项即时可见。
 - 旧浏览器兼容提示页：IE，以及无法正常显示本站的老旧浏览器，会离开正常页面，进入单独的提示页。
-  - 提示页说明当前浏览器无法正常显示网站，样式与站点卡片一致（细边框、圆角、浅阴影），并提供中文、英文、日文说明。
-  - 提供 Chrome、Edge、Firefox 的下载按钮，分别前往对应的中文下载页。
-  - 提供「订阅 RSS」按钮，直接打开 `/rss.xml`。旧浏览器打不开网页时仍可订阅，不依赖剪贴板。
-  - 若之后改用可以正常显示的浏览器打开这个提示页（例如关闭 IE 模式并重新加载），会自动回到首页，不会停在提示页上。仍无法显示的浏览器会留在提示页，不会来回跳转。
+    - 提示页说明当前浏览器无法正常显示网站，样式与站点卡片一致（细边框、圆角、浅阴影），并提供中文、英文、日文说明。
+    - 提供 Chrome、Edge、Firefox 的下载按钮，分别前往对应的中文下载页。
+    - 提供「订阅 RSS」按钮，直接打开 `/rss.xml`。旧浏览器打不开网页时仍可订阅，不依赖剪贴板。
+    - 若之后改用可以正常显示的浏览器打开这个提示页（例如关闭 IE 模式并重新加载），会自动回到首页，不会停在提示页上。仍无法显示的浏览器会留在提示页，不会来回跳转。
 
 ### 变更
 
@@ -45,22 +101,22 @@
 
 - 开放 RSS / Atom 订阅入口：左侧边栏社交区新增第 6 张 RSS 卡片，填补 2×3 宫格右下角空位，尺寸分毫不变（零布局位移）。
 - 社交卡片支持 `copy: true` 复制语义：
-  - 点击 RSS 卡片不再发生页面跳转，而是直接将完整的订阅地址（如 `https://www.wakusei.top/rss.xml`）复制到剪贴板，并在卡片正上方滑入弹出精致的浮动 Toast 气泡（「已复制订阅地址 / 粘贴到阅读器即可订阅」），带指示箭头并在 2.4 秒后平滑淡出。
-  - 卡片点击后立即解除聚焦并退回静止态，不残留高亮与浮起，与其他按钮交互体验完全一致。
-  - 保留逃生口：按住 <kbd>Ctrl</kbd> / <kbd>⌘</kbd> 点击或鼠标中键点击仍会直接在新标签页打开原始 XML。
-  - 补齐 Font Awesome 6 `rss` 图标，并在 `zh-CN`、`en`、`ja` 三语种中同步国际化文本与无障碍屏幕阅读器播报（`role="status" aria-live="polite"`）。
+    - 点击 RSS 卡片不再发生页面跳转，而是直接将完整的订阅地址（如 `https://www.wakusei.top/rss.xml`）复制到剪贴板，并在卡片正上方滑入弹出精致的浮动 Toast 气泡（「已复制订阅地址 / 粘贴到阅读器即可订阅」），带指示箭头并在 2.4 秒后平滑淡出。
+    - 卡片点击后立即解除聚焦并退回静止态，不残留高亮与浮起，与其他按钮交互体验完全一致。
+    - 保留逃生口：按住 <kbd>Ctrl</kbd> / <kbd>⌘</kbd> 点击或鼠标中键点击仍会直接在新标签页打开原始 XML。
+    - 补齐 Font Awesome 6 `rss` 图标，并在 `zh-CN`、`en`、`ja` 三语种中同步国际化文本与无障碍屏幕阅读器播报（`role="status" aria-live="polite"`）。
 - 新增 `tests/social-link-copy.test.ts` 与 `tests/image-loading-reveal.test.ts` 契约与功能测试。
 
 ### 修复
 
 - 文章卡片封面（`PostCard`）「啪」地突然闪现与滚动掉帧：
-  - 根因排查：原本封面的 `src` 被 IntersectionObserver 扣留未在 SSR 中输出，导致原生 `loading="lazy"` 与 `fetchpriority="low"` 完全失效，必须等客户端水合及卡片滚到眼前才开始请求，且缺失透明度过渡。
-  - 修复：封面 `src` 在 SSR 阶段常驻，交由浏览器原生懒加载提前预取；绑定 `HTMLImageElement.decode()` 在位图解码就绪后触发 `opacity 0.45s` 平滑淡入，淡入路径不再占用主线程解码；补全客户端水合前的缓存命中与 `@error` 兜底，并增加 `@media (scripting: enabled)` 无 JS 保护。
-  - 顺带修复 CSS 简写特异性冲突：`article.css` 的 `.post-card` 覆盖了 `components.css` 的 `.scroll-reveal` 过渡简写导致卡片显现变成硬切，已补回 `opacity 0.6s` 过渡。
+    - 根因排查：原本封面的 `src` 被 IntersectionObserver 扣留未在 SSR 中输出，导致原生 `loading="lazy"` 与 `fetchpriority="low"` 完全失效，必须等客户端水合及卡片滚到眼前才开始请求，且缺失透明度过渡。
+    - 修复：封面 `src` 在 SSR 阶段常驻，交由浏览器原生懒加载提前预取；绑定 `HTMLImageElement.decode()` 在位图解码就绪后触发 `opacity 0.45s` 平滑淡入，淡入路径不再占用主线程解码；补全客户端水合前的缓存命中与 `@error` 兜底，并增加 `@media (scripting: enabled)` 无 JS 保护。
+    - 顺带修复 CSS 简写特异性冲突：`article.css` 的 `.post-card` 覆盖了 `components.css` 的 `.scroll-reveal` 过渡简写导致卡片显现变成硬切，已补回 `opacity 0.6s` 过渡。
 - 文章图片灯箱（`image-lightbox`）换图硬切与掉帧：
-  - 引入邻居图片预热与解码机制（`warmNeighbours`），左右翻页无需等待网络往返。
-  - 换图流程改为 120ms 淡出 → 0 透明度提交位图并借由一帧渲染掩盖图片宽高比跳变 → 平滑淡入；引入 `swapToken` 丢弃过期切换请求。
-  - 移除 `.article-lightbox` 全屏 `backdrop-filter: blur(4px)` 高开销逐帧合成滤镜。
+    - 引入邻居图片预热与解码机制（`warmNeighbours`），左右翻页无需等待网络往返。
+    - 换图流程改为 120ms 淡出 → 0 透明度提交位图并借由一帧渲染掩盖图片宽高比跳变 → 平滑淡入；引入 `swapToken` 丢弃过期切换请求。
+    - 移除 `.article-lightbox` 全屏 `backdrop-filter: blur(4px)` 高开销逐帧合成滤镜。
 
 ---
 

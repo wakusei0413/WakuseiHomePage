@@ -1,19 +1,37 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleToc from '../../components/ArticleToc.vue';
+import PostComments from '../../components/PostComments.vue';
 import PostFooterNav from '../../components/PostFooterNav.vue';
 import PostMeta from '../../components/PostMeta.vue';
+import PostViews from '../../components/PostViews.vue';
 import ReadingControls from '../../components/ReadingControls.vue';
+import RepostNotice from '../../components/RepostNotice.astro';
+import { commentThreadPath } from '../../lib/comments';
 import { formatPostDateLabel } from '../../lib/post-model';
 import { getPostStaticPaths, type PostPageProps } from '../../lib/posts';
 import { createArticleSeoMetadata } from '../../lib/seo';
+import { translate } from '../../lib/i18n';
 import { siteConfig } from '../../data/site';
+import type { Locale } from '../../data/i18n';
 
 export { getPostStaticPaths as getStaticPaths };
 
-const { frontmatter, Content, readingMinutes, prev, next, coverMeta } = Astro.props as PostPageProps;
-const pub = formatPostDateLabel(frontmatter.pubDate);
-const updated = formatPostDateLabel(frontmatter.updatedDate);
+const {
+    frontmatter,
+    Content,
+    readingMinutes,
+    prev,
+    next,
+    coverMeta,
+    coverSrcset,
+    contentLocale,
+    translated,
+    availableLocales
+} = Astro.props as PostPageProps;
+const locale = siteConfig.i18n.defaultLocale as Locale;
+const pub = formatPostDateLabel(frontmatter.pubDate, locale);
+const updated = formatPostDateLabel(frontmatter.updatedDate, locale);
 const updatedForDisplay = updated && pub && updated.iso !== pub.iso ? updated : null;
 const siteUrl = Astro.site ?? new URL('https://www.wakusei.top');
 const siteHomeUrl = new URL('/', siteUrl).toString();
@@ -27,10 +45,15 @@ const articleSeo = createArticleSeoMetadata({
         url: siteHomeUrl
     },
     image: articleImage,
-    language: frontmatter.language ?? siteConfig.lang,
+    language: contentLocale,
     section: frontmatter.category,
-    tags: frontmatter.tags
+    tags: frontmatter.tags,
+    basedOn: frontmatter.repost?.url
 });
+const threadPath = commentThreadPath(String(Astro.params.slug ?? ''));
+const showComments = siteConfig.comments.enabled && frontmatter.comments !== false;
+const showViews = siteConfig.comments.enabled && siteConfig.comments.pageview;
+const fallbackNotice = translated ? null : translate(locale, 'post.translation.fallback');
 ---
 
 <BaseLayout
@@ -44,6 +67,9 @@ const articleSeo = createArticleSeoMetadata({
     ogImageHeight={coverMeta?.height}
     ogImageType={coverMeta ? `image/${coverMeta.format}` : undefined}
     articleSeo={articleSeo}
+    locale={locale}
+    contentLocale={contentLocale}
+    alternateLocales={availableLocales}
 >
     <div class="reading-progress" aria-hidden="true">
         <div class="reading-progress__fill"></div>
@@ -66,20 +92,31 @@ const articleSeo = createArticleSeoMetadata({
                         )
                     }
                     <PostMeta client:idle readingMinutes={readingMinutes} updated={updatedForDisplay} />
+                    {showViews && <PostViews client:idle threadPath={threadPath} />}
                 </div>
+                {frontmatter.repost && <RepostNotice repost={frontmatter.repost} locale={locale} />}
+                {
+                    fallbackNotice && (
+                        <p class="post-translation-notice" lang={locale}>
+                            {fallbackNotice}
+                        </p>
+                    )
+                }
             </header>
             {
                 frontmatter.cover && (
                     <div class="post-hero-image-wrapper">
                         <img
                             src={frontmatter.cover}
+                            srcset={coverSrcset}
+                            sizes={coverSrcset ? '(max-width: 900px) 100vw, 960px' : undefined}
                             alt={frontmatter.title}
                             class="post-hero-image"
                             loading="eager"
                             decoding="async"
                             fetchpriority="high"
-                            width="1400"
-                            height="788"
+                            width={coverMeta?.width ?? 1400}
+                            height={coverMeta?.height ?? 788}
                         />
                     </div>
                 )
@@ -89,6 +126,7 @@ const articleSeo = createArticleSeoMetadata({
             <Content />
         </div>
         <PostFooterNav client:idle prev={prev} next={next} />
+        {showComments && <PostComments client:visible threadPath={threadPath} />}
     </article>
     <ArticleToc client:idle={{ timeout: 500 }} />
     <ReadingControls client:idle />

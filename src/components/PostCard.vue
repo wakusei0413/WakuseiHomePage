@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { navigate } from 'astro:transitions/client';
 import { useI18n } from '../composables/useI18n';
+import { resolveLocalizedPath } from '../lib/i18n-routing';
 import { shouldEnhanceAnchorClick } from '../lib/navigation-click';
 import { estimateReadingTime } from '../lib/post-model';
 
@@ -13,6 +14,7 @@ interface PostData {
     language?: string;
     category?: string;
     tags?: string[];
+    repost?: object;
     draft?: boolean;
     pubDate?: string;
     updatedDate?: string;
@@ -26,13 +28,14 @@ interface PostCardProps {
 }
 
 const props = defineProps<PostCardProps>();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const cardRef = ref<HTMLElement | null>(null);
 const coverRef = ref<HTMLImageElement | null>(null);
 const coverShown = ref(false);
 const readingLabel = computed(() =>
     t('post.reading').replace('{minutes}', String(estimateReadingTime(props.wordCount)))
 );
+const postHref = computed(() => resolveLocalizedPath(`/posts/${props.slug}`, locale.value));
 let observer: IntersectionObserver | null = null;
 
 const layout = computed(() => props.data.coverLayout || 'below');
@@ -100,14 +103,14 @@ function handleClick(e: MouseEvent) {
     const anchor = e.currentTarget as HTMLAnchorElement | null;
     if (!anchor || !shouldEnhanceAnchorClick(e, anchor)) return;
     e.preventDefault();
-    navigate(`/posts/${props.slug}`);
+    navigate(postHref.value);
 }
 </script>
 
 <template>
     <a
         ref="cardRef"
-        :href="`/posts/${props.slug}`"
+        :href="postHref"
         :class="['post-card', `post-card--${layout}`, 'scroll-reveal']"
         @click="handleClick"
     >
@@ -125,6 +128,7 @@ function handleClick(e: MouseEvent) {
         />
         <div class="post-info">
             <div class="post-meta">
+                <span v-if="props.data.repost" class="post-badge post-badge--repost">{{ t('post.repost.badge') }}</span>
                 <time v-if="props.dateLabel">{{ props.dateLabel }}</time>
                 <span v-if="props.dateLabel" class="meta-separator">·</span>
                 <span>{{ readingLabel }}</span>

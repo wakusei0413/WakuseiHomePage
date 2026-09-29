@@ -1,0 +1,21 @@
+---
+import HomepageApp from '../../components/HomepageApp.vue';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../data/site';
+import { createHomepagePage, homepagePagePath } from '../../lib/home-pagination';
+import { NON_DEFAULT_LOCALES } from '../../lib/i18n-routing';
+import type { Locale } from '../../data/i18n';
+import { loadPublishedPosts } from '../../lib/posts';
+
+export function getStaticPaths() {
+    return NON_DEFAULT_LOCALES.map((locale) => ({ params: { locale } }));
+}
+
+const { locale } = Astro.params as { locale: Locale };
+const page = createHomepagePage(await loadPublishedPosts(locale), 1, undefined, locale);
+const paginationNext = page.pagination.nextHref ? homepagePagePath(2, locale) : undefined;
+---
+
+<BaseLayout shellMode="home" shellTitle={siteConfig.profile.name} paginationNext={paginationNext} locale={locale}>
+    <HomepageApp client:idle posts={page.posts} pagination={page.pagination} />
+</BaseLayout>

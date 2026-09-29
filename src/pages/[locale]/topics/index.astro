@@ -1,0 +1,39 @@
+---
+import TopicsPage from '../../../components/TopicsPage.vue';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { localizedSiteMeta, translate, type Locale } from '../../../lib/i18n';
+import { NON_DEFAULT_LOCALES } from '../../../lib/i18n-routing';
+import { loadPublishedPosts, loadTaxonomyTermSummaries } from '../../../lib/posts';
+
+export function getStaticPaths() {
+    return NON_DEFAULT_LOCALES.map((locale) => ({ params: { locale } }));
+}
+
+const { locale } = Astro.params as { locale: Locale };
+const [posts, categories, tags] = await Promise.all([
+    loadPublishedPosts(locale),
+    loadTaxonomyTermSummaries('category', locale),
+    loadTaxonomyTermSummaries('tag', locale)
+]);
+const metaParams = { categories: categories.length, tags: tags.length, posts: posts.length };
+const title = translate(locale, 'pages.topics.title', metaParams);
+const description = translate(locale, 'pages.topics.description', metaParams);
+---
+
+<BaseLayout
+    shellMode="blog"
+    shellTitle={title}
+    title={`${title} | ${localizedSiteMeta(locale).title}`}
+    description={description}
+    locale={locale}
+>
+    <TopicsPage
+        client:idle
+        categories={categories}
+        tags={tags}
+        postCount={posts.length}
+        titleKey="pages.topics.title"
+        descriptionKey="pages.topics.description"
+        metaParams={metaParams}
+    />
+</BaseLayout>

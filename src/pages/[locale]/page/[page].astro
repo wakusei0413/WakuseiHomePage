@@ -1,0 +1,57 @@
+---
+import type { GetStaticPaths } from 'astro';
+import HomepageApp from '../../../components/HomepageApp.vue';
+import { siteConfig } from '../../../data/site';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import {
+    createHomepagePage,
+    homepagePageCount,
+    homepagePagePath,
+    type HomepagePage
+} from '../../../lib/home-pagination';
+import { NON_DEFAULT_LOCALES } from '../../../lib/i18n-routing';
+import { localizedSiteMeta, translate, type Locale } from '../../../lib/i18n';
+import { loadPublishedPosts } from '../../../lib/posts';
+
+export const getStaticPaths = (async () => {
+    const perLocale = await Promise.all(
+        NON_DEFAULT_LOCALES.map(async (locale) => {
+            const posts = await loadPublishedPosts(locale);
+            const totalPages = homepagePageCount(posts.length);
+
+            return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => {
+                const currentPage = index + 2;
+                return {
+                    params: { locale, page: String(currentPage) },
+                    props: {
+                        ...createHomepagePage(posts, currentPage, undefined, locale),
+                        locale
+                    }
+                };
+            });
+        })
+    );
+
+    return perLocale.flat();
+}) satisfies GetStaticPaths;
+
+const { posts, pagination, locale } = Astro.props as HomepagePage & { locale: Locale };
+const metaParams = { page: pagination.currentPage, total: pagination.totalPages };
+const title = translate(locale, 'pages.home.page.title', metaParams);
+const description = translate(locale, 'pages.home.page.description', metaParams);
+const paginationPrev = homepagePagePath(pagination.currentPage - 1, locale);
+const paginationNext =
+    pagination.currentPage < pagination.totalPages ? homepagePagePath(pagination.currentPage + 1, locale) : undefined;
+---
+
+<BaseLayout
+    shellMode="home"
+    shellTitle={siteConfig.profile.name}
+    title={`${title} | ${localizedSiteMeta(locale).title}`}
+    description={description}
+    paginationPrev={paginationPrev}
+    paginationNext={paginationNext}
+    locale={locale}
+>
+    <HomepageApp client:idle posts={posts} pagination={pagination} />
+</BaseLayout>

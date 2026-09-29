@@ -1,49 +1,52 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18nStore } from '../stores/i18n';
-import { getStoredLang } from '../lib/i18n';
+import { applyDocumentLanguage, getStoredLang } from '../lib/i18n';
+import { extractLocaleFromPath } from '../lib/i18n-routing';
 import { siteConfig } from '../data/site';
 import type { I18nConfig, Locale } from '../types/site';
 
 const i18nConfig = siteConfig.i18n as I18nConfig;
 
+function getCurrentLocale(): Locale {
+    if (typeof window !== 'undefined') {
+        const routeLocale = extractLocaleFromPath(window.location.pathname);
+        if (routeLocale !== i18nConfig.defaultLocale) {
+            return routeLocale;
+        }
+    }
+    return getStoredLang(i18nConfig);
+}
+
 export function useI18n() {
     const store = useI18nStore();
-    // Always seed from the SSR default locale so this island's hydration render
-    // matches the server markup, even when the user previously selected another
-    // language (the store keeps that choice and it is applied after hydration).
-    // Astro mounts each island as a separate Vue app that hydrates at a
-    // different time (client:load vs client:idle), so a shared store value
-    // switched by the first island would make later islands mismatch the SSR
-    // (default-locale) text. Each island therefore adopts the persisted locale
-    // only after its own hydration.
     const locale = ref<Locale>(i18nConfig.defaultLocale);
 
-    const adoptStoredLocale = () => {
-        const stored = getStoredLang(i18nConfig);
-        if (stored !== locale.value) {
-            locale.value = stored;
+    const adoptLocale = () => {
+        const next = getCurrentLocale();
+        if (next !== locale.value) {
+            locale.value = next;
         }
-        if (typeof document !== 'undefined') {
-            document.documentElement.lang = stored;
+        if (store.locale !== next) {
+            store.setLocale(next);
         }
+        applyDocumentLanguage(next);
     };
 
-    onMounted(adoptStoredLocale);
+    onMounted(adoptLocale);
 
     // Persistent islands (site shell, top bar, footer) do not re-mount after a
-    // client-side navigation, so re-adopt the stored locale once the new page
-    // has been swapped in.
+    // client-side navigation, so re-adopt the new page's locale once the new
+    // document has been swapped in.
     if (typeof document !== 'undefined') {
-        document.addEventListener('astro:after-swap', adoptStoredLocale);
+        document.addEventListener('astro:after-swap', adoptLocale);
     }
     onUnmounted(() => {
         if (typeof document !== 'undefined') {
-            document.removeEventListener('astro:after-swap', adoptStoredLocale);
+            document.removeEventListener('astro:after-swap', adoptLocale);
         }
     });
 
     // Propagate UI language changes made through the store to every island.
-    // Pinia unwraps setup-store refs, so store.locale is the Locale value here.
     watch(
         () => store.locale,
         (next) => {
@@ -55,8 +58,6 @@ export function useI18n() {
         locale,
         t: (key: string, params?: Record<string, string | number>) => store.t(key, locale.value, params),
         setLocale: (lang: Locale) => {
-            // Update this island's ref synchronously (the store watcher below is
-            // deferred); the store persists the choice and syncs the document lang.
             locale.value = lang;
             store.setLocale(lang);
         }

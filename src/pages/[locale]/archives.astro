@@ -1,0 +1,37 @@
+---
+import ArchivesPage from '../../components/ArchivesPage.vue';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { localizedSiteMeta, translate, type Locale } from '../../lib/i18n';
+import { NON_DEFAULT_LOCALES } from '../../lib/i18n-routing';
+import { loadArchiveGroups, loadTaxonomyTermSummaries } from '../../lib/posts';
+
+export function getStaticPaths() {
+    return NON_DEFAULT_LOCALES.map((locale) => ({ params: { locale } }));
+}
+
+const { locale } = Astro.params as { locale: Locale };
+const archive = await loadArchiveGroups(locale);
+const categories = await loadTaxonomyTermSummaries('category', locale);
+const tags = await loadTaxonomyTermSummaries('tag', locale);
+const metaParams = { categories: categories.length, tags: tags.length, posts: archive.totalPosts };
+const title = translate(locale, 'pages.archives.title', metaParams);
+const description = translate(locale, 'pages.archives.description', metaParams);
+---
+
+<BaseLayout
+    shellMode="blog"
+    shellTitle={title}
+    title={`${title} | ${localizedSiteMeta(locale).title}`}
+    description={description}
+    locale={locale}
+>
+    <ArchivesPage
+        client:idle
+        archive={archive}
+        categories={categories}
+        tags={tags}
+        titleKey="pages.archives.title"
+        descriptionKey="pages.archives.description"
+        metaParams={metaParams}
+    />
+</BaseLayout>

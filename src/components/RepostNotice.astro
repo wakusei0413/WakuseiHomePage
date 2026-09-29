@@ -1,0 +1,30 @@
+---
+import type { Locale } from '../data/i18n';
+import { translate } from '../lib/i18n';
+import { repostSourceLabel, type PostRepost } from '../lib/post-model';
+
+interface Props {
+    repost: PostRepost;
+    locale: Locale;
+}
+
+const { repost, locale } = Astro.props;
+const source = repostSourceLabel(repost);
+// The source name sits inside a translated sentence, so split the template around
+// the placeholder and render the name (a link when there is a URL) in between.
+const [before, after = ''] = translate(locale, source ? 'post.repost.notice' : 'post.repost.noticeUnknown').split(
+    '{source}'
+);
+const author = repost.author ? translate(locale, 'post.repost.author', { author: repost.author }) : null;
+const link = source && repost.url ? { href: repost.url, target: '_blank', rel: 'noopener noreferrer nofollow' } : null;
+// The pieces stay on one line in the markup: whitespace between them would show
+// up before CJK punctuation ("来源 ，").
+---
+
+<aside class="post-repost-notice" lang={locale}>
+    <span class="post-badge post-badge--repost">{translate(locale, 'post.repost.badge')}</span>
+    <p>
+        {before}{source && (link ? <a {...link}>{source}</a> : <cite>{source}</cite>)}{after}
+        {author && <span class="post-repost-notice__author">{author}</span>}
+    </p>
+</aside>

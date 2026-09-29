@@ -27,7 +27,7 @@ export function writeSearchQuery(href: string, query: string): string {
     return `${url.pathname}${url.search}${url.hash}`;
 }
 
-/** Absolute target for the `SearchAction` entry point. */
-export function createSearchUrlTemplate(siteUrl: string | URL): string {
-    return `${new URL('/search', siteUrl).toString()}?${SEARCH_QUERY_PARAM}={search_term_string}`;
+/** Absolute target for the `SearchAction` entry point, on the given locale's route. */
+export function createSearchUrlTemplate(siteUrl: string | URL, searchPath = '/search'): string {
+    return `${new URL(searchPath, siteUrl).toString()}?${SEARCH_QUERY_PARAM}={search_term_string}`;
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TaxonomyTerm } from '../lib/post-model';
+import type { TaxonomyTermSummary } from '../lib/post-model';
 import { useI18n } from '../composables/useI18n';
 import { usePageMeta } from '../composables/usePageMeta';
 
@@ -7,8 +7,8 @@ const props = defineProps<{
     titleKey: string;
     descriptionKey: string;
     metaParams: Record<string, string | number>;
-    categories: TaxonomyTerm[];
-    tags: TaxonomyTerm[];
+    categories: TaxonomyTermSummary[];
+    tags: TaxonomyTermSummary[];
     postCount: number;
 }>();
 

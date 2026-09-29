@@ -1,9 +1,9 @@
 import type { SiteConfig } from '../types/site';
 
-// 日常站点配置的唯一入口；site.ts 会通过 schema.ts 校验后再暴露给运行时。
+// 日常站点配置的唯一入口；构建/SSR 时由 validate-site-config.ts 用 schema.ts 校验（zod 不进浏览器）。
 // 新增字段时同步更新 types/site.ts 与 schema.ts，不要建立第二套快捷配置映射。
 export const editableSiteConfig: SiteConfig = {
-    version: '2.0.3',
+    version: '2.1.0',
 
     // 浏览器与 SEO 元数据。
     title: '遊星Wakusei的个人小屋',
@@ -70,6 +70,15 @@ export const editableSiteConfig: SiteConfig = {
     github: {
         username: 'wakusei0413',
         url: 'https://github.com/wakusei0413'
+    },
+
+    // 文章评论与浏览量（Twikoo，部署在自己的 Cloudflare Workers + D1 上）。
+    // 部署步骤与后台推荐配置见 docs/comments.md；部署好后填上 envId 再把 enabled 打开。
+    comments: {
+        enabled: true,
+        provider: 'twikoo',
+        envId: 'https://comment.wakusei.top',
+        pageview: true
     },
 
     footer: {
@@ -208,6 +217,18 @@ export const editableSiteConfig: SiteConfig = {
     // 翻译正文统一维护在 src/data/i18n.ts。
     i18n: {
         defaultLocale: 'zh-CN',
-        locales: ['zh-CN', 'en', 'ja']
+        locales: ['zh-CN', 'en', 'ja'],
+        // 各语种的站点标题与描述（用于 <title>、meta description、订阅源）。
+        // 不填的语种自动回落到上面的 title / description。
+        siteMeta: {
+            en: {
+                title: "Wakusei's Homepage",
+                description: 'Wakusei — personal homepage and blog'
+            },
+            ja: {
+                title: '遊星Wakuseiのホームページ',
+                description: 'Wakusei — 個人ホームページとブログ'
+            }
+        }
     }
 };

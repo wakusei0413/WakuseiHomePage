@@ -21,6 +21,11 @@ type WallpaperPrefetch = {
     img: HTMLImageElement;
 };
 
+export type WallpaperControllerOptions = {
+    /** Constrained device or network: local default image only, no rotation, no Ken Burns. */
+    lite?: boolean;
+};
+
 export function decorateWallpaperImage(image: HTMLImageElement) {
     image.alt = '';
     image.setAttribute('aria-hidden', 'true');
@@ -79,6 +84,16 @@ export class WallpaperController {
     private hasReadyFired = false;
     private preloadingSlot: number | null = null;
     private reduceMotion = false;
+    /** Rotation fetches that used up every retry in a row (see noteRotationFailure). */
+    private consecutiveRotationFailures = 0;
+    /** Set once the external APIs look unreachable; the current frame stays for the session. */
+    private rotationGivenUp = false;
+    /**
+     * After this many exhausted rotation fetches the controller stops calling the
+     * external APIs: on a network that cannot reach them (e.g. behind the GFW)
+     * every further attempt only burns bandwidth and battery.
+     */
+    private readonly maxRotationFailures = 2;
     // The crossfade transition in layout.css runs for 0.9s. Replacing the layer we
     // just hid while it is still fading out would cut the transition short, so we
     // wait for it to finish before recycling that slot for the next preload.
@@ -87,9 +102,15 @@ export class WallpaperController {
 
     constructor(
         private readonly wallpaperConfig: WallpaperConfig,
-        callbacks: WallpaperCallbacks = {}
+        callbacks: WallpaperCallbacks = {},
+        private readonly options: WallpaperControllerOptions = {}
     ) {
         this.callbacks = callbacks;
+    }
+
+    /** Lite mode shows only the local default image: no rotation, no external requests. */
+    private get rotationEnabled() {
+        return this.wallpaperConfig.rotation.enabled && !this.options.lite && !this.rotationGivenUp;
     }
 
     attach(container: HTMLElement) {
@@ -99,7 +120,8 @@ export class WallpaperController {
     init() {
         this.isDestroyed = false;
         this.reduceMotion =
-            typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+            !!this.options.lite ||
+            (typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
         if (!this.container) {
             this.fireReady();
@@ -116,14 +138,26 @@ export class WallpaperController {
         this.startInitialLoad();
     }
 
+    /**
+     * Stops rotating, fetching and zooming while the wallpaper is not on screen
+     * (e.g. scrolled away under an article). An in-flight fetch may still land.
+     */
     pause() {
+        if (this.isPaused) {
+            return;
+        }
         this.isPaused = true;
         this.stopRotation();
         this.rotationPending = false;
+        this.kenburns.forEach((animation) => animation?.pause());
     }
 
     resume() {
+        if (!this.isPaused) {
+            return;
+        }
         this.isPaused = false;
+        this.kenburns.forEach((animation) => animation?.play());
         this.startRotation();
     }
 
@@ -329,6 +363,28 @@ export class WallpaperController {
             // The prefetch failed/timed out — fall back to a normal fetch below.
         }
 
+        const fallback = this.wallpaperConfig.defaultImage;
+        if (fallback && prefetched?.src !== new URL(fallback, window.location.href).href) {
+            // No usable prefetch (e.g. a narrow window widened after load): the
+            // self-hosted default is still the fastest first frame.
+            const image = new Image();
+            decorateWallpaperImage(image);
+            image.src = fallback;
+            const ok = await this.awaitImage(image, this.wallpaperConfig.raceTimeout);
+            if (this.isDestroyed) {
+                return false;
+            }
+            if (ok) {
+                this.adoptImageAsLayer(0, image);
+                return true;
+            }
+        }
+
+        if (this.options.lite) {
+            // Never reach for the external APIs on a constrained connection or device.
+            return false;
+        }
+
         return this.loadIntoLayer(0);
     }
 
@@ -399,12 +455,14 @@ export class WallpaperController {
         }
 
         this.preloadingSlot = slot;
+        const generation = this.loadGeneration;
 
         try {
             const image = await this.loadWithRetry(Date.now());
             if (this.isDestroyed) {
                 return false;
             }
+            this.consecutiveRotationFailures = 0;
 
             // Adopt the already-downloaded image directly. Because the URL carries a
             // unique cache-buster, the browser would otherwise re-fetch it when we
@@ -416,10 +474,27 @@ export class WallpaperController {
             this.resolvePendingRotation();
             return true;
         } catch {
+            // A cancelled load (tab hidden, destroyed) says nothing about the network.
+            if (generation === this.loadGeneration && !this.isDestroyed) {
+                this.noteRotationFailure();
+            }
             return false;
         } finally {
             this.preloadingSlot = null;
         }
+    }
+
+    private noteRotationFailure() {
+        this.consecutiveRotationFailures += 1;
+        if (this.consecutiveRotationFailures < this.maxRotationFailures) {
+            return;
+        }
+
+        // Keep whatever frame is on screen (usually the self-hosted default) and
+        // stop asking the unreachable APIs for the rest of the session.
+        this.rotationGivenUp = true;
+        this.rotationPending = false;
+        this.stopRotation();
     }
 
     private activateLayer(slot: number) {
@@ -494,7 +569,11 @@ export class WallpaperController {
         // Seek to the outgoing layer's phase (no-op on the very first frame, where
         // phaseMs is 0) and make sure the animation actually plays from there.
         animation.currentTime = phaseMs;
-        animation.play();
+        if (this.isPaused) {
+            animation.pause();
+        } else {
+            animation.play();
+        }
         this.kenburns[slot] = animation;
     }
 
@@ -562,7 +641,7 @@ export class WallpaperController {
     }
 
     private startRotation() {
-        if (!this.wallpaperConfig.rotation.enabled || !this.canRequestWallpaper()) {
+        if (!this.rotationEnabled || !this.canRequestWallpaper()) {
             return;
         }
 
