@@ -74,6 +74,7 @@ const publishedFeedSlugs = [
     'jlpt-n1-n5-certification-standards',
     'miui13-lmi-flash-packages-before-spring-festival',
     'n5-grammar-easy-system',
+    'opus-5-5-review-domestic-models-on-the-edge',
     'some-random-talks-about-2022',
     'trump-tariff-plan-report',
     'whataboutblog01',

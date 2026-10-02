@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { getBlogDateMetadata, parsePostUrl } from './src/lib/sitemap-helper';
+import rehypeLinkCards from './src/lib/link-cards';
 
 const astroVueClientEntry = fileURLToPath(new URL('./src/lib/astro-vue-client.ts', import.meta.url));
 const vueRuntimeEntry = fileURLToPath(new URL('./node_modules/vue/dist/vue.runtime.esm-bundler.js', import.meta.url));
@@ -167,6 +168,7 @@ export default defineConfig({
                 wrap: false
             },
             rehypePlugins: [
+                rehypeLinkCards,
                 rehypeSlug,
                 [
                     rehypeAutolinkHeadings,

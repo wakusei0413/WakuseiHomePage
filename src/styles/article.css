@@ -369,6 +369,103 @@
     color: color-mix(in srgb, var(--accent-blue) 70%, var(--accent-red));
 }
 
+/* ===== 链接卡片 —— 独占一段的外链（构建期由 src/lib/link-cards.ts 生成） ===== */
+.post-body .link-card {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+    margin: 0 0 1.25em;
+    padding: 14px 16px;
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-lg);
+    background: var(--panel-glass);
+    box-shadow: var(--panel-shadow);
+    color: var(--fg);
+    text-decoration: none;
+    transition:
+        border-color var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.post-body .link-card:hover {
+    border-color: color-mix(in srgb, var(--accent-blue) 45%, var(--panel-border));
+    transform: translateY(-1px);
+}
+
+.post-body .link-card:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
+}
+
+.post-body .link-card__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.post-body .link-card__site {
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.post-body .link-card__title {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--accent-blue);
+    font-weight: 700;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.post-body .link-card__desc {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.post-body .link-card__media {
+    flex: 0 0 auto;
+    align-self: center;
+    width: 200px;
+    aspect-ratio: 1.91 / 1;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+
+.post-body .link-card__image {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    object-fit: cover;
+}
+
+@media (max-width: 640px) {
+    .post-body .link-card--media {
+        flex-direction: column-reverse;
+    }
+
+    .post-body .link-card__media {
+        width: 100%;
+    }
+}
+
 /* ===== 行内代码 ===== */
 .post-body code {
     font-family: var(--font-mono);

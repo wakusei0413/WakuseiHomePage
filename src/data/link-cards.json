@@ -1,0 +1,28 @@
+{
+    "https://apk.qoo-app.com": {
+        "title": "QooApp 遊戲庫",
+        "description": "QooApp 是專注二次元的專業平台，旨在聚集世界各地熱愛ACG的用戶，為他們創造有價值的服務和產品。從遊戲商店、新聞資訊、玩家社群，到線下聚會、漫畫閱讀、遊戲發行——QooApp不斷進化中，拓展突破次元的遊玩體驗。",
+        "siteName": "QooApp",
+        "image": "https://o.qoo-img.com/statics.qoo-app.com/cdn/img/QooApp_512.v-0d0fd2.png"
+    },
+    "https://genshin.hoyoverse.com/en": {
+        "title": "A Rekviem for the Underworld"
+    },
+    "https://genshin.hoyoverse.com/en/download": {
+        "title": "Genshin Impact – Step into a Vast Magical World for Adventure",
+        "description": "Genshin Impact is an open-world action RPG. In the game, set forth on a journey across a fantasy world called Teyvat. In this vast world, you can explore seven…",
+        "image": "https://upload-static.hoyoverse.com/hk4e/upload/fb/common.jpg"
+    },
+    "https://real-api-pricing.vercel.app/#lang=zh&view=allowance&fee=0-30&channels=Zhipu&channels=OpenAI&channels=Anthropic&channels=Kimi": {
+        "title": "Real API Pricing · The cost behind the capability",
+        "description": "Monthly fee ÷ tokens you can actually use, plotted against independent leaderboards. Open data, open methodology.",
+        "siteName": "Real API Pricing",
+        "image": "https://raw.githubusercontent.com/FeiZhuLulu/real-api-pricing/main/charts/en/pareto/pareto-aa-intelligence.png"
+    },
+    "https://www.bilibili.com/video/BV1HFYw6oESR/": {
+        "title": "震惊瘫坐之Opus5.5，花7分钟讲完了改革开放47年_哔哩哔哩_bilibili",
+        "description": "“1978年，一个中国人一年创造的价值是385元；2025年，这个数字是99665元。这47年，到底发生了什么？这是一部由AI独立完成的纪录片：脚本、画面（全部为原创动态图形）、配乐都由AI（Claude Opus 5.5）完成。从真理标准大讨论、小岗村的18枚红手印，到深圳速度、加入WTO、脱贫攻坚、5万公里高铁，…",
+        "siteName": "哔哩哔哩",
+        "image": "https://i0.hdslb.com/bfs/archive/b9e6cc7f50bb5d3799f3a1019fc1afa4364bb10c.jpg@1200w_630h"
+    }
+}
