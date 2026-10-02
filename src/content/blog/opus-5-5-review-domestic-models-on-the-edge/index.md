@@ -1,6 +1,8 @@
 ---
 title: '国产模型已经到了最危险的边缘【Opus 5.5 体验报告】'
 description: '用了几天 Opus 5.5 之后的真实感受：勤奋、会说人话、套餐性价比反超国产模型。对比 GPT-6 Astra 与 Kimi、GLM、DeepSeek，聊聊国产模型与开源生态正在面临的困境。'
+cover: './cover.webp'
+coverLayout: below
 language: 'zh-CN'
 category: '随笔'
 tags: ['AI', 'Claude', 'Opus 5.5', '大模型', '国产模型', 'GPT']
