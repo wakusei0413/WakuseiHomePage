@@ -205,6 +205,20 @@ describe('reading controls: dock consolidation', () => {
     });
 });
 
+describe('reading controls: jump to comments', () => {
+    it('shows the button only when the comments section exists', () => {
+        expect(readingControlsComponent).toContain('v-if="hasComments"');
+        expect(readingControlsComponent).toContain("document.querySelector('.post-comments')");
+        expect(readingControlsComponent).toContain("t('article.dock.toComments')");
+        expect(readingControlsComponent).toContain('scrollIntoView');
+    });
+
+    it('raises the TOC capsule above the taller three-button dock', () => {
+        expect(readingControlsCss).toContain(':root:has(.post-comments)');
+        expect(readingControlsCss).toContain('var(--article-dock-item) * 3');
+    });
+});
+
 describe('reading controls: i18n coverage', () => {
     it('provides the new keys in zh-CN, en and ja', () => {
         const keys = [
@@ -223,7 +237,8 @@ describe('reading controls: i18n coverage', () => {
             'article.reading.focus',
             'article.reading.focus.enable',
             'article.reading.focus.disable',
-            'article.dock.backToTop'
+            'article.dock.backToTop',
+            'article.dock.toComments'
         ];
         for (const locale of ['zh-CN', 'en', 'ja'] as const) {
             for (const key of keys) {

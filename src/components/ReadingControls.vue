@@ -64,6 +64,8 @@ const widthLabels = computed(() => [
 
 // ===== dock 显隐：翻到正文开始才一起出现 =====
 const dockVisible = ref(false);
+// 文章开启评论时才显示「跳到评论」
+const hasComments = ref(false);
 let scrollerEl: HTMLElement | null = null;
 let scrollFrame: number | null = null;
 let scrollCleanup: (() => void) | null = null;
@@ -93,6 +95,7 @@ function attachScrollListener(): void {
     scrollCleanup?.();
     scrollCleanup = null;
     scrollerEl = getScroller();
+    hasComments.value = getCommentsSection() !== null;
     if (!scrollerEl) {
         dockVisible.value = false;
         return;
@@ -101,6 +104,15 @@ function attachScrollListener(): void {
     scrollerEl.addEventListener('scroll', handler, { passive: true });
     updateDockVisibility();
     scrollCleanup = () => scrollerEl?.removeEventListener('scroll', handler);
+}
+
+function getCommentsSection(): HTMLElement | null {
+    const el = document.querySelector('.post-comments');
+    return el instanceof HTMLElement ? el : null;
+}
+
+function scrollToComments(): void {
+    getCommentsSection()?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function scrollToTop(): void {
@@ -227,6 +239,28 @@ onUnmounted(() => {
                 aria-hidden="true"
             >
                 <path d="M12 19V5M6 11l6-6 6 6"></path>
+            </svg>
+        </button>
+
+        <button
+            v-if="hasComments"
+            type="button"
+            class="article-dock__fab"
+            :aria-label="t('article.dock.toComments')"
+            @click="scrollToComments"
+        >
+            <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+            >
+                <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"></path>
             </svg>
         </button>
 

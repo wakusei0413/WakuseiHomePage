@@ -16,6 +16,56 @@
     display: none;
 }
 
+/* 叠加式滚动条（src/scripts/page-scrollbar.ts 注入）：不占布局宽度，
+   滚动/悬停时淡入，静止后淡出；可拖动、点轨道跳转 */
+.page-scrollbar {
+    position: fixed;
+    top: 4px;
+    right: 0;
+    bottom: 4px;
+    z-index: var(--z-float, 1500);
+    width: 14px;
+    cursor: default;
+    touch-action: none;
+    user-select: none;
+}
+
+.page-scrollbar--disabled {
+    display: none;
+}
+
+.page-scrollbar__thumb {
+    position: absolute;
+    top: 0;
+    right: 3px;
+    width: 6px;
+    min-height: 32px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--fg) 32%, transparent);
+    opacity: 0;
+    transition:
+        opacity 0.3s ease,
+        width 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.page-scrollbar--active .page-scrollbar__thumb,
+.page-scrollbar:hover .page-scrollbar__thumb {
+    opacity: 1;
+}
+
+.page-scrollbar:hover .page-scrollbar__thumb,
+.page-scrollbar--dragging .page-scrollbar__thumb {
+    width: 9px;
+    background: color-mix(in srgb, var(--fg) 50%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-scrollbar__thumb {
+        transition: none;
+    }
+}
+
 /* Hero 粘顶层：滚动时钉在视口顶部，通过 transform 沉入 3D 空间 */
 .hero-sticky {
     position: sticky;

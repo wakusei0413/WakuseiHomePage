@@ -15,6 +15,11 @@
     --article-dock-shadow: 0 10px 30px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+/* 开启评论的文章 dock 多一个「跳到评论」按钮，目录胶囊随之上移 */
+:root:has(.post-comments) {
+    --article-dock-height: calc(var(--article-dock-item) * 3 + var(--article-dock-gap) * 2);
+}
+
 [data-theme='dark'] {
     --article-dock-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 12px 32px rgba(0, 0, 0, 0.5);
 }
